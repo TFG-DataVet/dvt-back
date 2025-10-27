@@ -78,9 +78,7 @@ public class Clinic extends AggregateRoot<Long> implements Entity<Long> {
                 .updatedAt(LocalDateTime.now())
                 .build();
         
-        System.out.println("🔍 DEBUG: Adding ClinicCreatedEvent to clinic");
         clinic.addDomainEvent(ClinicCreatedEvent.of(clinicID, clinicName, legalName));
-        System.out.println("🔍 DEBUG: Event added, total events: " + clinic.getDomainEvents().size());
         return clinic;
     }
 

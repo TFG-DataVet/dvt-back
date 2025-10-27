@@ -13,9 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class LoggingDomainEventPublisher implements DomainEventPublisher {
     
-    public LoggingDomainEventPublisher() {
-        System.out.println("🔍 DEBUG: LoggingDomainEventPublisher created!");
-    }
+
     
     @Override
     public void publish(DomainEvent event) {
