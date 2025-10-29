@@ -10719,15 +10719,713 @@ Con estas soluciones y herramientas de diagnóstico, deberías poder resolver la
 
 ## 9. Checklists y Verificación
 
-*[Esta sección se completará en las siguientes tareas]*
+Esta sección te proporciona checklists detallados para verificar que has implementado correctamente cada capa de tu dominio, junto con comandos específicos para validar tu implementación.
 
 ### Checklist por Capa
 
-*Contenido pendiente de implementación*
+#### 🏛️ Checklist - Capa de Dominio
+
+**📋 Modelo de Dominio (Owner.java)**
+- [ ] **Estructura Base**
+  - [ ] Extiende `AggregateRoot<Long>`
+  - [ ] Implementa `Entity<Long>`
+  - [ ] Implementa método `getId()` que retorna el identificador único
+  - [ ] Usa anotaciones Lombok (`@Getter`, `@Builder`, `@AllArgsConstructor`, `@NoArgsConstructor`)
+
+- [ ] **Campos y Validaciones**
+  - [ ] Tiene campo `ownerId` de tipo `Long`
+  - [ ] Campos obligatorios con `@NotBlank` o `@NotNull`
+  - [ ] Campos con límites de tamaño usando `@Size`
+  - [ ] Usa Value Objects del shared (`Email`, `Phone`, `Address`)
+  - [ ] Incluye campos de auditoría (`createdAt`, `updatedAt`)
+
+- [ ] **Factory Methods**
+  - [ ] Método estático `create()` para crear nuevas instancias
+  - [ ] Validaciones de negocio en el factory method
+  - [ ] Establece fechas automáticamente (`LocalDateTime.now()`)
+  - [ ] Publica evento `OwnerCreatedEvent` usando `addDomainEvent()`
+
+- [ ] **Métodos de Negocio**
+  - [ ] Método `update()` para actualizar información
+  - [ ] Método `delete()` para marcar eliminación
+  - [ ] Publica eventos correspondientes en cada operación
+  - [ ] Actualiza `updatedAt` en operaciones de modificación
+
+- [ ] **Métodos de Conveniencia**
+  - [ ] Método `getFullName()` para obtener nombre completo
+  - [ ] Métodos de validación como `hasCompleteContactInfo()`
+  - [ ] Métodos que encapsulan lógica de negocio específica
+
+**📋 Eventos de Dominio**
+- [ ] **OwnerCreatedEvent.java**
+  - [ ] Implementa `DomainEvent`
+  - [ ] Campos inmutables (`private final`)
+  - [ ] Factory method `of()` con timestamp automático
+  - [ ] Implementa `occurredOn()` correctamente
+  - [ ] Incluye información relevante (ID, nombre, email)
+  - [ ] Método `toString()` informativo
+
+- [ ] **OwnerUpdatedEvent.java**
+  - [ ] Implementa `DomainEvent`
+  - [ ] Campos inmutables (`private final`)
+  - [ ] Factory method `of()` con timestamp automático
+  - [ ] Incluye información actualizada (ID, nombre)
+  - [ ] Método `toString()` informativo
+
+- [ ] **OwnerDeletedEvent.java**
+  - [ ] Implementa `DomainEvent`
+  - [ ] Campos inmutables (`private final`)
+  - [ ] Factory method `of()` con timestamp automático
+  - [ ] Incluye información del dueño eliminado
+  - [ ] Método `toString()` informativo
+
+**📋 Excepciones de Dominio**
+- [ ] **OwnerNotFoundException.java**
+  - [ ] Extiende `EntityNotFoundException` del shared
+  - [ ] Constructor para búsqueda por ID
+  - [ ] Constructor para búsqueda por campo específico
+  - [ ] Factory methods (`byEmail()`, `byIdentificationNumber()`)
+  - [ ] Mensajes de error claros y específicos
+
+- [ ] **OwnerAlreadyExistsException.java**
+  - [ ] Extiende `EntityAlreadyExistsException` del shared
+  - [ ] Constructor para duplicación por campo específico
+  - [ ] Factory methods (`withEmail()`, `withIdentificationNumber()`)
+  - [ ] Mensajes de error que indican el campo duplicado
+
+- [ ] **OwnerValidationException.java**
+  - [ ] Extiende `DomainException` del shared
+  - [ ] Constructor que acepta `ValidationResult`
+  - [ ] Factory methods para casos comunes
+  - [ ] Método `hasValidationErrors()` para verificar errores
+
+#### 🔧 Checklist - Capa de Aplicación
+
+**📋 Puertos de Entrada (Input Ports)**
+- [ ] **OwnerUseCase.java**
+  - [ ] Extiende `UseCase` del shared
+  - [ ] Define métodos para operaciones CRUD básicas
+  - [ ] Métodos retornan tipos apropiados (`OwnerResponse`, `Optional<OwnerResponse>`)
+  - [ ] Métodos lanzan excepciones específicas del dominio
+  - [ ] Incluye operaciones de búsqueda específicas (por email, etc.)
+
+**📋 Comandos**
+- [ ] **CreateOwnerCommand.java**
+  - [ ] Campos inmutables (`private final`)
+  - [ ] Validaciones básicas con anotaciones Jakarta
+  - [ ] Usa Value Objects del shared cuando sea apropiado
+  - [ ] Constructor que acepta todos los campos requeridos
+  - [ ] Métodos getter para todos los campos
+
+- [ ] **UpdateOwnerCommand.java**
+  - [ ] Incluye campo `ownerId` para identificar la entidad
+  - [ ] Campos inmutables (`private final`)
+  - [ ] Validaciones básicas con anotaciones Jakarta
+  - [ ] Usa Value Objects del shared cuando sea apropiado
+
+**📋 Validadores**
+- [ ] **CreateOwnerCommandValidator.java**
+  - [ ] Implementa `Validator<CreateOwnerCommand>` del shared
+  - [ ] Método `validate()` retorna `ValidationResult`
+  - [ ] Validaciones de negocio específicas
+  - [ ] Verifica unicidad de email si es necesario
+  - [ ] Mensajes de error claros y específicos
+
+- [ ] **UpdateOwnerCommandValidator.java**
+  - [ ] Implementa `Validator<UpdateOwnerCommand>` del shared
+  - [ ] Valida que el dueño existe antes de actualizar
+  - [ ] Verifica unicidad de campos modificados
+  - [ ] Validaciones de negocio para actualizaciones
+
+**📋 Puertos de Salida (Output Ports)**
+- [ ] **OwnerRepositoryPort.java**
+  - [ ] Extiende `Repository<Owner, Long>` del shared
+  - [ ] Métodos de búsqueda específicos (`findByEmail()`, `findByIdentificationNumber()`)
+  - [ ] Métodos que retornan `Optional<Owner>` para búsquedas
+  - [ ] Métodos de verificación de existencia (`existsByEmail()`)
+
+**📋 Servicios de Aplicación**
+- [ ] **OwnerService.java**
+  - [ ] Implementa `OwnerUseCase` y extiende `ApplicationService`
+  - [ ] Anotado con `@Service`
+  - [ ] Inyección de dependencias correcta (`OwnerRepositoryPort`, validadores)
+  - [ ] Manejo de transacciones con `@Transactional`
+  - [ ] Publicación de eventos de dominio
+  - [ ] Manejo de excepciones específicas
+  - [ ] Validación de comandos antes de procesarlos
+
+**📋 DTOs y Mappers**
+- [ ] **OwnerResponse.java**
+  - [ ] Campos inmutables (`private final`)
+  - [ ] Incluye todos los campos necesarios para la respuesta
+  - [ ] Usa tipos apropiados (String para Value Objects en respuesta)
+  - [ ] Constructor que acepta todos los campos
+
+- [ ] **OwnerMapper.java**
+  - [ ] Implementa `Mapper<Owner, OwnerResponse>` del shared
+  - [ ] Método estático `toResponse()` para convertir Owner a OwnerResponse
+  - [ ] Método estático `toDomain()` si es necesario
+  - [ ] Manejo correcto de Value Objects (conversión a String)
+  - [ ] Manejo de campos opcionales (null checks)
+
+#### 🌐 Checklist - Capa de Infraestructura
+
+**📋 Controladores REST**
+- [ ] **OwnerController.java**
+  - [ ] Anotado con `@RestController`
+  - [ ] Mapping base con `@RequestMapping("/api/v1/owners")`
+  - [ ] Inyección del `OwnerUseCase`
+  - [ ] Endpoints CRUD completos (GET, POST, PUT, DELETE)
+  - [ ] Validación de requests con `@Valid`
+  - [ ] Códigos de respuesta HTTP apropiados
+  - [ ] Manejo de excepciones con try-catch si es necesario
+  - [ ] Documentación con comentarios JavaDoc
+
+**📋 DTOs de Request**
+- [ ] **CreateOwnerRequest.java**
+  - [ ] Validaciones con Bean Validation (`@NotBlank`, `@Email`, etc.)
+  - [ ] Campos que corresponden a los del comando
+  - [ ] Método para convertir a `CreateOwnerCommand`
+  - [ ] Manejo de Value Objects (recibe String, convierte a Value Object)
+
+- [ ] **UpdateOwnerRequest.java**
+  - [ ] Validaciones con Bean Validation
+  - [ ] Incluye todos los campos actualizables
+  - [ ] Método para convertir a `UpdateOwnerCommand`
+  - [ ] Manejo apropiado de campos opcionales
+
+**📋 Persistencia JPA**
+- [ ] **OwnerEntity.java**
+  - [ ] Extiende `BaseEntity` del shared
+  - [ ] Anotado con `@Entity` y `@Table`
+  - [ ] Campos mapeados con anotaciones JPA apropiadas
+  - [ ] Convertidores para Value Objects (`@Convert`)
+  - [ ] Constraints de base de datos (`@Column(unique = true)`)
+  - [ ] Constructor sin parámetros para JPA
+  - [ ] Métodos para convertir desde/hacia el modelo de dominio
+
+- [ ] **JpaOwnerRepository.java**
+  - [ ] Extiende `JpaRepository<OwnerEntity, Long>`
+  - [ ] Métodos de consulta personalizados con `@Query` o naming convention
+  - [ ] Métodos que corresponden a los del puerto de salida
+  - [ ] Manejo de excepciones de base de datos
+
+- [ ] **JpaOwnerRepositoryAdapter.java**
+  - [ ] Implementa `OwnerRepositoryPort`
+  - [ ] Anotado con `@Repository`
+  - [ ] Inyección del `JpaOwnerRepository`
+  - [ ] Conversión entre entidades JPA y modelos de dominio
+  - [ ] Manejo de `Optional` correctamente
+  - [ ] Traducción de excepciones JPA a excepciones de dominio
+
+**📋 Configuración**
+- [ ] **Configuración Spring**
+  - [ ] Todos los componentes están anotados correctamente
+  - [ ] Inyección de dependencias funciona sin errores
+  - [ ] Configuración de base de datos si es necesaria
+  - [ ] Configuración de transacciones
+
+- [ ] **Migraciones de Base de Datos**
+  - [ ] Script SQL para crear tabla `owner`
+  - [ ] Índices para campos de búsqueda frecuente
+  - [ ] Constraints de unicidad para email
+  - [ ] Constraints de integridad referencial si aplica
+
+#### ✅ Verificación Final por Capa
+
+**🏛️ Dominio - Verificación Rápida**
+```bash
+# Verificar que compila sin errores
+mvn compile -pl . -am
+
+# Verificar que los tests de dominio pasan
+mvn test -Dtest="*Owner*Domain*Test"
+```
+
+**🔧 Aplicación - Verificación Rápida**
+```bash
+# Verificar que los servicios se inyectan correctamente
+mvn test -Dtest="*Owner*Service*Test"
+
+# Verificar que las validaciones funcionan
+mvn test -Dtest="*Owner*Validator*Test"
+```
+
+**🌐 Infraestructura - Verificación Rápida**
+```bash
+# Verificar que los controladores responden
+mvn test -Dtest="*Owner*Controller*Test"
+
+# Verificar que la persistencia funciona
+mvn test -Dtest="*Owner*Repository*Test"
+```
 
 ### Comandos de Verificación
 
-*Contenido pendiente de implementación*
+Esta sección te proporciona comandos específicos para compilar, probar y validar tu implementación del dominio Owner en cada etapa del desarrollo.
+
+#### 🛠️ Comandos Maven Básicos
+
+**📦 Compilación y Construcción**
+
+```bash
+# Limpiar y compilar todo el proyecto
+mvn clean compile
+
+# Compilar solo el código fuente (sin tests)
+mvn compile
+
+# Compilar incluyendo tests
+mvn test-compile
+
+# Empaquetar la aplicación (JAR)
+mvn package
+
+# Instalar en repositorio local
+mvn install
+```
+
+**🧪 Ejecución de Tests**
+
+```bash
+# Ejecutar todos los tests
+mvn test
+
+# Ejecutar tests con reporte detallado
+mvn test -Dtest.verbose=true
+
+# Ejecutar tests específicos del dominio Owner
+mvn test -Dtest="*Owner*"
+
+# Ejecutar solo tests unitarios (excluyendo integración)
+mvn test -Dtest="*Test" -DexcludedGroups="integration"
+
+# Ejecutar solo tests de integración
+mvn test -Dtest="*IntegrationTest"
+
+# Ejecutar tests con cobertura
+mvn test jacoco:report
+```
+
+**🔍 Análisis de Código**
+
+```bash
+# Verificar estilo de código (si está configurado)
+mvn checkstyle:check
+
+# Análisis estático con SpotBugs (si está configurado)
+mvn spotbugs:check
+
+# Verificar dependencias
+mvn dependency:analyze
+
+# Ver árbol de dependencias
+mvn dependency:tree
+```
+
+#### 🎯 Comandos Específicos por Capa
+
+**🏛️ Verificación de Capa de Dominio**
+
+```bash
+# Compilar solo el dominio
+mvn compile -Dinclude.scope=compile
+
+# Ejecutar tests de modelo de dominio
+mvn test -Dtest="*Owner*Domain*Test"
+
+# Ejecutar tests de eventos de dominio
+mvn test -Dtest="*Owner*Event*Test"
+
+# Ejecutar tests de excepciones de dominio
+mvn test -Dtest="*Owner*Exception*Test"
+
+# Verificar que el modelo compila sin dependencias externas
+mvn compile -Dexclude.scope=test,provided
+```
+
+**🔧 Verificación de Capa de Aplicación**
+
+```bash
+# Ejecutar tests de servicios de aplicación
+mvn test -Dtest="*Owner*Service*Test"
+
+# Ejecutar tests de validadores
+mvn test -Dtest="*Owner*Validator*Test"
+
+# Ejecutar tests de comandos
+mvn test -Dtest="*Owner*Command*Test"
+
+# Ejecutar tests de mappers
+mvn test -Dtest="*Owner*Mapper*Test"
+
+# Verificar inyección de dependencias
+mvn spring-boot:run -Dspring.profiles.active=test
+```
+
+**🌐 Verificación de Capa de Infraestructura**
+
+```bash
+# Ejecutar tests de controladores
+mvn test -Dtest="*Owner*Controller*Test"
+
+# Ejecutar tests de repositorios
+mvn test -Dtest="*Owner*Repository*Test"
+
+# Ejecutar tests de entidades JPA
+mvn test -Dtest="*Owner*Entity*Test"
+
+# Ejecutar tests de integración completos
+mvn test -Dtest="*Owner*IntegrationTest"
+```
+
+#### 🚀 Comandos de Ejecución y Prueba
+
+**▶️ Ejecutar la Aplicación**
+
+```bash
+# Ejecutar la aplicación en modo desarrollo
+mvn spring-boot:run
+
+# Ejecutar con perfil específico
+mvn spring-boot:run -Dspring.profiles.active=dev
+
+# Ejecutar con puerto específico
+mvn spring-boot:run -Dserver.port=8081
+
+# Ejecutar con debug habilitado
+mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005"
+```
+
+**🌐 Probar APIs REST**
+
+```bash
+# Verificar que la aplicación está corriendo
+curl -X GET http://localhost:8080/actuator/health
+
+# Crear un nuevo dueño
+curl -X POST http://localhost:8080/api/v1/owners \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "Juan",
+    "lastName": "Pérez",
+    "email": "juan.perez@example.com",
+    "phone": "+34123456789",
+    "address": {
+      "street": "Calle Mayor 123",
+      "city": "Madrid",
+      "postalCode": "28001",
+      "country": "España"
+    },
+    "identificationNumber": "12345678A",
+    "notes": "Cliente VIP"
+  }'
+
+# Obtener un dueño por ID
+curl -X GET http://localhost:8080/api/v1/owners/1
+
+# Obtener todos los dueños
+curl -X GET http://localhost:8080/api/v1/owners
+
+# Actualizar un dueño
+curl -X PUT http://localhost:8080/api/v1/owners/1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "Juan Carlos",
+    "lastName": "Pérez García",
+    "email": "juan.carlos.perez@example.com",
+    "phone": "+34987654321",
+    "address": {
+      "street": "Avenida de la Paz 456",
+      "city": "Madrid",
+      "postalCode": "28002",
+      "country": "España"
+    },
+    "identificationNumber": "12345678A",
+    "notes": "Cliente VIP - Información actualizada"
+  }'
+
+# Eliminar un dueño
+curl -X DELETE http://localhost:8080/api/v1/owners/1
+
+# Buscar dueño por email
+curl -X GET "http://localhost:8080/api/v1/owners/search?email=juan.perez@example.com"
+```
+
+**📊 Comandos con HTTPie (Alternativa más legible)**
+
+```bash
+# Instalar HTTPie (si no está instalado)
+pip install httpie
+
+# Crear un nuevo dueño
+http POST localhost:8080/api/v1/owners \
+  firstName="María" \
+  lastName="González" \
+  email="maria.gonzalez@example.com" \
+  phone="+34666777888" \
+  identificationNumber="87654321B" \
+  notes="Nueva cliente"
+
+# Obtener un dueño
+http GET localhost:8080/api/v1/owners/1
+
+# Actualizar un dueño
+http PUT localhost:8080/api/v1/owners/1 \
+  firstName="María Carmen" \
+  lastName="González López" \
+  email="maria.carmen.gonzalez@example.com"
+
+# Eliminar un dueño
+http DELETE localhost:8080/api/v1/owners/1
+```
+
+#### 🔧 Scripts de Validación Automática
+
+**📝 Script de Validación Completa**
+
+Crea un archivo `validate-owner-domain.sh` en la raíz del proyecto:
+
+```bash
+#!/bin/bash
+
+echo "🚀 Iniciando validación completa del dominio Owner..."
+
+# Colores para output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Función para mostrar resultados
+show_result() {
+    if [ $1 -eq 0 ]; then
+        echo -e "${GREEN}✅ $2${NC}"
+    else
+        echo -e "${RED}❌ $2${NC}"
+        exit 1
+    fi
+}
+
+# 1. Compilación
+echo -e "${YELLOW}📦 Compilando proyecto...${NC}"
+mvn clean compile -q
+show_result $? "Compilación exitosa"
+
+# 2. Tests de dominio
+echo -e "${YELLOW}🏛️ Ejecutando tests de dominio...${NC}"
+mvn test -Dtest="*Owner*Domain*Test" -q
+show_result $? "Tests de dominio pasaron"
+
+# 3. Tests de aplicación
+echo -e "${YELLOW}🔧 Ejecutando tests de aplicación...${NC}"
+mvn test -Dtest="*Owner*Service*Test,*Owner*Validator*Test" -q
+show_result $? "Tests de aplicación pasaron"
+
+# 4. Tests de infraestructura
+echo -e "${YELLOW}🌐 Ejecutando tests de infraestructura...${NC}"
+mvn test -Dtest="*Owner*Controller*Test,*Owner*Repository*Test" -q
+show_result $? "Tests de infraestructura pasaron"
+
+# 5. Tests de integración
+echo -e "${YELLOW}🔄 Ejecutando tests de integración...${NC}"
+mvn test -Dtest="*Owner*IntegrationTest" -q
+show_result $? "Tests de integración pasaron"
+
+# 6. Empaquetado
+echo -e "${YELLOW}📦 Empaquetando aplicación...${NC}"
+mvn package -DskipTests -q
+show_result $? "Empaquetado exitoso"
+
+echo -e "${GREEN}🎉 ¡Validación completa exitosa! El dominio Owner está listo.${NC}"
+```
+
+**🔍 Script de Verificación de APIs**
+
+Crea un archivo `test-owner-apis.sh`:
+
+```bash
+#!/bin/bash
+
+echo "🌐 Probando APIs del dominio Owner..."
+
+# Configuración
+BASE_URL="http://localhost:8080/api/v1/owners"
+HEALTH_URL="http://localhost:8080/actuator/health"
+
+# Colores
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+# Función para verificar respuesta HTTP
+check_http_status() {
+    if [ $1 -eq $2 ]; then
+        echo -e "${GREEN}✅ $3 (Status: $1)${NC}"
+    else
+        echo -e "${RED}❌ $3 (Expected: $2, Got: $1)${NC}"
+        exit 1
+    fi
+}
+
+# Verificar que la aplicación está corriendo
+echo -e "${YELLOW}🔍 Verificando que la aplicación está corriendo...${NC}"
+HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_URL)
+check_http_status $HEALTH_STATUS 200 "Aplicación está corriendo"
+
+# Test 1: Crear un dueño
+echo -e "${YELLOW}➕ Creando un nuevo dueño...${NC}"
+CREATE_RESPONSE=$(curl -s -w "%{http_code}" -X POST $BASE_URL \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "Test",
+    "lastName": "Owner",
+    "email": "test.owner@example.com",
+    "phone": "+34123456789",
+    "identificationNumber": "TEST123",
+    "notes": "Test owner for API validation"
+  }')
+
+CREATE_STATUS=${CREATE_RESPONSE: -3}
+check_http_status $CREATE_STATUS 201 "Dueño creado exitosamente"
+
+# Extraer ID del dueño creado (asumiendo que retorna JSON con id)
+OWNER_ID=1  # Simplificado para el ejemplo
+
+# Test 2: Obtener el dueño creado
+echo -e "${YELLOW}🔍 Obteniendo dueño por ID...${NC}"
+GET_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET $BASE_URL/$OWNER_ID)
+check_http_status $GET_STATUS 200 "Dueño obtenido exitosamente"
+
+# Test 3: Actualizar el dueño
+echo -e "${YELLOW}✏️ Actualizando dueño...${NC}"
+UPDATE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X PUT $BASE_URL/$OWNER_ID \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "Test Updated",
+    "lastName": "Owner Updated",
+    "email": "test.updated@example.com",
+    "phone": "+34987654321",
+    "identificationNumber": "TEST123",
+    "notes": "Updated test owner"
+  }')
+check_http_status $UPDATE_STATUS 200 "Dueño actualizado exitosamente"
+
+# Test 4: Listar dueños
+echo -e "${YELLOW}📋 Listando todos los dueños...${NC}"
+LIST_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET $BASE_URL)
+check_http_status $LIST_STATUS 200 "Lista de dueños obtenida exitosamente"
+
+# Test 5: Eliminar el dueño
+echo -e "${YELLOW}🗑️ Eliminando dueño...${NC}"
+DELETE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE $BASE_URL/$OWNER_ID)
+check_http_status $DELETE_STATUS 204 "Dueño eliminado exitosamente"
+
+# Test 6: Verificar que el dueño fue eliminado
+echo -e "${YELLOW}🔍 Verificando eliminación...${NC}"
+GET_DELETED_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET $BASE_URL/$OWNER_ID)
+check_http_status $GET_DELETED_STATUS 404 "Dueño no encontrado (eliminación confirmada)"
+
+echo -e "${GREEN}🎉 ¡Todas las APIs funcionan correctamente!${NC}"
+```
+
+**⚡ Comandos de Desarrollo Rápido**
+
+```bash
+# Compilar y ejecutar tests en una sola línea
+mvn clean compile test
+
+# Ejecutar aplicación y probar API básica
+mvn spring-boot:run & sleep 10 && curl http://localhost:8080/actuator/health && kill %1
+
+# Verificar que todos los componentes Spring se cargan correctamente
+mvn spring-boot:run -Dspring.profiles.active=test -Dlogging.level.org.springframework=DEBUG
+
+# Ejecutar solo tests que fallan
+mvn test --fail-at-end
+
+# Ejecutar tests con output detallado
+mvn test -Dtest.verbose=true -Dsurefire.printSummary=true
+```
+
+#### 🐛 Comandos de Debugging
+
+**🔍 Diagnóstico de Problemas Comunes**
+
+```bash
+# Verificar que todas las dependencias están disponibles
+mvn dependency:resolve
+
+# Verificar conflictos de dependencias
+mvn dependency:tree -Dverbose
+
+# Verificar que Spring encuentra todos los componentes
+mvn spring-boot:run -Ddebug=true
+
+# Ejecutar con logs de SQL habilitados
+mvn spring-boot:run -Dspring.jpa.show-sql=true -Dspring.jpa.properties.hibernate.format_sql=true
+
+# Verificar configuración de base de datos
+mvn spring-boot:run -Dlogging.level.org.springframework.jdbc=DEBUG
+
+# Ejecutar tests con stack traces completos
+mvn test -Dmaven.test.failure.ignore=false -Dsurefire.printSummary=true
+```
+
+**📊 Comandos de Monitoreo**
+
+```bash
+# Ver métricas de la aplicación (si Actuator está habilitado)
+curl http://localhost:8080/actuator/metrics
+
+# Ver información de la aplicación
+curl http://localhost:8080/actuator/info
+
+# Ver beans de Spring cargados
+curl http://localhost:8080/actuator/beans
+
+# Ver configuración de la aplicación
+curl http://localhost:8080/actuator/configprops
+
+# Ver mapeos de endpoints
+curl http://localhost:8080/actuator/mappings
+```
+
+#### ✅ Checklist de Comandos Ejecutados
+
+**📋 Verificación Paso a Paso**
+
+- [ ] **Compilación Básica**
+  - [ ] `mvn clean compile` - Sin errores
+  - [ ] `mvn test-compile` - Sin errores
+  - [ ] `mvn package -DskipTests` - JAR generado correctamente
+
+- [ ] **Tests por Capa**
+  - [ ] `mvn test -Dtest="*Owner*Domain*Test"` - Todos pasan
+  - [ ] `mvn test -Dtest="*Owner*Service*Test"` - Todos pasan
+  - [ ] `mvn test -Dtest="*Owner*Controller*Test"` - Todos pasan
+  - [ ] `mvn test -Dtest="*Owner*Repository*Test"` - Todos pasan
+  - [ ] `mvn test -Dtest="*Owner*IntegrationTest"` - Todos pasan
+
+- [ ] **Ejecución de Aplicación**
+  - [ ] `mvn spring-boot:run` - Inicia sin errores
+  - [ ] `curl http://localhost:8080/actuator/health` - Retorna 200 OK
+  - [ ] Aplicación responde en puerto configurado
+
+- [ ] **APIs REST**
+  - [ ] POST `/api/v1/owners` - Crea dueño (201 Created)
+  - [ ] GET `/api/v1/owners/{id}` - Obtiene dueño (200 OK)
+  - [ ] GET `/api/v1/owners` - Lista dueños (200 OK)
+  - [ ] PUT `/api/v1/owners/{id}` - Actualiza dueño (200 OK)
+  - [ ] DELETE `/api/v1/owners/{id}` - Elimina dueño (204 No Content)
+
+- [ ] **Validación de Errores**
+  - [ ] POST con datos inválidos - Retorna 400 Bad Request
+  - [ ] GET de dueño inexistente - Retorna 404 Not Found
+  - [ ] POST con email duplicado - Retorna 409 Conflict
+
+Con estos comandos y scripts, tienes todas las herramientas necesarias para verificar que tu implementación del dominio Owner funciona correctamente en todas las capas de la arquitectura.
 
 ---
 

@@ -127,21 +127,21 @@
     - Mostrar cómo debuggear problemas
     - _Requisitos: 6.5, 7.3_
 
-- [ ] 9. Crear checklists y herramientas de verificación
-  - [ ] 9.1 Implementar checklist detallado por capa
+- [x] 9. Crear checklists y herramientas de verificación
+  - [x] 9.1 Implementar checklist detallado por capa
     - Crear checklist para capa de dominio
     - Incluir checklist para capa de aplicación
     - Desarrollar checklist para capa de infraestructura
     - _Requisitos: 6.1, 6.2_
   
-  - [ ] 9.2 Crear comandos de verificación
+  - [x] 9.2 Crear comandos de verificación
     - Incluir comandos Maven para compilación
     - Mostrar comandos para ejecutar tests
     - Crear scripts de validación automática
     - _Requisitos: 6.3, 6.4_
 
-- [ ] 10. Finalizar y pulir el documento
-  - [ ] 10.1 Revisar y mejorar la redacción
+- [-] 10. Finalizar y pulir el documento
+  - [-] 10.1 Revisar y mejorar la redacción
     - Asegurar lenguaje claro y sencillo
     - Verificar consistencia en ejemplos
     - Corregir errores y mejorar explicaciones
