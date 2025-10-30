@@ -72,13 +72,13 @@ Enable and support core domains:
 ### Step 1: Create Package Structure
 ```bash
 # Create the complete package structure
-mkdir -p src/main/java/com/datavet/datavet/{domain}/domain/{model,exception,service}
-mkdir -p src/main/java/com/datavet/datavet/{domain}/application/{port/in,port/out,service,dto,mapper}
+mkdir -p src/main/java/com/datavet/datavet/{domain}/domain/{model,exception,OwnerService}
+mkdir -p src/main/java/com/datavet/datavet/{domain}/application/{port/in,port/out,OwnerService,dto,mapper}
 mkdir -p src/main/java/com/datavet/datavet/{domain}/infrastructure/{adapter/input,adapter/output,persistence/entity,persistence/repository,config}
 
 # Create corresponding test structure
-mkdir -p src/test/java/com/datavet/datavet/{domain}/domain/{model,exception,service}
-mkdir -p src/test/java/com/datavet/datavet/{domain}/application/{port/in,port/out,service,dto,mapper}
+mkdir -p src/test/java/com/datavet/datavet/{domain}/domain/{model,exception,OwnerService}
+mkdir -p src/test/java/com/datavet/datavet/{domain}/application/{port/in,port/out,OwnerService,dto,mapper}
 mkdir -p src/test/java/com/datavet/datavet/{domain}/infrastructure/{adapter/input,adapter/output,persistence/entity,persistence/repository,config}
 ```
 
@@ -215,7 +215,7 @@ class PetTest {
 
 ### Application Tests
 ```java
-// Test application service orchestration
+// Test application OwnerService orchestration
 class PetServiceTest {
     @Test
     void shouldCreatePetSuccessfully() {
