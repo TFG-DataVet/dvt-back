@@ -491,7 +491,7 @@ src/main/java/com/datavet/datavet/clinic/application/port/in/command/CreateClini
 src/main/java/com/datavet/datavet/clinic/application/port/in/command/UpdateClinicCommand.java
 
 # 3. Servicio de aplicación - El orquestador principal
-src/main/java/com/datavet/datavet/clinic/application/service/ClinicService.java
+src/main/java/com/datavet/datavet/clinic/application/OwnerService/ClinicService.java
 
 # 4. Validadores - Cómo validar comandos
 src/main/java/com/datavet/datavet/clinic/application/validation/CreateClinicCommandValidator.java
@@ -529,7 +529,7 @@ src/main/java/com/datavet/datavet/clinic/infrastructure/persistence/converter/Ad
 src/test/java/com/datavet/datavet/clinic/domain/model/ClinicDomainEventsTest.java
 
 # Tests de aplicación
-src/test/java/com/datavet/datavet/clinic/application/service/ClinicServiceExceptionTest.java
+src/test/java/com/datavet/datavet/clinic/application/OwnerService/ClinicServiceExceptionTest.java
 
 # Tests de infraestructura
 src/test/java/com/datavet/datavet/clinic/infrastructure/adapter/input/ClinicControllerIntegrationTest.java
@@ -555,7 +555,7 @@ src/main/java/com/datavet/datavet/clinic/domain/model/Clinic.java
 # - Orquesta las operaciones
 # - Maneja validaciones
 # - Publica eventos
-src/main/java/com/datavet/datavet/clinic/application/service/ClinicService.java
+src/main/java/com/datavet/datavet/clinic/application/OwnerService/ClinicService.java
 ```
 
 **3. Termina con el Controlador**
@@ -648,10 +648,10 @@ import java.time.LocalDateTime;
 
 /**
  * Agregado Owner que representa a un propietario de mascotas.
- * 
+ *
  * Este modelo encapsula toda la información y comportamientos relacionados
  * con los dueños de mascotas en el sistema veterinario.
- * 
+ *
  * Características principales:
  * - Extiende AggregateRoot para manejar eventos de dominio
  * - Implementa Entity para tener identidad única
@@ -664,30 +664,30 @@ import java.time.LocalDateTime;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Owner extends AggregateRoot<Long> implements Entity<Long> {
-    
+
     private Long ownerId;
-    
+
     @NotBlank(message = "El nombre no puede estar vacío")
     @Size(max = 50, message = "El nombre no puede exceder 50 caracteres")
     private String firstName;
-    
+
     @NotBlank(message = "El apellido no puede estar vacío")
     @Size(max = 50, message = "El apellido no puede exceder 50 caracteres")
     private String lastName;
-    
+
     @NotNull(message = "El email es obligatorio")
     private Email email;
-    
+
     private Phone phone;
-    
+
     private Address address;
-    
+
     @Size(max = 20, message = "El número de identificación no puede exceder 20 caracteres")
     private String identificationNumber; // DNI, NIE, etc.
-    
+
     @Size(max = 500, message = "Las notas no pueden exceder 500 caracteres")
     private String notes; // Notas adicionales sobre el dueño
-    
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -702,12 +702,12 @@ public class Owner extends AggregateRoot<Long> implements Entity<Long> {
 
     /**
      * Factory method para crear un nuevo Owner.
-     * 
+     *
      * Este método es la forma recomendada de crear nuevos dueños porque:
      * - Garantiza que se publique el evento OwnerCreatedEvent
      * - Establece automáticamente las fechas de creación y actualización
      * - Valida que los datos mínimos estén presentes
-     * 
+     *
      * @param ownerId ID único del dueño
      * @param firstName Nombre del dueño
      * @param lastName Apellido del dueño
@@ -718,10 +718,10 @@ public class Owner extends AggregateRoot<Long> implements Entity<Long> {
      * @param notes Notas adicionales (opcional)
      * @return Nueva instancia de Owner con evento de creación publicado
      */
-    public static Owner create(Long ownerId, String firstName, String lastName, 
-                              Email email, Phone phone, Address address, 
-                              String identificationNumber, String notes) {
-        
+    public static Owner create(Long ownerId, String firstName, String lastName,
+                               Email email, Phone phone, Address address,
+                               String identificationNumber, String notes) {
+
         // Validaciones de negocio específicas
         if (firstName == null || firstName.trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre del dueño es obligatorio");
@@ -732,11 +732,11 @@ public class Owner extends AggregateRoot<Long> implements Entity<Long> {
         if (email == null) {
             throw new IllegalArgumentException("El email del dueño es obligatorio");
         }
-        
+
         Owner owner = Owner.builder()
                 .ownerId(ownerId)
                 .firstName(firstName.trim())
-                .lastName(lastName.trim())
+                .ownerLastName(lastName.trim())
                 .email(email)
                 .phone(phone)
                 .address(address)
@@ -745,16 +745,16 @@ public class Owner extends AggregateRoot<Long> implements Entity<Long> {
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
-        
+
         // Publicar evento de dominio
         owner.addDomainEvent(OwnerCreatedEvent.of(ownerId, firstName, lastName, email));
-        
+
         return owner;
     }
 
     /**
      * Actualiza la información del dueño y publica un evento de actualización.
-     * 
+     *
      * @param firstName Nuevo nombre
      * @param lastName Nuevo apellido
      * @param email Nuevo email
@@ -763,9 +763,9 @@ public class Owner extends AggregateRoot<Long> implements Entity<Long> {
      * @param identificationNumber Nuevo número de identificación
      * @param notes Nuevas notas
      */
-    public void update(String firstName, String lastName, Email email, 
-                      Phone phone, Address address, String identificationNumber, String notes) {
-        
+    public void update(String firstName, String lastName, Email email,
+                       Phone phone, Address address, String identificationNumber, String notes) {
+
         // Validaciones de negocio
         if (firstName == null || firstName.trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre del dueño es obligatorio");
@@ -776,7 +776,7 @@ public class Owner extends AggregateRoot<Long> implements Entity<Long> {
         if (email == null) {
             throw new IllegalArgumentException("El email del dueño es obligatorio");
         }
-        
+
         this.firstName = firstName.trim();
         this.lastName = lastName.trim();
         this.email = email;
@@ -785,21 +785,21 @@ public class Owner extends AggregateRoot<Long> implements Entity<Long> {
         this.identificationNumber = identificationNumber != null ? identificationNumber.trim() : null;
         this.notes = notes != null ? notes.trim() : null;
         this.updatedAt = LocalDateTime.now();
-        
+
         // Publicar evento de dominio
         addDomainEvent(OwnerUpdatedEvent.of(this.ownerId, this.firstName, this.lastName));
     }
 
     /**
      * Marca el dueño para eliminación y publica un evento de eliminación.
-     * 
+     *
      * Nota: En un sistema real, probablemente implementarías "soft delete"
      * en lugar de eliminación física para mantener el historial.
      */
     public void delete() {
         addDomainEvent(OwnerDeletedEvent.of(this.ownerId, this.firstName, this.lastName));
     }
-    
+
     /**
      * Retorna el nombre completo del dueño.
      * Método de conveniencia para mostrar información.
@@ -807,7 +807,7 @@ public class Owner extends AggregateRoot<Long> implements Entity<Long> {
     public String getFullName() {
         return firstName + " " + lastName;
     }
-    
+
     /**
      * Verifica si el dueño tiene información de contacto completa.
      * Útil para validaciones de negocio.
@@ -3152,7 +3152,7 @@ src/main/java/com/datavet/datavet/owner/application/service/OwnerService.java
 **Código completo:**
 
 ```java
-package com.datavet.datavet.owner.application.service;
+package com.datavet.datavet.owner.application.service.OwnerService;
 
 import com.datavet.datavet.owner.application.dto.OwnerResponse;
 import com.datavet.datavet.owner.application.mapper.OwnerMapper;
@@ -3927,17 +3927,17 @@ import java.util.stream.Collectors;
 
 /**
  * Mapper para convertir entre entidades Owner del dominio y DTOs de aplicación.
- * 
+ *
  * Este mapper centraliza toda la lógica de conversión entre la capa de dominio
  * y la capa de aplicación, manteniendo la separación de responsabilidades.
- * 
+ *
  * Responsabilidades:
  * - Convertir Owner → OwnerResponse
  * - Manejar campos null de manera segura
  * - Formatear Value Objects a strings simples
  * - Calcular campos derivados (ej: fullName, hasCompleteContactInfo)
  * - Convertir listas de entidades
- * 
+ *
  * Principios aplicados:
  * - Conversiones son stateless (sin estado)
  * - Manejo seguro de valores null
@@ -3946,16 +3946,16 @@ import java.util.stream.Collectors;
  */
 @Component
 public class OwnerMapper implements Mapper {
-    
+
     /**
      * Convierte una entidad Owner del dominio a OwnerResponse DTO.
-     * 
+     *
      * Esta conversión:
      * - Simplifica Value Objects a strings
      * - Calcula campos derivados
      * - Maneja valores null de manera segura
      * - Formatea direcciones como string único
-     * 
+     *
      * @param owner Entidad de dominio a convertir
      * @return OwnerResponse DTO, o null si owner es null
      */
@@ -3963,11 +3963,11 @@ public class OwnerMapper implements Mapper {
         if (owner == null) {
             return null;
         }
-        
+
         return OwnerResponse.builder()
                 .ownerId(owner.getId())
                 .firstName(owner.getFirstName())
-                .lastName(owner.getLastName())
+                .lastName(owner.getOwnerLastName())
                 .fullName(buildFullName(owner))
                 .email(extractEmailValue(owner))
                 .phone(extractPhoneValue(owner))
@@ -3982,10 +3982,10 @@ public class OwnerMapper implements Mapper {
                 .version(extractVersion(owner))
                 .build();
     }
-    
+
     /**
      * Convierte una lista de entidades Owner a lista de OwnerResponse DTOs.
-     * 
+     *
      * @param owners Lista de entidades de dominio
      * @return Lista de DTOs, o lista vacía si owners es null
      */
@@ -3993,97 +3993,97 @@ public class OwnerMapper implements Mapper {
         if (owners == null) {
             return List.of();
         }
-        
+
         return owners.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
-    
+
     // ========== MÉTODOS AUXILIARES PRIVADOS ==========
-    
+
     /**
      * Construye el nombre completo del dueño.
      * Maneja casos donde firstName o lastName podrían ser null.
-     * 
+     *
      * @param owner Entidad de dominio
      * @return Nombre completo formateado
      */
     private String buildFullName(Owner owner) {
         String firstName = owner.getFirstName();
-        String lastName = owner.getLastName();
-        
+        String lastName = owner.getOwnerLastName();
+
         if (firstName == null && lastName == null) {
             return null;
         }
-        
+
         if (firstName == null) {
             return lastName;
         }
-        
+
         if (lastName == null) {
             return firstName;
         }
-        
+
         return firstName + " " + lastName;
     }
-    
+
     /**
      * Extrae el valor string del Value Object Email.
-     * 
+     *
      * @param owner Entidad de dominio
      * @return Valor del email como string, o null si no tiene email
      */
     private String extractEmailValue(Owner owner) {
-        return owner.getEmail() != null ? owner.getEmail().getValue() : null;
+        return owner.getOwnerEmail() != null ? owner.getOwnerEmail().getValue() : null;
     }
-    
+
     /**
      * Extrae el valor string del Value Object Phone.
      * Formatea el teléfono en un formato legible.
-     * 
+     *
      * @param owner Entidad de dominio
      * @return Teléfono formateado como string, o null si no tiene teléfono
      */
     private String extractPhoneValue(Owner owner) {
-        if (owner.getPhone() == null) {
+        if (owner.getOwnerPhone() == null) {
             return null;
         }
-        
+
         // Formatear teléfono con código de país si está disponible
-        String countryCode = owner.getPhone().getCountryCode();
-        String number = owner.getPhone().getNumber();
-        
+        String countryCode = owner.getOwnerPhone().getCountryCode();
+        String number = owner.getOwnerPhone().getNumber();
+
         if (countryCode != null && !countryCode.isEmpty()) {
             return String.format("+%s %s", countryCode, number);
         }
-        
+
         return number;
     }
-    
+
     /**
      * Formatea la dirección completa como un string único.
      * Combina todos los campos de la dirección en un formato legible.
-     * 
+     *
      * @param owner Entidad de dominio
      * @return Dirección formateada como string, o null si no tiene dirección
      */
     private String formatAddress(Owner owner) {
-        if (owner.getAddress() == null) {
+        if (owner.getOwnerAddress() == null) {
             return null;
         }
-        
-        var address = owner.getAddress();
+
+        var address = owner.getOwnerAddress();
         StringBuilder formatted = new StringBuilder();
-        
+
         // Agregar calle y número
         if (address.getStreet() != null && !address.getStreet().isEmpty()) {
             formatted.append(address.getStreet());
-            
+
             if (address.getNumber() != null && !address.getNumber().isEmpty()) {
                 formatted.append(" ").append(address.getNumber());
             }
         }
-        
+
         // Agregar ciudad
         if (address.getCity() != null && !address.getCity().isEmpty()) {
             if (formatted.length() > 0) {
@@ -4091,7 +4091,7 @@ public class OwnerMapper implements Mapper {
             }
             formatted.append(address.getCity());
         }
-        
+
         // Agregar código postal
         if (address.getPostalCode() != null && !address.getPostalCode().isEmpty()) {
             if (formatted.length() > 0) {
@@ -4099,7 +4099,7 @@ public class OwnerMapper implements Mapper {
             }
             formatted.append(address.getPostalCode());
         }
-        
+
         // Agregar país
         if (address.getCountry() != null && !address.getCountry().isEmpty()) {
             if (formatted.length() > 0) {
@@ -4107,35 +4107,35 @@ public class OwnerMapper implements Mapper {
             }
             formatted.append(address.getCountry());
         }
-        
+
         return formatted.length() > 0 ? formatted.toString() : null;
     }
-    
+
     /**
      * Extrae la ciudad de la dirección.
-     * 
+     *
      * @param owner Entidad de dominio
      * @return Ciudad como string, o null si no tiene dirección o ciudad
      */
     private String extractCity(Owner owner) {
-        return owner.getAddress() != null ? owner.getAddress().getCity() : null;
+        return owner.getOwnerAddress() != null ? owner.getOwnerAddress().getCity() : null;
     }
-    
+
     /**
      * Extrae el país de la dirección.
-     * 
+     *
      * @param owner Entidad de dominio
      * @return País como string, o null si no tiene dirección o país
      */
     private String extractCountry(Owner owner) {
-        return owner.getAddress() != null ? owner.getAddress().getCountry() : null;
+        return owner.getOwnerAddress() != null ? owner.getOwnerAddress().getCountry() : null;
     }
-    
+
     /**
      * Extrae la versión del registro para control de concurrencia.
      * En este ejemplo, usamos un valor fijo, pero en un sistema real
      * esto vendría de la entidad JPA o de un campo específico.
-     * 
+     *
      * @param owner Entidad de dominio
      * @return Versión del registro
      */
@@ -4147,22 +4147,22 @@ public class OwnerMapper implements Mapper {
         // Por ahora, retornamos un valor fijo
         return 1L;
     }
-    
+
     // ========== MÉTODOS ESTÁTICOS PARA TESTING ==========
-    
+
     /**
      * Método estático para facilitar testing sin inyección de dependencias.
-     * 
+     *
      * @param owner Entidad de dominio
      * @return OwnerResponse DTO
      */
     public static OwnerResponse mapToResponse(Owner owner) {
         return new OwnerMapper().toResponse(owner);
     }
-    
+
     /**
      * Método estático para convertir listas sin inyección de dependencias.
-     * 
+     *
      * @param owners Lista de entidades de dominio
      * @return Lista de DTOs
      */
@@ -5478,23 +5478,22 @@ import com.datavet.datavet.shared.domain.valueobject.Address;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
 import com.datavet.datavet.shared.infrastructure.persistence.BaseEntity;
-import com.datavet.datavet.clinic.infrastructure.persistence.converter.AddressConverter;
-import com.datavet.datavet.clinic.infrastructure.persistence.converter.EmailConverter;
-import com.datavet.datavet.clinic.infrastructure.persistence.converter.PhoneConverter;
+import com.datavet.datavet.shared.infrastructure.persistence.converter.AddressConverter;
+import com.datavet.datavet.shared.infrastructure.persistence.converter.EmailConverter;
+import com.datavet.datavet.shared.infrastructure.persistence.converter.PhoneConverter;
 import lombok.*;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 
 /**
  * Entidad JPA que mapea el modelo de dominio Owner a la tabla 'owner' en la base de datos.
- * 
+ *
  * Esta entidad:
  * - Extiende BaseEntity para campos comunes (id, createdAt, updatedAt)
  * - Usa convertidores para Value Objects (Email, Phone, Address)
  * - Define constraints de base de datos (unique, not null, length)
  * - Se convierte hacia/desde el modelo de dominio Owner
- * 
+ *
  * Tabla resultante:
  * CREATE TABLE owner (
  *   owner_id BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -5510,23 +5509,23 @@ import java.time.LocalDateTime;
  * );
  */
 @Entity
-@Table(name = "owner", 
-       uniqueConstraints = {
-           @UniqueConstraint(name = "uk_owner_email", columnNames = "email"),
-           @UniqueConstraint(name = "uk_owner_identification", columnNames = "identification_number")
-       },
-       indexes = {
-           @Index(name = "idx_owner_email", columnList = "email"),
-           @Index(name = "idx_owner_name", columnList = "first_name, last_name"),
-           @Index(name = "idx_owner_identification", columnList = "identification_number")
-       })
+@Table(name = "owner",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_owner_email", columnNames = "email"),
+                @UniqueConstraint(name = "uk_owner_identification", columnNames = "identification_number")
+        },
+        indexes = {
+                @Index(name = "idx_owner_email", columnList = "email"),
+                @Index(name = "idx_owner_name", columnList = "first_name, last_name"),
+                @Index(name = "idx_owner_identification", columnList = "identification_number")
+        })
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class OwnerEntity extends BaseEntity {
-    
+
     /**
      * ID único del dueño.
      * Clave primaria auto-generada.
@@ -5535,21 +5534,21 @@ public class OwnerEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "owner_id")
     private Long ownerId;
-    
+
     /**
      * Nombre del dueño.
      * Obligatorio, máximo 50 caracteres.
      */
     @Column(name = "first_name", nullable = false, length = 50)
     private String firstName;
-    
+
     /**
      * Apellido del dueño.
      * Obligatorio, máximo 50 caracteres.
      */
     @Column(name = "last_name", nullable = false, length = 50)
     private String lastName;
-    
+
     /**
      * Email del dueño.
      * Obligatorio, único, máximo 100 caracteres.
@@ -5558,7 +5557,7 @@ public class OwnerEntity extends BaseEntity {
     @Column(name = "email", nullable = false, length = 100, unique = true)
     @Convert(converter = EmailConverter.class)
     private Email email;
-    
+
     /**
      * Teléfono del dueño.
      * Opcional, máximo 20 caracteres.
@@ -5567,7 +5566,7 @@ public class OwnerEntity extends BaseEntity {
     @Column(name = "phone", length = 20)
     @Convert(converter = PhoneConverter.class)
     private Phone phone;
-    
+
     /**
      * Dirección del dueño.
      * Opcional, se almacena como JSON/TEXT.
@@ -5576,24 +5575,24 @@ public class OwnerEntity extends BaseEntity {
     @Column(name = "address", columnDefinition = "TEXT")
     @Convert(converter = AddressConverter.class)
     private Address address;
-    
+
     /**
      * Número de identificación del dueño (DNI, NIE, pasaporte, etc.).
      * Opcional, único si se proporciona, máximo 20 caracteres.
      */
     @Column(name = "identification_number", length = 20, unique = true)
     private String identificationNumber;
-    
+
     /**
      * Notas adicionales sobre el dueño.
      * Opcional, texto largo.
      */
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
-    
+
     /**
      * Convierte esta entidad JPA al modelo de dominio Owner.
-     * 
+     *
      * @return Instancia del modelo de dominio Owner
      */
     public Owner toDomainModel() {
@@ -5610,10 +5609,10 @@ public class OwnerEntity extends BaseEntity {
                 .updatedAt(this.getUpdatedAt())
                 .build();
     }
-    
+
     /**
      * Crea una entidad JPA desde el modelo de dominio Owner.
-     * 
+     *
      * @param owner Modelo de dominio Owner
      * @return Nueva instancia de OwnerEntity
      */
@@ -5621,14 +5620,14 @@ public class OwnerEntity extends BaseEntity {
         OwnerEntity entity = OwnerEntity.builder()
                 .ownerId(owner.getOwnerId())
                 .firstName(owner.getFirstName())
-                .lastName(owner.getLastName())
-                .email(owner.getEmail())
-                .phone(owner.getPhone())
-                .address(owner.getAddress())
+                .lastName(owner.getOwnerLastName())
+                .email(owner.getOwnerEmail())
+                .phone(owner.getOwnerPhone())
+                .address(owner.getOwnerAddress())
                 .identificationNumber(owner.getIdentificationNumber())
                 .notes(owner.getNotes())
                 .build();
-        
+
         // Establecer fechas desde el modelo de dominio
         if (owner.getCreatedAt() != null) {
             entity.setCreatedAt(owner.getCreatedAt());
@@ -5636,30 +5635,30 @@ public class OwnerEntity extends BaseEntity {
         if (owner.getUpdatedAt() != null) {
             entity.setUpdatedAt(owner.getUpdatedAt());
         }
-        
+
         return entity;
     }
-    
+
     /**
      * Actualiza esta entidad con datos del modelo de dominio Owner.
      * Útil para operaciones de actualización.
-     * 
+     *
      * @param owner Modelo de dominio Owner con datos actualizados
      */
     public void updateFromDomainModel(Owner owner) {
         this.firstName = owner.getFirstName();
-        this.lastName = owner.getLastName();
-        this.email = owner.getEmail();
-        this.phone = owner.getPhone();
-        this.address = owner.getAddress();
+        this.lastName = owner.getOwnerLastName();
+        this.email = owner.getOwnerEmail();
+        this.phone = owner.getOwnerPhone();
+        this.address = owner.getOwnerAddress();
         this.identificationNumber = owner.getIdentificationNumber();
         this.notes = owner.getNotes();
         this.setUpdatedAt(owner.getUpdatedAt());
     }
-    
+
     @Override
     public String toString() {
-        return String.format("OwnerEntity{ownerId=%d, fullName='%s %s', email='%s'}", 
+        return String.format("OwnerEntity{ownerId=%d, fullName='%s %s', email='%s'}",
                 ownerId, firstName, lastName, email != null ? email.getValue() : "null");
     }
 }
@@ -7197,17 +7196,17 @@ class OwnerDomainEventsTest {
         String notes = "Cliente VIP";
 
         // When
-        Owner owner = Owner.create(ownerId, firstName, lastName, email, 
-                                 phone, address, identificationNumber, notes);
+        Owner owner = Owner.create(ownerId, firstName, lastName, email,
+                phone, address, identificationNumber, notes);
 
         // Then
         List<DomainEvent> domainEvents = owner.getDomainEvents();
         assertFalse(domainEvents.isEmpty(), "Should have domain events");
         assertEquals(1, domainEvents.size(), "Should have exactly one domain event");
-        
+
         DomainEvent event = domainEvents.get(0);
         assertInstanceOf(OwnerCreatedEvent.class, event, "Should be OwnerCreatedEvent");
-        
+
         OwnerCreatedEvent createdEvent = (OwnerCreatedEvent) event;
         assertEquals(ownerId, createdEvent.getOwnerId(), "Event should have correct owner ID");
         assertEquals(firstName, createdEvent.getFirstName(), "Event should have correct first name");
@@ -7223,29 +7222,29 @@ class OwnerDomainEventsTest {
         Email originalEmail = new Email("juan.perez@example.com");
         Phone originalPhone = new Phone("+51987654321");
         Address originalAddress = new Address("Av. Lima 123", "Lima", "15001");
-        
-        Owner owner = Owner.create(1L, "Juan", "Pérez", originalEmail, 
-                                 originalPhone, originalAddress, "12345678", "Cliente VIP");
-        
+
+        Owner owner = Owner.create(1L, "Juan", "Pérez", originalEmail,
+                originalPhone, originalAddress, "12345678", "Cliente VIP");
+
         // Clear the creation event
         owner.clearDomainEvents();
-        
+
         // When
         Email updatedEmail = new Email("juan.perez.updated@example.com");
         Phone updatedPhone = new Phone("+51912345678");
         Address updatedAddress = new Address("Av. Arequipa 456", "Lima", "15002");
-        
-        owner.update("Juan Carlos", "Pérez García", updatedEmail, 
-                    updatedPhone, updatedAddress, "87654321", "Cliente Premium");
+
+        owner.update("Juan Carlos", "Pérez García", updatedEmail,
+                updatedPhone, updatedAddress, "87654321", "Cliente Premium");
 
         // Then
         List<DomainEvent> domainEvents = owner.getDomainEvents();
         assertFalse(domainEvents.isEmpty(), "Should have domain events");
         assertEquals(1, domainEvents.size(), "Should have exactly one domain event");
-        
+
         DomainEvent event = domainEvents.get(0);
         assertInstanceOf(OwnerUpdatedEvent.class, event, "Should be OwnerUpdatedEvent");
-        
+
         OwnerUpdatedEvent updatedEvent = (OwnerUpdatedEvent) event;
         assertEquals(1L, updatedEvent.getOwnerId(), "Event should have correct owner ID");
         assertEquals("Juan Carlos", updatedEvent.getFirstName(), "Event should have correct updated first name");
@@ -7260,13 +7259,13 @@ class OwnerDomainEventsTest {
         Email email = new Email("juan.perez@example.com");
         Phone phone = new Phone("+51987654321");
         Address address = new Address("Av. Lima 123", "Lima", "15001");
-        
-        Owner owner = Owner.create(1L, "Juan", "Pérez", email, 
-                                 phone, address, "12345678", "Cliente VIP");
-        
+
+        Owner owner = Owner.create(1L, "Juan", "Pérez", email,
+                phone, address, "12345678", "Cliente VIP");
+
         // Clear the creation event
         owner.clearDomainEvents();
-        
+
         // When
         owner.delete();
 
@@ -7274,10 +7273,10 @@ class OwnerDomainEventsTest {
         List<DomainEvent> domainEvents = owner.getDomainEvents();
         assertFalse(domainEvents.isEmpty(), "Should have domain events");
         assertEquals(1, domainEvents.size(), "Should have exactly one domain event");
-        
+
         DomainEvent event = domainEvents.get(0);
         assertInstanceOf(OwnerDeletedEvent.class, event, "Should be OwnerDeletedEvent");
-        
+
         OwnerDeletedEvent deletedEvent = (OwnerDeletedEvent) event;
         assertEquals(1L, deletedEvent.getOwnerId(), "Event should have correct owner ID");
         assertEquals("Juan", deletedEvent.getFirstName(), "Event should have correct first name");
@@ -7292,26 +7291,26 @@ class OwnerDomainEventsTest {
         Email email = new Email("juan.perez@example.com");
         Phone phone = new Phone("+51987654321");
         Address address = new Address("Av. Lima 123", "Lima", "15001");
-        
-        Owner owner = Owner.create(1L, "Juan", "Pérez", email, 
-                                 phone, address, "12345678", "Cliente VIP");
+
+        Owner owner = Owner.create(1L, "Juan", "Pérez", email,
+                phone, address, "12345678", "Cliente VIP");
 
         // When & Then
         assertEquals(1L, owner.getId(), "getId() should return the owner ID");
         assertEquals(1L, owner.getOwnerId(), "getOwnerId() should return the same value as getId()");
-        
+
         // Test that owner is an instance of Entity
-        assertTrue(owner instanceof com.datavet.datavet.shared.domain.model.Entity, 
+        assertTrue(owner instanceof com.datavet.datavet.shared.domain.model.Entity,
                 "Owner should implement Entity interface");
-        
+
         // Test entity identity consistency
-        Owner sameOwner = Owner.create(1L, "Different Name", "Different Last Name", email, 
-                                     phone, address, "87654321", "Different notes");
+        Owner sameOwner = Owner.create(1L, "Different Name", "Different Last Name", email,
+                phone, address, "87654321", "Different notes");
         assertEquals(owner.getId(), sameOwner.getId(), "Owners with same ID should have same identity");
-        
+
         // Test different entity identity
-        Owner differentOwner = Owner.create(2L, "Juan", "Pérez", email, 
-                                          phone, address, "12345678", "Cliente VIP");
+        Owner differentOwner = Owner.create(2L, "Juan", "Pérez", email,
+                phone, address, "12345678", "Cliente VIP");
         assertNotEquals(owner.getId(), differentOwner.getId(), "Owners with different IDs should have different identity");
     }
 
@@ -7322,22 +7321,22 @@ class OwnerDomainEventsTest {
         Email email = new Email("juan.perez@example.com");
         Phone phone = new Phone("+51987654321");
         Address address = new Address("Av. Lima 123", "Lima", "15001");
-        
+
         // When
-        Owner owner = Owner.create(1L, "Juan", "Pérez", email, 
-                                 phone, address, "12345678", "Cliente VIP");
+        Owner owner = Owner.create(1L, "Juan", "Pérez", email,
+                phone, address, "12345678", "Cliente VIP");
 
         // Then
-        assertNotNull(owner.getAddress(), "Address should not be null");
-        assertEquals("Av. Lima 123", owner.getAddress().getStreet(), "Address street should be correct");
-        assertEquals("Lima", owner.getAddress().getCity(), "Address city should be correct");
-        assertEquals("15001", owner.getAddress().getPostalCode(), "Address postal code should be correct");
-        
-        assertNotNull(owner.getPhone(), "Phone should not be null");
-        assertEquals("+51987654321", owner.getPhone().getValue(), "Phone value should be correct");
-        
-        assertNotNull(owner.getEmail(), "Email should not be null");
-        assertEquals("juan.perez@example.com", owner.getEmail().getValue(), "Email value should be correct");
+        assertNotNull(owner.getOwnerAddress(), "Address should not be null");
+        assertEquals("Av. Lima 123", owner.getOwnerAddress().getStreet(), "Address street should be correct");
+        assertEquals("Lima", owner.getOwnerAddress().getCity(), "Address city should be correct");
+        assertEquals("15001", owner.getOwnerAddress().getPostalCode(), "Address postal code should be correct");
+
+        assertNotNull(owner.getOwnerPhone(), "Phone should not be null");
+        assertEquals("+51987654321", owner.getOwnerPhone().getValue(), "Phone value should be correct");
+
+        assertNotNull(owner.getOwnerEmail(), "Email should not be null");
+        assertEquals("juan.perez@example.com", owner.getOwnerEmail().getValue(), "Email value should be correct");
     }
 
     @Test
@@ -7347,17 +7346,17 @@ class OwnerDomainEventsTest {
         Email email = new Email("juan.perez@example.com");
         Phone phone = new Phone("+51987654321");
         Address address = new Address("Av. Lima 123", "Lima", "15001");
-        
-        Owner owner = Owner.create(1L, "Juan", "Pérez", email, 
-                                 phone, address, "12345678", "Cliente VIP");
+
+        Owner owner = Owner.create(1L, "Juan", "Pérez", email,
+                phone, address, "12345678", "Cliente VIP");
 
         // When & Then
         assertEquals("Juan Pérez", owner.getFullName(), "Should return correct full name");
         assertTrue(owner.hasCompleteContactInfo(), "Should have complete contact info");
-        
+
         // Test with incomplete contact info
-        Owner incompleteOwner = Owner.create(2L, "María", "García", email, 
-                                           null, null, null, null);
+        Owner incompleteOwner = Owner.create(2L, "María", "García", email,
+                null, null, null, null);
         assertFalse(incompleteOwner.hasCompleteContactInfo(), "Should not have complete contact info");
     }
 
@@ -7370,24 +7369,24 @@ class OwnerDomainEventsTest {
         Address address = new Address("Av. Lima 123", "Lima", "15001");
 
         // Test required field validations
-        assertThrows(IllegalArgumentException.class, () -> 
-                Owner.create(1L, null, "Pérez", email, phone, address, "12345678", "Notes"), 
+        assertThrows(IllegalArgumentException.class, () ->
+                        Owner.create(1L, null, "Pérez", email, phone, address, "12345678", "Notes"),
                 "Should reject null first name");
-        
-        assertThrows(IllegalArgumentException.class, () -> 
-                Owner.create(1L, "", "Pérez", email, phone, address, "12345678", "Notes"), 
+
+        assertThrows(IllegalArgumentException.class, () ->
+                        Owner.create(1L, "", "Pérez", email, phone, address, "12345678", "Notes"),
                 "Should reject empty first name");
-        
-        assertThrows(IllegalArgumentException.class, () -> 
-                Owner.create(1L, "Juan", null, email, phone, address, "12345678", "Notes"), 
+
+        assertThrows(IllegalArgumentException.class, () ->
+                        Owner.create(1L, "Juan", null, email, phone, address, "12345678", "Notes"),
                 "Should reject null last name");
-        
-        assertThrows(IllegalArgumentException.class, () -> 
-                Owner.create(1L, "Juan", "", email, phone, address, "12345678", "Notes"), 
+
+        assertThrows(IllegalArgumentException.class, () ->
+                        Owner.create(1L, "Juan", "", email, phone, address, "12345678", "Notes"),
                 "Should reject empty last name");
-        
-        assertThrows(IllegalArgumentException.class, () -> 
-                Owner.create(1L, "Juan", "Pérez", null, phone, address, "12345678", "Notes"), 
+
+        assertThrows(IllegalArgumentException.class, () ->
+                        Owner.create(1L, "Juan", "Pérez", null, phone, address, "12345678", "Notes"),
                 "Should reject null email");
     }
 
@@ -7398,28 +7397,28 @@ class OwnerDomainEventsTest {
         Email email = new Email("juan.perez@example.com");
         Phone phone = new Phone("+51987654321");
         Address address = new Address("Av. Lima 123", "Lima", "15001");
-        
+
         // When
-        Owner owner = Owner.create(1L, "Juan", "Pérez", email, 
-                                 phone, address, "12345678", "Cliente VIP");
+        Owner owner = Owner.create(1L, "Juan", "Pérez", email,
+                phone, address, "12345678", "Cliente VIP");
 
         // Then
-        assertTrue(owner instanceof com.datavet.datavet.shared.domain.model.AggregateRoot, 
+        assertTrue(owner instanceof com.datavet.datavet.shared.domain.model.AggregateRoot,
                 "Owner should extend AggregateRoot");
-        
+
         // Test domain events functionality
         assertNotNull(owner.getDomainEvents(), "Should have domain events collection");
         assertFalse(owner.getDomainEvents().isEmpty(), "Should have at least one domain event after creation");
-        
+
         // Test that domain events are immutable
         List<DomainEvent> events = owner.getDomainEvents();
-        assertThrows(UnsupportedOperationException.class, () -> events.add(null), 
+        assertThrows(UnsupportedOperationException.class, () -> events.add(null),
                 "Domain events collection should be immutable");
-        
+
         // Test clear domain events
         owner.clearDomainEvents();
         assertTrue(owner.getDomainEvents().isEmpty(), "Domain events should be cleared");
-        
+
         // Test that new events can be added after clearing
         owner.update("Juan Carlos", "Pérez García", email, phone, address, "87654321", "Updated notes");
         assertFalse(owner.getDomainEvents().isEmpty(), "Should have new domain events after update");
@@ -7437,7 +7436,7 @@ src/test/java/com/datavet/datavet/owner/application/service/OwnerServiceTest.jav
 **Código completo del test:**
 
 ```java
-package com.datavet.datavet.owner.application.service;
+package com.datavet.datavet.owner.application.service.OwnerService;
 
 import com.datavet.datavet.owner.application.port.in.command.CreateOwnerCommand;
 import com.datavet.datavet.owner.application.port.in.command.UpdateOwnerCommand;
@@ -7478,13 +7477,13 @@ class OwnerServiceTest {
 
     @Mock
     private OwnerRepositoryPort ownerRepositoryPort;
-    
+
     @Mock
     private CreateOwnerCommandValidator createValidator;
-    
+
     @Mock
     private UpdateOwnerCommandValidator updateValidator;
-    
+
     @Mock
     private DomainEventPublisher domainEventPublisher;
 
@@ -7507,7 +7506,7 @@ class OwnerServiceTest {
         Address address = new Address("Av. Lima 123", "Lima", "15001");
         Phone phone = new Phone("+51987654321");
         Email email = new Email("juan.perez@example.com");
-        
+
         CreateOwnerCommand command = new CreateOwnerCommand(
                 "", // Invalid empty first name
                 "Pérez",
@@ -7526,7 +7525,7 @@ class OwnerServiceTest {
         // When & Then
         assertThatThrownBy(() -> ownerService.createOwner(command))
                 .isInstanceOf(OwnerValidationException.class);
-        
+
         // Verify validation was called
         verify(createValidator).validate(command);
     }
@@ -7538,7 +7537,7 @@ class OwnerServiceTest {
         Address address = new Address("Av. Lima 123", "Lima", "15001");
         Phone phone = new Phone("+51987654321");
         Email email = new Email("juan.perez@example.com");
-        
+
         CreateOwnerCommand command = new CreateOwnerCommand(
                 "Juan",
                 "Pérez",
@@ -7566,7 +7565,7 @@ class OwnerServiceTest {
         Address address = new Address("Av. Lima 123", "Lima", "15001");
         Phone phone = new Phone("+51987654321");
         Email email = new Email("juan.perez@example.com");
-        
+
         CreateOwnerCommand command = new CreateOwnerCommand(
                 "Juan",
                 "Pérez",
@@ -7577,8 +7576,8 @@ class OwnerServiceTest {
                 "Cliente VIP"
         );
 
-        Owner savedOwner = Owner.create(1L, "Juan", "Pérez", email, 
-                                      phone, address, "12345678", "Cliente VIP");
+        Owner savedOwner = Owner.create(1L, "Juan", "Pérez", email,
+                phone, address, "12345678", "Cliente VIP");
 
         // Mock validation to pass using shared validation framework
         ValidationResult validationResult = new ValidationResult(); // Empty result = valid
@@ -7594,9 +7593,9 @@ class OwnerServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getOwnerId()).isEqualTo(1L);
         assertThat(result.getFirstName()).isEqualTo("Juan");
-        assertThat(result.getLastName()).isEqualTo("Pérez");
-        assertThat(result.getEmail().getValue()).isEqualTo("juan.perez@example.com");
-        
+        assertThat(result.getOwnerLastName()).isEqualTo("Pérez");
+        assertThat(result.getOwnerEmail().getValue()).isEqualTo("juan.perez@example.com");
+
         // Verify shared validation framework was used
         verify(createValidator).validate(command);
         // Verify shared repository interface methods were used
@@ -7612,7 +7611,7 @@ class OwnerServiceTest {
         Address address = new Address("Av. Arequipa 456", "Lima", "15002");
         Phone phone = new Phone("+51912345678");
         Email email = new Email("juan.updated@example.com");
-        
+
         UpdateOwnerCommand command = UpdateOwnerCommand.builder()
                 .ownerId(999L)
                 .firstName("Juan Carlos")
@@ -7639,14 +7638,14 @@ class OwnerServiceTest {
     void shouldUseSharedRepositoryInterfaceMethods() {
         // Given
         List<Owner> expectedOwners = Arrays.asList(
-                Owner.create(1L, "Juan", "Pérez", new Email("juan@example.com"), 
-                           new Phone("+51987654321"), new Address("Av. Lima 123", "Lima", "15001"), 
-                           "12345678", "Cliente VIP"),
-                Owner.create(2L, "María", "García", new Email("maria@example.com"), 
-                           new Phone("+51912345678"), new Address("Av. Arequipa 456", "Lima", "15002"), 
-                           "87654321", "Cliente Premium")
+                Owner.create(1L, "Juan", "Pérez", new Email("juan@example.com"),
+                        new Phone("+51987654321"), new Address("Av. Lima 123", "Lima", "15001"),
+                        "12345678", "Cliente VIP"),
+                Owner.create(2L, "María", "García", new Email("maria@example.com"),
+                        new Phone("+51912345678"), new Address("Av. Arequipa 456", "Lima", "15002"),
+                        "87654321", "Cliente Premium")
         );
-        
+
         when(ownerRepositoryPort.findAll()).thenReturn(expectedOwners);
 
         // When
@@ -9841,11 +9840,15 @@ com.datavet.datavet.[dominio].[capa].[subcapa]
 ```
 
 **Ejemplos Específicos:**
+
 ```java
 // ✅ CORRECTO: Seguir la estructura establecida
+
+import com.datavet.datavet.owner.application.service.OwnerService;
+
 com.datavet.datavet.owner.domain.model.Owner
 com.datavet.datavet.owner.domain.event.OwnerCreatedEvent
-com.datavet.datavet.owner.application.service.OwnerService
+com.datavet.datavet.owner.application.service.OwnerService.OwnerService
 com.datavet.datavet.owner.infrastructure.adapter.input.OwnerController
 ```
 
@@ -10719,713 +10722,15 @@ Con estas soluciones y herramientas de diagnóstico, deberías poder resolver la
 
 ## 9. Checklists y Verificación
 
-Esta sección te proporciona checklists detallados para verificar que has implementado correctamente cada capa de tu dominio, junto con comandos específicos para validar tu implementación.
+*[Esta sección se completará en las siguientes tareas]*
 
 ### Checklist por Capa
 
-#### 🏛️ Checklist - Capa de Dominio
-
-**📋 Modelo de Dominio (Owner.java)**
-- [ ] **Estructura Base**
-  - [ ] Extiende `AggregateRoot<Long>`
-  - [ ] Implementa `Entity<Long>`
-  - [ ] Implementa método `getId()` que retorna el identificador único
-  - [ ] Usa anotaciones Lombok (`@Getter`, `@Builder`, `@AllArgsConstructor`, `@NoArgsConstructor`)
-
-- [ ] **Campos y Validaciones**
-  - [ ] Tiene campo `ownerId` de tipo `Long`
-  - [ ] Campos obligatorios con `@NotBlank` o `@NotNull`
-  - [ ] Campos con límites de tamaño usando `@Size`
-  - [ ] Usa Value Objects del shared (`Email`, `Phone`, `Address`)
-  - [ ] Incluye campos de auditoría (`createdAt`, `updatedAt`)
-
-- [ ] **Factory Methods**
-  - [ ] Método estático `create()` para crear nuevas instancias
-  - [ ] Validaciones de negocio en el factory method
-  - [ ] Establece fechas automáticamente (`LocalDateTime.now()`)
-  - [ ] Publica evento `OwnerCreatedEvent` usando `addDomainEvent()`
-
-- [ ] **Métodos de Negocio**
-  - [ ] Método `update()` para actualizar información
-  - [ ] Método `delete()` para marcar eliminación
-  - [ ] Publica eventos correspondientes en cada operación
-  - [ ] Actualiza `updatedAt` en operaciones de modificación
-
-- [ ] **Métodos de Conveniencia**
-  - [ ] Método `getFullName()` para obtener nombre completo
-  - [ ] Métodos de validación como `hasCompleteContactInfo()`
-  - [ ] Métodos que encapsulan lógica de negocio específica
-
-**📋 Eventos de Dominio**
-- [ ] **OwnerCreatedEvent.java**
-  - [ ] Implementa `DomainEvent`
-  - [ ] Campos inmutables (`private final`)
-  - [ ] Factory method `of()` con timestamp automático
-  - [ ] Implementa `occurredOn()` correctamente
-  - [ ] Incluye información relevante (ID, nombre, email)
-  - [ ] Método `toString()` informativo
-
-- [ ] **OwnerUpdatedEvent.java**
-  - [ ] Implementa `DomainEvent`
-  - [ ] Campos inmutables (`private final`)
-  - [ ] Factory method `of()` con timestamp automático
-  - [ ] Incluye información actualizada (ID, nombre)
-  - [ ] Método `toString()` informativo
-
-- [ ] **OwnerDeletedEvent.java**
-  - [ ] Implementa `DomainEvent`
-  - [ ] Campos inmutables (`private final`)
-  - [ ] Factory method `of()` con timestamp automático
-  - [ ] Incluye información del dueño eliminado
-  - [ ] Método `toString()` informativo
-
-**📋 Excepciones de Dominio**
-- [ ] **OwnerNotFoundException.java**
-  - [ ] Extiende `EntityNotFoundException` del shared
-  - [ ] Constructor para búsqueda por ID
-  - [ ] Constructor para búsqueda por campo específico
-  - [ ] Factory methods (`byEmail()`, `byIdentificationNumber()`)
-  - [ ] Mensajes de error claros y específicos
-
-- [ ] **OwnerAlreadyExistsException.java**
-  - [ ] Extiende `EntityAlreadyExistsException` del shared
-  - [ ] Constructor para duplicación por campo específico
-  - [ ] Factory methods (`withEmail()`, `withIdentificationNumber()`)
-  - [ ] Mensajes de error que indican el campo duplicado
-
-- [ ] **OwnerValidationException.java**
-  - [ ] Extiende `DomainException` del shared
-  - [ ] Constructor que acepta `ValidationResult`
-  - [ ] Factory methods para casos comunes
-  - [ ] Método `hasValidationErrors()` para verificar errores
-
-#### 🔧 Checklist - Capa de Aplicación
-
-**📋 Puertos de Entrada (Input Ports)**
-- [ ] **OwnerUseCase.java**
-  - [ ] Extiende `UseCase` del shared
-  - [ ] Define métodos para operaciones CRUD básicas
-  - [ ] Métodos retornan tipos apropiados (`OwnerResponse`, `Optional<OwnerResponse>`)
-  - [ ] Métodos lanzan excepciones específicas del dominio
-  - [ ] Incluye operaciones de búsqueda específicas (por email, etc.)
-
-**📋 Comandos**
-- [ ] **CreateOwnerCommand.java**
-  - [ ] Campos inmutables (`private final`)
-  - [ ] Validaciones básicas con anotaciones Jakarta
-  - [ ] Usa Value Objects del shared cuando sea apropiado
-  - [ ] Constructor que acepta todos los campos requeridos
-  - [ ] Métodos getter para todos los campos
-
-- [ ] **UpdateOwnerCommand.java**
-  - [ ] Incluye campo `ownerId` para identificar la entidad
-  - [ ] Campos inmutables (`private final`)
-  - [ ] Validaciones básicas con anotaciones Jakarta
-  - [ ] Usa Value Objects del shared cuando sea apropiado
-
-**📋 Validadores**
-- [ ] **CreateOwnerCommandValidator.java**
-  - [ ] Implementa `Validator<CreateOwnerCommand>` del shared
-  - [ ] Método `validate()` retorna `ValidationResult`
-  - [ ] Validaciones de negocio específicas
-  - [ ] Verifica unicidad de email si es necesario
-  - [ ] Mensajes de error claros y específicos
-
-- [ ] **UpdateOwnerCommandValidator.java**
-  - [ ] Implementa `Validator<UpdateOwnerCommand>` del shared
-  - [ ] Valida que el dueño existe antes de actualizar
-  - [ ] Verifica unicidad de campos modificados
-  - [ ] Validaciones de negocio para actualizaciones
-
-**📋 Puertos de Salida (Output Ports)**
-- [ ] **OwnerRepositoryPort.java**
-  - [ ] Extiende `Repository<Owner, Long>` del shared
-  - [ ] Métodos de búsqueda específicos (`findByEmail()`, `findByIdentificationNumber()`)
-  - [ ] Métodos que retornan `Optional<Owner>` para búsquedas
-  - [ ] Métodos de verificación de existencia (`existsByEmail()`)
-
-**📋 Servicios de Aplicación**
-- [ ] **OwnerService.java**
-  - [ ] Implementa `OwnerUseCase` y extiende `ApplicationService`
-  - [ ] Anotado con `@Service`
-  - [ ] Inyección de dependencias correcta (`OwnerRepositoryPort`, validadores)
-  - [ ] Manejo de transacciones con `@Transactional`
-  - [ ] Publicación de eventos de dominio
-  - [ ] Manejo de excepciones específicas
-  - [ ] Validación de comandos antes de procesarlos
-
-**📋 DTOs y Mappers**
-- [ ] **OwnerResponse.java**
-  - [ ] Campos inmutables (`private final`)
-  - [ ] Incluye todos los campos necesarios para la respuesta
-  - [ ] Usa tipos apropiados (String para Value Objects en respuesta)
-  - [ ] Constructor que acepta todos los campos
-
-- [ ] **OwnerMapper.java**
-  - [ ] Implementa `Mapper<Owner, OwnerResponse>` del shared
-  - [ ] Método estático `toResponse()` para convertir Owner a OwnerResponse
-  - [ ] Método estático `toDomain()` si es necesario
-  - [ ] Manejo correcto de Value Objects (conversión a String)
-  - [ ] Manejo de campos opcionales (null checks)
-
-#### 🌐 Checklist - Capa de Infraestructura
-
-**📋 Controladores REST**
-- [ ] **OwnerController.java**
-  - [ ] Anotado con `@RestController`
-  - [ ] Mapping base con `@RequestMapping("/api/v1/owners")`
-  - [ ] Inyección del `OwnerUseCase`
-  - [ ] Endpoints CRUD completos (GET, POST, PUT, DELETE)
-  - [ ] Validación de requests con `@Valid`
-  - [ ] Códigos de respuesta HTTP apropiados
-  - [ ] Manejo de excepciones con try-catch si es necesario
-  - [ ] Documentación con comentarios JavaDoc
-
-**📋 DTOs de Request**
-- [ ] **CreateOwnerRequest.java**
-  - [ ] Validaciones con Bean Validation (`@NotBlank`, `@Email`, etc.)
-  - [ ] Campos que corresponden a los del comando
-  - [ ] Método para convertir a `CreateOwnerCommand`
-  - [ ] Manejo de Value Objects (recibe String, convierte a Value Object)
-
-- [ ] **UpdateOwnerRequest.java**
-  - [ ] Validaciones con Bean Validation
-  - [ ] Incluye todos los campos actualizables
-  - [ ] Método para convertir a `UpdateOwnerCommand`
-  - [ ] Manejo apropiado de campos opcionales
-
-**📋 Persistencia JPA**
-- [ ] **OwnerEntity.java**
-  - [ ] Extiende `BaseEntity` del shared
-  - [ ] Anotado con `@Entity` y `@Table`
-  - [ ] Campos mapeados con anotaciones JPA apropiadas
-  - [ ] Convertidores para Value Objects (`@Convert`)
-  - [ ] Constraints de base de datos (`@Column(unique = true)`)
-  - [ ] Constructor sin parámetros para JPA
-  - [ ] Métodos para convertir desde/hacia el modelo de dominio
-
-- [ ] **JpaOwnerRepository.java**
-  - [ ] Extiende `JpaRepository<OwnerEntity, Long>`
-  - [ ] Métodos de consulta personalizados con `@Query` o naming convention
-  - [ ] Métodos que corresponden a los del puerto de salida
-  - [ ] Manejo de excepciones de base de datos
-
-- [ ] **JpaOwnerRepositoryAdapter.java**
-  - [ ] Implementa `OwnerRepositoryPort`
-  - [ ] Anotado con `@Repository`
-  - [ ] Inyección del `JpaOwnerRepository`
-  - [ ] Conversión entre entidades JPA y modelos de dominio
-  - [ ] Manejo de `Optional` correctamente
-  - [ ] Traducción de excepciones JPA a excepciones de dominio
-
-**📋 Configuración**
-- [ ] **Configuración Spring**
-  - [ ] Todos los componentes están anotados correctamente
-  - [ ] Inyección de dependencias funciona sin errores
-  - [ ] Configuración de base de datos si es necesaria
-  - [ ] Configuración de transacciones
-
-- [ ] **Migraciones de Base de Datos**
-  - [ ] Script SQL para crear tabla `owner`
-  - [ ] Índices para campos de búsqueda frecuente
-  - [ ] Constraints de unicidad para email
-  - [ ] Constraints de integridad referencial si aplica
-
-#### ✅ Verificación Final por Capa
-
-**🏛️ Dominio - Verificación Rápida**
-```bash
-# Verificar que compila sin errores
-mvn compile -pl . -am
-
-# Verificar que los tests de dominio pasan
-mvn test -Dtest="*Owner*Domain*Test"
-```
-
-**🔧 Aplicación - Verificación Rápida**
-```bash
-# Verificar que los servicios se inyectan correctamente
-mvn test -Dtest="*Owner*Service*Test"
-
-# Verificar que las validaciones funcionan
-mvn test -Dtest="*Owner*Validator*Test"
-```
-
-**🌐 Infraestructura - Verificación Rápida**
-```bash
-# Verificar que los controladores responden
-mvn test -Dtest="*Owner*Controller*Test"
-
-# Verificar que la persistencia funciona
-mvn test -Dtest="*Owner*Repository*Test"
-```
+*Contenido pendiente de implementación*
 
 ### Comandos de Verificación
 
-Esta sección te proporciona comandos específicos para compilar, probar y validar tu implementación del dominio Owner en cada etapa del desarrollo.
-
-#### 🛠️ Comandos Maven Básicos
-
-**📦 Compilación y Construcción**
-
-```bash
-# Limpiar y compilar todo el proyecto
-mvn clean compile
-
-# Compilar solo el código fuente (sin tests)
-mvn compile
-
-# Compilar incluyendo tests
-mvn test-compile
-
-# Empaquetar la aplicación (JAR)
-mvn package
-
-# Instalar en repositorio local
-mvn install
-```
-
-**🧪 Ejecución de Tests**
-
-```bash
-# Ejecutar todos los tests
-mvn test
-
-# Ejecutar tests con reporte detallado
-mvn test -Dtest.verbose=true
-
-# Ejecutar tests específicos del dominio Owner
-mvn test -Dtest="*Owner*"
-
-# Ejecutar solo tests unitarios (excluyendo integración)
-mvn test -Dtest="*Test" -DexcludedGroups="integration"
-
-# Ejecutar solo tests de integración
-mvn test -Dtest="*IntegrationTest"
-
-# Ejecutar tests con cobertura
-mvn test jacoco:report
-```
-
-**🔍 Análisis de Código**
-
-```bash
-# Verificar estilo de código (si está configurado)
-mvn checkstyle:check
-
-# Análisis estático con SpotBugs (si está configurado)
-mvn spotbugs:check
-
-# Verificar dependencias
-mvn dependency:analyze
-
-# Ver árbol de dependencias
-mvn dependency:tree
-```
-
-#### 🎯 Comandos Específicos por Capa
-
-**🏛️ Verificación de Capa de Dominio**
-
-```bash
-# Compilar solo el dominio
-mvn compile -Dinclude.scope=compile
-
-# Ejecutar tests de modelo de dominio
-mvn test -Dtest="*Owner*Domain*Test"
-
-# Ejecutar tests de eventos de dominio
-mvn test -Dtest="*Owner*Event*Test"
-
-# Ejecutar tests de excepciones de dominio
-mvn test -Dtest="*Owner*Exception*Test"
-
-# Verificar que el modelo compila sin dependencias externas
-mvn compile -Dexclude.scope=test,provided
-```
-
-**🔧 Verificación de Capa de Aplicación**
-
-```bash
-# Ejecutar tests de servicios de aplicación
-mvn test -Dtest="*Owner*Service*Test"
-
-# Ejecutar tests de validadores
-mvn test -Dtest="*Owner*Validator*Test"
-
-# Ejecutar tests de comandos
-mvn test -Dtest="*Owner*Command*Test"
-
-# Ejecutar tests de mappers
-mvn test -Dtest="*Owner*Mapper*Test"
-
-# Verificar inyección de dependencias
-mvn spring-boot:run -Dspring.profiles.active=test
-```
-
-**🌐 Verificación de Capa de Infraestructura**
-
-```bash
-# Ejecutar tests de controladores
-mvn test -Dtest="*Owner*Controller*Test"
-
-# Ejecutar tests de repositorios
-mvn test -Dtest="*Owner*Repository*Test"
-
-# Ejecutar tests de entidades JPA
-mvn test -Dtest="*Owner*Entity*Test"
-
-# Ejecutar tests de integración completos
-mvn test -Dtest="*Owner*IntegrationTest"
-```
-
-#### 🚀 Comandos de Ejecución y Prueba
-
-**▶️ Ejecutar la Aplicación**
-
-```bash
-# Ejecutar la aplicación en modo desarrollo
-mvn spring-boot:run
-
-# Ejecutar con perfil específico
-mvn spring-boot:run -Dspring.profiles.active=dev
-
-# Ejecutar con puerto específico
-mvn spring-boot:run -Dserver.port=8081
-
-# Ejecutar con debug habilitado
-mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005"
-```
-
-**🌐 Probar APIs REST**
-
-```bash
-# Verificar que la aplicación está corriendo
-curl -X GET http://localhost:8080/actuator/health
-
-# Crear un nuevo dueño
-curl -X POST http://localhost:8080/api/v1/owners \
-  -H "Content-Type: application/json" \
-  -d '{
-    "firstName": "Juan",
-    "lastName": "Pérez",
-    "email": "juan.perez@example.com",
-    "phone": "+34123456789",
-    "address": {
-      "street": "Calle Mayor 123",
-      "city": "Madrid",
-      "postalCode": "28001",
-      "country": "España"
-    },
-    "identificationNumber": "12345678A",
-    "notes": "Cliente VIP"
-  }'
-
-# Obtener un dueño por ID
-curl -X GET http://localhost:8080/api/v1/owners/1
-
-# Obtener todos los dueños
-curl -X GET http://localhost:8080/api/v1/owners
-
-# Actualizar un dueño
-curl -X PUT http://localhost:8080/api/v1/owners/1 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "firstName": "Juan Carlos",
-    "lastName": "Pérez García",
-    "email": "juan.carlos.perez@example.com",
-    "phone": "+34987654321",
-    "address": {
-      "street": "Avenida de la Paz 456",
-      "city": "Madrid",
-      "postalCode": "28002",
-      "country": "España"
-    },
-    "identificationNumber": "12345678A",
-    "notes": "Cliente VIP - Información actualizada"
-  }'
-
-# Eliminar un dueño
-curl -X DELETE http://localhost:8080/api/v1/owners/1
-
-# Buscar dueño por email
-curl -X GET "http://localhost:8080/api/v1/owners/search?email=juan.perez@example.com"
-```
-
-**📊 Comandos con HTTPie (Alternativa más legible)**
-
-```bash
-# Instalar HTTPie (si no está instalado)
-pip install httpie
-
-# Crear un nuevo dueño
-http POST localhost:8080/api/v1/owners \
-  firstName="María" \
-  lastName="González" \
-  email="maria.gonzalez@example.com" \
-  phone="+34666777888" \
-  identificationNumber="87654321B" \
-  notes="Nueva cliente"
-
-# Obtener un dueño
-http GET localhost:8080/api/v1/owners/1
-
-# Actualizar un dueño
-http PUT localhost:8080/api/v1/owners/1 \
-  firstName="María Carmen" \
-  lastName="González López" \
-  email="maria.carmen.gonzalez@example.com"
-
-# Eliminar un dueño
-http DELETE localhost:8080/api/v1/owners/1
-```
-
-#### 🔧 Scripts de Validación Automática
-
-**📝 Script de Validación Completa**
-
-Crea un archivo `validate-owner-domain.sh` en la raíz del proyecto:
-
-```bash
-#!/bin/bash
-
-echo "🚀 Iniciando validación completa del dominio Owner..."
-
-# Colores para output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-# Función para mostrar resultados
-show_result() {
-    if [ $1 -eq 0 ]; then
-        echo -e "${GREEN}✅ $2${NC}"
-    else
-        echo -e "${RED}❌ $2${NC}"
-        exit 1
-    fi
-}
-
-# 1. Compilación
-echo -e "${YELLOW}📦 Compilando proyecto...${NC}"
-mvn clean compile -q
-show_result $? "Compilación exitosa"
-
-# 2. Tests de dominio
-echo -e "${YELLOW}🏛️ Ejecutando tests de dominio...${NC}"
-mvn test -Dtest="*Owner*Domain*Test" -q
-show_result $? "Tests de dominio pasaron"
-
-# 3. Tests de aplicación
-echo -e "${YELLOW}🔧 Ejecutando tests de aplicación...${NC}"
-mvn test -Dtest="*Owner*Service*Test,*Owner*Validator*Test" -q
-show_result $? "Tests de aplicación pasaron"
-
-# 4. Tests de infraestructura
-echo -e "${YELLOW}🌐 Ejecutando tests de infraestructura...${NC}"
-mvn test -Dtest="*Owner*Controller*Test,*Owner*Repository*Test" -q
-show_result $? "Tests de infraestructura pasaron"
-
-# 5. Tests de integración
-echo -e "${YELLOW}🔄 Ejecutando tests de integración...${NC}"
-mvn test -Dtest="*Owner*IntegrationTest" -q
-show_result $? "Tests de integración pasaron"
-
-# 6. Empaquetado
-echo -e "${YELLOW}📦 Empaquetando aplicación...${NC}"
-mvn package -DskipTests -q
-show_result $? "Empaquetado exitoso"
-
-echo -e "${GREEN}🎉 ¡Validación completa exitosa! El dominio Owner está listo.${NC}"
-```
-
-**🔍 Script de Verificación de APIs**
-
-Crea un archivo `test-owner-apis.sh`:
-
-```bash
-#!/bin/bash
-
-echo "🌐 Probando APIs del dominio Owner..."
-
-# Configuración
-BASE_URL="http://localhost:8080/api/v1/owners"
-HEALTH_URL="http://localhost:8080/actuator/health"
-
-# Colores
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-# Función para verificar respuesta HTTP
-check_http_status() {
-    if [ $1 -eq $2 ]; then
-        echo -e "${GREEN}✅ $3 (Status: $1)${NC}"
-    else
-        echo -e "${RED}❌ $3 (Expected: $2, Got: $1)${NC}"
-        exit 1
-    fi
-}
-
-# Verificar que la aplicación está corriendo
-echo -e "${YELLOW}🔍 Verificando que la aplicación está corriendo...${NC}"
-HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_URL)
-check_http_status $HEALTH_STATUS 200 "Aplicación está corriendo"
-
-# Test 1: Crear un dueño
-echo -e "${YELLOW}➕ Creando un nuevo dueño...${NC}"
-CREATE_RESPONSE=$(curl -s -w "%{http_code}" -X POST $BASE_URL \
-  -H "Content-Type: application/json" \
-  -d '{
-    "firstName": "Test",
-    "lastName": "Owner",
-    "email": "test.owner@example.com",
-    "phone": "+34123456789",
-    "identificationNumber": "TEST123",
-    "notes": "Test owner for API validation"
-  }')
-
-CREATE_STATUS=${CREATE_RESPONSE: -3}
-check_http_status $CREATE_STATUS 201 "Dueño creado exitosamente"
-
-# Extraer ID del dueño creado (asumiendo que retorna JSON con id)
-OWNER_ID=1  # Simplificado para el ejemplo
-
-# Test 2: Obtener el dueño creado
-echo -e "${YELLOW}🔍 Obteniendo dueño por ID...${NC}"
-GET_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET $BASE_URL/$OWNER_ID)
-check_http_status $GET_STATUS 200 "Dueño obtenido exitosamente"
-
-# Test 3: Actualizar el dueño
-echo -e "${YELLOW}✏️ Actualizando dueño...${NC}"
-UPDATE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X PUT $BASE_URL/$OWNER_ID \
-  -H "Content-Type: application/json" \
-  -d '{
-    "firstName": "Test Updated",
-    "lastName": "Owner Updated",
-    "email": "test.updated@example.com",
-    "phone": "+34987654321",
-    "identificationNumber": "TEST123",
-    "notes": "Updated test owner"
-  }')
-check_http_status $UPDATE_STATUS 200 "Dueño actualizado exitosamente"
-
-# Test 4: Listar dueños
-echo -e "${YELLOW}📋 Listando todos los dueños...${NC}"
-LIST_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET $BASE_URL)
-check_http_status $LIST_STATUS 200 "Lista de dueños obtenida exitosamente"
-
-# Test 5: Eliminar el dueño
-echo -e "${YELLOW}🗑️ Eliminando dueño...${NC}"
-DELETE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE $BASE_URL/$OWNER_ID)
-check_http_status $DELETE_STATUS 204 "Dueño eliminado exitosamente"
-
-# Test 6: Verificar que el dueño fue eliminado
-echo -e "${YELLOW}🔍 Verificando eliminación...${NC}"
-GET_DELETED_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET $BASE_URL/$OWNER_ID)
-check_http_status $GET_DELETED_STATUS 404 "Dueño no encontrado (eliminación confirmada)"
-
-echo -e "${GREEN}🎉 ¡Todas las APIs funcionan correctamente!${NC}"
-```
-
-**⚡ Comandos de Desarrollo Rápido**
-
-```bash
-# Compilar y ejecutar tests en una sola línea
-mvn clean compile test
-
-# Ejecutar aplicación y probar API básica
-mvn spring-boot:run & sleep 10 && curl http://localhost:8080/actuator/health && kill %1
-
-# Verificar que todos los componentes Spring se cargan correctamente
-mvn spring-boot:run -Dspring.profiles.active=test -Dlogging.level.org.springframework=DEBUG
-
-# Ejecutar solo tests que fallan
-mvn test --fail-at-end
-
-# Ejecutar tests con output detallado
-mvn test -Dtest.verbose=true -Dsurefire.printSummary=true
-```
-
-#### 🐛 Comandos de Debugging
-
-**🔍 Diagnóstico de Problemas Comunes**
-
-```bash
-# Verificar que todas las dependencias están disponibles
-mvn dependency:resolve
-
-# Verificar conflictos de dependencias
-mvn dependency:tree -Dverbose
-
-# Verificar que Spring encuentra todos los componentes
-mvn spring-boot:run -Ddebug=true
-
-# Ejecutar con logs de SQL habilitados
-mvn spring-boot:run -Dspring.jpa.show-sql=true -Dspring.jpa.properties.hibernate.format_sql=true
-
-# Verificar configuración de base de datos
-mvn spring-boot:run -Dlogging.level.org.springframework.jdbc=DEBUG
-
-# Ejecutar tests con stack traces completos
-mvn test -Dmaven.test.failure.ignore=false -Dsurefire.printSummary=true
-```
-
-**📊 Comandos de Monitoreo**
-
-```bash
-# Ver métricas de la aplicación (si Actuator está habilitado)
-curl http://localhost:8080/actuator/metrics
-
-# Ver información de la aplicación
-curl http://localhost:8080/actuator/info
-
-# Ver beans de Spring cargados
-curl http://localhost:8080/actuator/beans
-
-# Ver configuración de la aplicación
-curl http://localhost:8080/actuator/configprops
-
-# Ver mapeos de endpoints
-curl http://localhost:8080/actuator/mappings
-```
-
-#### ✅ Checklist de Comandos Ejecutados
-
-**📋 Verificación Paso a Paso**
-
-- [ ] **Compilación Básica**
-  - [ ] `mvn clean compile` - Sin errores
-  - [ ] `mvn test-compile` - Sin errores
-  - [ ] `mvn package -DskipTests` - JAR generado correctamente
-
-- [ ] **Tests por Capa**
-  - [ ] `mvn test -Dtest="*Owner*Domain*Test"` - Todos pasan
-  - [ ] `mvn test -Dtest="*Owner*Service*Test"` - Todos pasan
-  - [ ] `mvn test -Dtest="*Owner*Controller*Test"` - Todos pasan
-  - [ ] `mvn test -Dtest="*Owner*Repository*Test"` - Todos pasan
-  - [ ] `mvn test -Dtest="*Owner*IntegrationTest"` - Todos pasan
-
-- [ ] **Ejecución de Aplicación**
-  - [ ] `mvn spring-boot:run` - Inicia sin errores
-  - [ ] `curl http://localhost:8080/actuator/health` - Retorna 200 OK
-  - [ ] Aplicación responde en puerto configurado
-
-- [ ] **APIs REST**
-  - [ ] POST `/api/v1/owners` - Crea dueño (201 Created)
-  - [ ] GET `/api/v1/owners/{id}` - Obtiene dueño (200 OK)
-  - [ ] GET `/api/v1/owners` - Lista dueños (200 OK)
-  - [ ] PUT `/api/v1/owners/{id}` - Actualiza dueño (200 OK)
-  - [ ] DELETE `/api/v1/owners/{id}` - Elimina dueño (204 No Content)
-
-- [ ] **Validación de Errores**
-  - [ ] POST con datos inválidos - Retorna 400 Bad Request
-  - [ ] GET de dueño inexistente - Retorna 404 Not Found
-  - [ ] POST con email duplicado - Retorna 409 Conflict
-
-Con estos comandos y scripts, tienes todas las herramientas necesarias para verificar que tu implementación del dominio Owner funciona correctamente en todas las capas de la arquitectura.
+*Contenido pendiente de implementación*
 
 ---
 
