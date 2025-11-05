@@ -90,7 +90,7 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
 
     @Override
     public List<Owner> getAllOwners() {
-        return List.of();
+        return ownerRepositoryPort.findAll();
     }
 
     private void publishDomainEvent(Owner owner) {
