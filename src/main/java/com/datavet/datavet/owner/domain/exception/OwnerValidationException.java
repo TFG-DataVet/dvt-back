@@ -3,8 +3,6 @@ package com.datavet.datavet.owner.domain.exception;
 import com.datavet.datavet.shared.domain.exception.DomainException;
 import com.datavet.datavet.shared.domain.validation.ValidationResult;
 
-import static com.datavet.datavet.clinic.domain.exception.ClinicValidationException.formatErrors;
-
 public class OwnerValidationException extends DomainException {
 
     private final ValidationResult validationResult;

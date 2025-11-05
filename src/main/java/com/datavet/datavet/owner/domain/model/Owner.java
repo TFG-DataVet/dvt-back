@@ -44,9 +44,6 @@ public class Owner extends AggregateRoot<Long> implements Entity<Long> {
     private Email ownerEmail;
 
     @NotNull
-    private String ownerPassword;
-
-    @NotNull
     private Address ownerAddress;
 
     private LocalDateTime createdAt;
@@ -65,7 +62,6 @@ public class Owner extends AggregateRoot<Long> implements Entity<Long> {
             String dni,
             Phone phone,
             Email email,
-            String password,
             Address address
     )
          {
@@ -77,7 +73,6 @@ public class Owner extends AggregateRoot<Long> implements Entity<Long> {
                 .ownerDni(dni)
                 .ownerPhone(phone)
                 .ownerEmail(email)
-                .ownerPassword(password)
                 .ownerAddress(address)
                 .createdAt(LocalDateTime.now())
                 .updateAt(LocalDateTime.now())

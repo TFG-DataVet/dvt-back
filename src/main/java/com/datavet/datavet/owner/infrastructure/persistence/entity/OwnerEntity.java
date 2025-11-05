@@ -1,8 +1,8 @@
-package com.datavet.datavet.owner.infrastructure.persistence;
+package com.datavet.datavet.owner.infrastructure.persistence.entity;
 
-import com.datavet.datavet.clinic.infrastructure.persistence.converter.AddressConverter;
-import com.datavet.datavet.clinic.infrastructure.persistence.converter.EmailConverter;
-import com.datavet.datavet.clinic.infrastructure.persistence.converter.PhoneConverter;
+import com.datavet.datavet.shared.infrastructure.persistence.converter.AddressConverter;
+import com.datavet.datavet.shared.infrastructure.persistence.converter.EmailConverter;
+import com.datavet.datavet.shared.infrastructure.persistence.converter.PhoneConverter;
 import com.datavet.datavet.shared.domain.valueobject.Address;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
@@ -23,7 +23,10 @@ public class OwnerEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long ownerId;
+    private Long ownerID;
+
+    @Column(nullable = false)
+    private Long clinicID;
 
     @NotBlank
     @Size(max = 100)
@@ -40,21 +43,17 @@ public class OwnerEntity extends BaseEntity {
     @Column(nullable = false, length = 9)
     private String dni;
 
-    @NotBlank
-    @Size(max = 10)
     @Convert(converter = PhoneConverter.class)
     @Column(name= "phone", nullable = false, length = 10)
     private Phone phone;
 
-    @NotBlank
-    @Size(max = 100)
+
     @Convert(converter = EmailConverter.class)
-    @Column(nullable = false, length = 100)
+    @Column(name = "email", nullable = false, length = 100)
     private Email email;
 
-    @NotBlank
-    @Size(max = 100)
     @Convert(converter = AddressConverter.class)
-    @Column(nullable = false, length = 100)
+    @Column(name = "address", nullable = false, length = 500)
     private Address address;
+
 }

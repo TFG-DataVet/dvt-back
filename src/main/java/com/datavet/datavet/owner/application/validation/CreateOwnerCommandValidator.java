@@ -1,6 +1,6 @@
 package com.datavet.datavet.owner.application.validation;
 
-import com.datavet.datavet.owner.application.port.command.CreateOwnerCommand;
+import com.datavet.datavet.owner.application.port.in.command.CreateOwnerCommand;
 import com.datavet.datavet.shared.application.validation.Validator;
 import com.datavet.datavet.shared.domain.validation.ValidationResult;
 import org.springframework.stereotype.Component;

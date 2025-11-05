@@ -10,5 +10,5 @@ public interface OwnerRepositoryPort extends Repository<Owner, Long> {
     boolean existsByEmail(Email email);
     boolean existsByDni(String dni);
     boolean existsByPhone(Phone phone);
-    boolean existsByLegalNumberAndIdNot(String legalNumber, Long id);
+    boolean existsByDniAndOwnerIdNot(String legalNumber, Long id);
 }

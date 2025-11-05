@@ -1,9 +1,9 @@
 package com.datavet.datavet.owner.application.service;
 
-import com.datavet.datavet.owner.application.port.command.CreateOwnerCommand;
 import com.datavet.datavet.owner.application.port.command.UpdateOwnerCommand;
 import com.datavet.datavet.owner.application.port.in.OwnerUseCase;
 import com.datavet.datavet.owner.application.port.out.OwnerRepositoryPort;
+import com.datavet.datavet.owner.application.port.in.command.CreateOwnerCommand;
 import com.datavet.datavet.owner.application.validation.CreateOwnerCommandValidator;
 import com.datavet.datavet.owner.domain.exception.OwnerAlreadyExistsException;
 import com.datavet.datavet.owner.domain.exception.OwnerValidationException;
@@ -53,17 +53,16 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
         // Use Factory method to create owner with domain events
         Owner owner = Owner.create(
                 null,
-                1L,
+                10L,
                 command.getOwnerName(),
                 command.getOwnerLastName(),
                 command.getOwnerDni(),
                 command.getOwnerPhone(),
                 command.getOwnerEmail(),
-                command.getOwnerPassword(),
                 command.getOwnerAddress()
         );
 
-        // Publish domain events BEFORE sabing (While ew still have them)
+        // Publish domain events BEFORE saving (While ew still have them)
         publishDomainEvent(owner);
 
         Owner savedOwner = ownerRepositoryPort.save(owner);
