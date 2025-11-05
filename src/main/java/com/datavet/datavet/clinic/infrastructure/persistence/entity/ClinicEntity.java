@@ -1,8 +1,8 @@
 package com.datavet.datavet.clinic.infrastructure.persistence.entity;
 
-import com.datavet.datavet.clinic.infrastructure.persistence.converter.AddressConverter;
-import com.datavet.datavet.clinic.infrastructure.persistence.converter.EmailConverter;
-import com.datavet.datavet.clinic.infrastructure.persistence.converter.PhoneConverter;
+import com.datavet.datavet.shared.infrastructure.persistence.converter.AddressConverter;
+import com.datavet.datavet.shared.infrastructure.persistence.converter.EmailConverter;
+import com.datavet.datavet.shared.infrastructure.persistence.converter.PhoneConverter;
 import com.datavet.datavet.shared.domain.valueobject.Address;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import com.datavet.datavet.shared.domain.valueobject.Phone;

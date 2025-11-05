@@ -1,4 +1,4 @@
-package com.datavet.datavet.clinic.infrastructure.persistence.converter;
+package com.datavet.datavet.shared.infrastructure.persistence.converter;
 
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import jakarta.persistence.AttributeConverter;
