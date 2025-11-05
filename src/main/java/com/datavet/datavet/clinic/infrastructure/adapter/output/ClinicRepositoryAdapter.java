@@ -54,7 +54,6 @@ public class ClinicRepositoryAdapter implements ClinicRepositoryPort {
 
     @Override
     public Optional<Clinic> findById(Long id) {
-        System.out.println("Hooooola desde ClinicRepositoryAdapter");
         return repository.findById(id).map(this::toDomain);
     }
 
