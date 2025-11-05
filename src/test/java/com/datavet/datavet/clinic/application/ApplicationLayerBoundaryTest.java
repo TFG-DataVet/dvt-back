@@ -60,10 +60,10 @@ class ApplicationLayerBoundaryTest {
     }
 
     @Test
-    @DisplayName("Application service should implement use case interface")
+    @DisplayName("Application OwnerService should implement use case interface")
     void clinicService_ShouldImplementUseCaseInterface() {
         assertTrue(ClinicUseCase.class.isAssignableFrom(ClinicService.class),
-            "Application service should implement use case interface");
+            "Application OwnerService should implement use case interface");
     }
 
     @Test
@@ -133,11 +133,11 @@ class ApplicationLayerBoundaryTest {
     }
 
     @Test
-    @DisplayName("Application service should be in correct package")
+    @DisplayName("Application OwnerService should be in correct package")
     void applicationService_ShouldBeInCorrectPackage() {
-        assertEquals("com.datavet.datavet.clinic.application.service",
+        assertEquals("com.datavet.datavet.clinic.application.OwnerService",
             ClinicService.class.getPackage().getName(),
-            "Application service should be in application.service package");
+            "Application OwnerService should be in application.OwnerService package");
     }
 
     @Test
