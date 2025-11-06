@@ -103,7 +103,12 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
 
     @Override
     public void deleteOwner(Long id) {
+        Owner owner = getOwnerById(id);
+        owner.delete();
 
+        publishDomainEvent(owner);
+
+        ownerRepositoryPort.deleteById(id);
     }
 
     @Override

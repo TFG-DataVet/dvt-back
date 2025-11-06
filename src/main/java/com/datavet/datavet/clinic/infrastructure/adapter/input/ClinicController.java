@@ -82,7 +82,7 @@ public class ClinicController {
         // Check if clinic exists before deleting
         clinicUseCase.getClinicById(id); // This will throw ClinicNotFoundException if not found
         clinicUseCase.deleteClinic(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(204).build();
     }
 
 
