@@ -1,5 +1,6 @@
 package com.datavet.datavet.owner.infrastructure.adapter.input;
 
+import com.datavet.datavet.clinic.application.port.in.ClinicUseCase;
 import com.datavet.datavet.owner.application.dto.OwnerResponse;
 import com.datavet.datavet.owner.application.mapper.OwnerMapper;
 import com.datavet.datavet.owner.application.port.in.command.CreateOwnerCommand;
@@ -69,5 +70,12 @@ public class OwnerController {
 
         Owner owner = ownerUseCase.updateOwner(command);
         return ResponseEntity.status(200).body(OwnerMapper.toResponse(owner));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        ownerUseCase.getOwnerById(id);
+        ownerUseCase.deleteOwner(id);
+        return ResponseEntity.status(204).build();
     }
 }
