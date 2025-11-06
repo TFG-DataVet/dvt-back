@@ -1,7 +1,7 @@
 package com.datavet.datavet.owner.application.port.in;
 
 import com.datavet.datavet.owner.application.port.in.command.CreateOwnerCommand;
-import com.datavet.datavet.owner.application.port.command.UpdateOwnerCommand;
+import com.datavet.datavet.owner.application.port.in.command.UpdateOwnerCommand;
 import com.datavet.datavet.owner.domain.model.Owner;
 import com.datavet.datavet.shared.application.port.UseCase;
 
