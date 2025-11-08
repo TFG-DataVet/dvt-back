@@ -1,6 +1,8 @@
-package com.datavet.datavet.owner.application.port.command;
+package com.datavet.datavet.owner.application.port.in.command;
 
 import com.datavet.datavet.shared.domain.valueobject.Address;
+import com.datavet.datavet.shared.domain.valueobject.Email;
+import com.datavet.datavet.shared.domain.valueobject.Phone;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
@@ -11,6 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Value
 @Builder
 public class UpdateOwnerCommand {
+    @NotBlank
+    @Size(min = 1, max = 255)
+    private Long ownerID;
+
     @NotBlank
     @Size(max = 50, message = "Owner name is required")
     private String ownerName;
@@ -25,15 +31,11 @@ public class UpdateOwnerCommand {
 
     @NotBlank
     @Size(max= 9, message = "Owner phone is required")
-    private String ownerPhone;
+    private Phone ownerPhone;
 
     @NotBlank
     @Size(max = 70, message = "Owner email is required")
-    private String ownerEmail;
-
-    @NotBlank
-    @Size(max = 30, message = "Owner address is required")
-    private String ownerPassword;
+    private Email ownerEmail;
 
     @NotBlank
     @Size(max = 50, message = "Owner password is required")

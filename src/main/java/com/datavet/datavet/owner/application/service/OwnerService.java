@@ -1,11 +1,14 @@
 package com.datavet.datavet.owner.application.service;
 
+import com.datavet.datavet.clinic.application.port.in.command.UpdateClinicCommand;
 import com.datavet.datavet.clinic.application.port.out.ClinicRepositoryPort;
-import com.datavet.datavet.owner.application.port.command.UpdateOwnerCommand;
+import com.datavet.datavet.clinic.application.validation.UpdateClinicCommandValidator;
+import com.datavet.datavet.owner.application.port.in.command.UpdateOwnerCommand;
 import com.datavet.datavet.owner.application.port.in.OwnerUseCase;
 import com.datavet.datavet.owner.application.port.out.OwnerRepositoryPort;
 import com.datavet.datavet.owner.application.port.in.command.CreateOwnerCommand;
 import com.datavet.datavet.owner.application.validation.CreateOwnerCommandValidator;
+import com.datavet.datavet.owner.application.validation.UpdateOwnerCommandValidator;
 import com.datavet.datavet.owner.domain.exception.OwnerAlreadyExistsException;
 import com.datavet.datavet.owner.domain.exception.OwnerNotFoundException;
 import com.datavet.datavet.owner.domain.exception.OwnerValidationException;
@@ -25,9 +28,8 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
 
     private final OwnerRepositoryPort ownerRepositoryPort;
     private final CreateOwnerCommandValidator createOwnerCommandValidator;
-//    private final UpdateOwnerCommandValidation updateOwnerCommandValidation;
     private final DomainEventPublisher domainEventPublisher;
-    private final ClinicRepositoryPort clinicRepositoryPort;
+    private final UpdateOwnerCommandValidator updateClinicCommandValidator;
 
 
     @Override
@@ -75,7 +77,28 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
 
     @Override
     public Owner updateOwner(UpdateOwnerCommand command) {
-        return null;
+        ValidationResult validationResult = updateClinicCommandValidator.validate(command);
+        if ( validationResult.hasErrors()) {
+            throw new OwnerValidationException(validationResult);
+        }
+
+        Owner existing = ownerRepositoryPort.findById(command.getOwnerID())
+                .orElseThrow(() -> new OwnerNotFoundException(command.getOwnerID()));
+
+        existing.update(
+                command.getOwnerName(),
+                command.getOwnerLastName(),
+                command.getOwnerEmail(),
+                command.getOwnerDni(),
+                command.getOwnerAddress(),
+                command.getOwnerPhone()
+        );
+
+        publishDomainEvent(existing);
+
+        Owner savedOwner = ownerRepositoryPort.save(existing);
+
+        return savedOwner;
     }
 
     @Override

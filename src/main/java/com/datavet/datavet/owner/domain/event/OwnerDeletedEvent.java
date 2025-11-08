@@ -20,6 +20,6 @@ public class OwnerDeletedEvent implements DomainEvent {
 
     @Override
     public LocalDateTime occurredOn() {
-        return null;
+        return occurredOn;
     }
 }
