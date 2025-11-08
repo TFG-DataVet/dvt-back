@@ -1,11 +1,13 @@
 package com.datavet.datavet.owner.application.service;
 
+import com.datavet.datavet.clinic.application.port.out.ClinicRepositoryPort;
 import com.datavet.datavet.owner.application.port.command.UpdateOwnerCommand;
 import com.datavet.datavet.owner.application.port.in.OwnerUseCase;
 import com.datavet.datavet.owner.application.port.out.OwnerRepositoryPort;
 import com.datavet.datavet.owner.application.port.in.command.CreateOwnerCommand;
 import com.datavet.datavet.owner.application.validation.CreateOwnerCommandValidator;
 import com.datavet.datavet.owner.domain.exception.OwnerAlreadyExistsException;
+import com.datavet.datavet.owner.domain.exception.OwnerNotFoundException;
 import com.datavet.datavet.owner.domain.exception.OwnerValidationException;
 import com.datavet.datavet.owner.domain.model.Owner;
 import com.datavet.datavet.shared.application.service.ApplicationService;
@@ -25,6 +27,7 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
     private final CreateOwnerCommandValidator createOwnerCommandValidator;
 //    private final UpdateOwnerCommandValidation updateOwnerCommandValidation;
     private final DomainEventPublisher domainEventPublisher;
+    private final ClinicRepositoryPort clinicRepositoryPort;
 
 
     @Override
@@ -82,12 +85,12 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
 
     @Override
     public Owner getOwnerById(Long id) {
-        return null;
+        return ownerRepositoryPort.findById(id).orElseThrow(() -> new OwnerNotFoundException(id));
     }
 
     @Override
     public List<Owner> getAllOwners() {
-        return List.of();
+        return ownerRepositoryPort.findAll();
     }
 
     private void publishDomainEvent(Owner owner) {

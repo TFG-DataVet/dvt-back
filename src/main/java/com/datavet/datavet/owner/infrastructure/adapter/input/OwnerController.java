@@ -12,10 +12,10 @@ import com.datavet.datavet.shared.domain.valueobject.Phone;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/owner")
@@ -39,4 +39,18 @@ public class OwnerController {
         return ResponseEntity.status(201).body(OwnerMapper.toResponse(owner));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<OwnerResponse> getById(@PathVariable Long id) {
+        Owner owner = ownerUseCase.getOwnerById(id);
+        return ResponseEntity.status(200).body(OwnerMapper.toResponse(owner));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<OwnerResponse>> getAll() {
+        List<Owner> owners = ownerUseCase.getAllOwners();
+        List<OwnerResponse> responses = owners.stream()
+                .map(OwnerMapper::toResponse)
+                .toList();
+        return ResponseEntity.status(200).body(responses);
+    }
 }
