@@ -1,4 +1,4 @@
-package com.datavet.datavet.owner.application.port.command;
+package com.datavet.datavet.owner.application.port.in.command;
 
 import com.datavet.datavet.shared.domain.valueobject.Address;
 import jakarta.validation.constraints.NotBlank;
@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Value
 @Builder
 public class UpdateOwnerCommand {
+    @NotBlank
+    private String ownerID;
+
     @NotBlank
     @Size(max = 50, message = "Owner name is required")
     private String ownerName;

@@ -40,8 +40,8 @@ class DomainArchitectureIntegrationTest {
             "Clinic domain should have domain/exception package");
         
         // Verify application layer structure
-        assertTrue(directoryExists(CLINIC_DOMAIN_PATH + "/application/OwnerService"),
-            "Clinic domain should have application/OwnerService package");
+        assertTrue(directoryExists(CLINIC_DOMAIN_PATH + "/application/service"),
+            "Clinic domain should have application/service package");
         assertTrue(directoryExists(CLINIC_DOMAIN_PATH + "/application/dto"),
             "Clinic domain should have application/dto package");
         assertTrue(directoryExists(CLINIC_DOMAIN_PATH + "/application/port/in"),
@@ -142,10 +142,10 @@ class DomainArchitectureIntegrationTest {
             Clinic.class.getPackage().getName(),
             "Domain model should follow package naming convention");
         
-        // Verify application OwnerService is in correct package
-        assertEquals("com.datavet.datavet.clinic.application.OwnerService",
+        // Verify application service is in correct package
+        assertEquals("com.datavet.datavet.clinic.application.service",
             ClinicService.class.getPackage().getName(),
-            "Application OwnerService should follow package naming convention");
+            "Application service should follow package naming convention");
         
         // Verify infrastructure controller is in correct package
         assertEquals("com.datavet.datavet.clinic.infrastructure.adapter.input",
@@ -162,13 +162,13 @@ class DomainArchitectureIntegrationTest {
         assertDoesNotThrow(() -> Class.forName("com.datavet.datavet.clinic.domain.exception.ClinicNotFoundException"),
             "Domain exceptions should exist");
         assertDoesNotThrow(() -> Class.forName("com.datavet.datavet.clinic.application.service.ClinicService"),
-            "Application OwnerService should exist");
+            "Application service should exist");
         assertDoesNotThrow(() -> Class.forName("com.datavet.datavet.clinic.application.port.in.ClinicUseCase"),
             "Use case interface should exist");
         assertDoesNotThrow(() -> Class.forName("com.datavet.datavet.clinic.infrastructure.adapter.input.ClinicController"),
             "Infrastructure controller should exist");
-        assertDoesNotThrow(() -> Class.forName("com.datavet.datavet.clinic.infrastructure.persistence.entity.ClinicEntity"),
-            "Infrastructure entity should exist");
+        assertDoesNotThrow(() -> Class.forName("com.datavet.datavet.clinic.infrastructure.persistence.entity.ClinicDocument"),
+            "Infrastructure document should exist");
     }
 
     @Test

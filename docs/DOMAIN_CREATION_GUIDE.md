@@ -514,7 +514,7 @@ src/main/java/com/datavet/datavet/clinic/infrastructure/adapter/input/dto/Create
 src/main/java/com/datavet/datavet/clinic/infrastructure/persistence/entity/ClinicEntity.java
 
 # 4. Repositorio JPA - Cómo acceder a datos
-src/main/java/com/datavet/datavet/clinic/infrastructure/persistence/repository/JpaClinicRepositoryAdapter.java
+src/main/java/com/datavet/datavet/clinic/infrastructure/persistence/repository/MongoClinicRepositoryAdapter.java
 
 # 5. Convertidores - Cómo manejar Value Objects en JPA
 src/main/java/com/datavet/datavet/clinic/infrastructure/persistence/converter/EmailConverter.java
@@ -5477,10 +5477,9 @@ import com.datavet.datavet.owner.domain.model.Owner;
 import com.datavet.datavet.shared.domain.valueobject.Address;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
-import com.datavet.datavet.shared.infrastructure.persistence.BaseEntity;
-import com.datavet.datavet.shared.infrastructure.persistence.converter.AddressConverter;
-import com.datavet.datavet.shared.infrastructure.persistence.converter.EmailConverter;
-import com.datavet.datavet.shared.infrastructure.persistence.converter.PhoneConverter;
+import com.datavet.datavet.shared.infrastructure.util.converter.AddressConverter;
+import com.datavet.datavet.shared.infrastructure.util.converter.EmailConverter;
+import com.datavet.datavet.shared.infrastructure.util.converter.PhoneConverter;
 import lombok.*;
 
 import jakarta.persistence.*;
@@ -5676,7 +5675,6 @@ src/main/java/com/datavet/datavet/owner/infrastructure/persistence/repository/Jp
 ```java
 package com.datavet.datavet.owner.infrastructure.persistence.repository;
 
-import com.datavet.datavet.owner.infrastructure.persistence.entity.OwnerEntity;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -5690,13 +5688,13 @@ import java.util.Optional;
 
 /**
  * Repositorio JPA para la entidad OwnerEntity.
- * 
+ *
  * Este repositorio:
  * - Extiende JpaRepository para operaciones CRUD básicas
  * - Define consultas personalizadas con @Query
  * - Proporciona métodos de búsqueda específicos del dominio
  * - Maneja paginación para consultas que pueden retornar muchos resultados
- * 
+ *
  * Operaciones disponibles:
  * - CRUD básico (heredado de JpaRepository)
  * - Búsquedas por email, nombre, número de identificación
@@ -5706,194 +5704,194 @@ import java.util.Optional;
  */
 @Repository
 public interface JpaOwnerRepository extends JpaRepository<OwnerEntity, Long> {
-    
+
     // ========== CONSULTAS POR CAMPOS ÚNICOS ==========
-    
+
     /**
      * Busca un dueño por su email.
      * El email es único, por lo que retorna Optional.
-     * 
+     *
      * @param email Email del dueño a buscar
      * @return Optional con la entidad encontrada, o empty si no existe
      */
     Optional<OwnerEntity> findByEmail(Email email);
-    
+
     /**
      * Busca un dueño por su número de identificación.
      * El número de identificación es único cuando está presente.
-     * 
+     *
      * @param identificationNumber Número de identificación del dueño
      * @return Optional con la entidad encontrada, o empty si no existe
      */
     Optional<OwnerEntity> findByIdentificationNumber(String identificationNumber);
-    
+
     // ========== BÚSQUEDAS POR NOMBRE ==========
-    
+
     /**
      * Busca dueños cuyo nombre contenga el texto especificado (case-insensitive).
      * Busca tanto en firstName como en lastName.
-     * 
+     *
      * @param name Texto a buscar en el nombre
      * @return Lista de entidades que coinciden con el criterio
      */
     @Query("SELECT o FROM OwnerEntity o WHERE " +
-           "LOWER(o.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR " +
-           "LOWER(o.lastName) LIKE LOWER(CONCAT('%', :name, '%'))")
+            "LOWER(o.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR " +
+            "LOWER(o.lastName) LIKE LOWER(CONCAT('%', :name, '%'))")
     List<OwnerEntity> findByNameContaining(@Param("name") String name);
-    
+
     /**
      * Busca dueños por nombre con paginación.
      * Versión paginada de findByNameContaining.
-     * 
+     *
      * @param name Texto a buscar en el nombre
      * @param pageable Información de paginación
      * @return Página de entidades que coinciden con el criterio
      */
     @Query("SELECT o FROM OwnerEntity o WHERE " +
-           "LOWER(o.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR " +
-           "LOWER(o.lastName) LIKE LOWER(CONCAT('%', :name, '%'))")
+            "LOWER(o.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR " +
+            "LOWER(o.lastName) LIKE LOWER(CONCAT('%', :name, '%'))")
     Page<OwnerEntity> findByNameContaining(@Param("name") String name, Pageable pageable);
-    
+
     /**
      * Busca dueños por nombre completo exacto (case-insensitive).
      * Útil para búsquedas más precisas.
-     * 
+     *
      * @param firstName Nombre exacto
      * @param lastName Apellido exacto
      * @return Lista de entidades que coinciden exactamente
      */
     @Query("SELECT o FROM OwnerEntity o WHERE " +
-           "LOWER(o.firstName) = LOWER(:firstName) AND " +
-           "LOWER(o.lastName) = LOWER(:lastName)")
+            "LOWER(o.firstName) = LOWER(:firstName) AND " +
+            "LOWER(o.lastName) = LOWER(:lastName)")
     List<OwnerEntity> findByFirstNameAndLastNameIgnoreCase(
-            @Param("firstName") String firstName, 
+            @Param("firstName") String firstName,
             @Param("lastName") String lastName);
-    
+
     // ========== BÚSQUEDAS POR DIRECCIÓN ==========
-    
+
     /**
      * Busca dueños por ciudad en su dirección.
      * Nota: Requiere que el convertidor de Address permita consultas por ciudad.
      * Esta consulta podría necesitar ajustes según cómo se almacene Address.
-     * 
+     *
      * @param city Ciudad a buscar
      * @return Lista de entidades en la ciudad especificada
      */
     @Query("SELECT o FROM OwnerEntity o WHERE o.address IS NOT NULL AND " +
-           "LOWER(o.address) LIKE LOWER(CONCAT('%', :city, '%'))")
+            "LOWER(o.address) LIKE LOWER(CONCAT('%', :city, '%'))")
     List<OwnerEntity> findByAddressContainingCity(@Param("city") String city);
-    
+
     // ========== VERIFICACIONES DE EXISTENCIA ==========
-    
+
     /**
      * Verifica si existe un dueño con el email especificado.
      * Más eficiente que findByEmail cuando solo necesitas verificar existencia.
-     * 
+     *
      * @param email Email a verificar
      * @return true si existe un dueño con ese email, false en caso contrario
      */
     boolean existsByEmail(Email email);
-    
+
     /**
      * Verifica si existe un dueño con el número de identificación especificado.
-     * 
+     *
      * @param identificationNumber Número de identificación a verificar
      * @return true si existe un dueño con ese número, false en caso contrario
      */
     boolean existsByIdentificationNumber(String identificationNumber);
-    
+
     /**
      * Verifica si existe otro dueño (diferente al ID especificado) con el email dado.
      * Útil para validaciones de actualización.
-     * 
+     *
      * @param email Email a verificar
      * @param ownerId ID del dueño a excluir de la búsqueda
      * @return true si existe otro dueño con ese email, false en caso contrario
      */
     boolean existsByEmailAndOwnerIdNot(Email email, Long ownerId);
-    
+
     /**
      * Verifica si existe otro dueño con el número de identificación dado.
      * Similar a existsByEmailAndOwnerIdNot pero para número de identificación.
-     * 
+     *
      * @param identificationNumber Número de identificación a verificar
      * @param ownerId ID del dueño a excluir de la búsqueda
      * @return true si existe otro dueño con ese número, false en caso contrario
      */
     boolean existsByIdentificationNumberAndOwnerIdNot(String identificationNumber, Long ownerId);
-    
+
     // ========== CONSULTAS DE ESTADÍSTICAS ==========
-    
+
     /**
      * Cuenta dueños por ciudad.
      * Útil para reportes de distribución geográfica.
-     * 
+     *
      * @param city Ciudad a contar
      * @return Número de dueños en la ciudad especificada
      */
     @Query("SELECT COUNT(o) FROM OwnerEntity o WHERE o.address IS NOT NULL AND " +
-           "LOWER(o.address) LIKE LOWER(CONCAT('%', :city, '%'))")
+            "LOWER(o.address) LIKE LOWER(CONCAT('%', :city, '%'))")
     long countByAddressContainingCity(@Param("city") String city);
-    
+
     /**
      * Cuenta dueños que tienen información de contacto completa.
      * Útil para métricas de calidad de datos.
-     * 
+     *
      * @return Número de dueños con email, teléfono y dirección
      */
     @Query("SELECT COUNT(o) FROM OwnerEntity o WHERE " +
-           "o.email IS NOT NULL AND o.phone IS NOT NULL AND o.address IS NOT NULL")
+            "o.email IS NOT NULL AND o.phone IS NOT NULL AND o.address IS NOT NULL")
     long countByCompleteContactInfo();
-    
+
     /**
      * Obtiene estadísticas básicas de dueños.
      * Retorna un objeto con conteos útiles para dashboards.
-     * 
+     *
      * @return Array con [total, conTeléfono, conDirección, conIdentificación]
      */
     @Query("SELECT " +
-           "COUNT(o), " +
-           "SUM(CASE WHEN o.phone IS NOT NULL THEN 1 ELSE 0 END), " +
-           "SUM(CASE WHEN o.address IS NOT NULL THEN 1 ELSE 0 END), " +
-           "SUM(CASE WHEN o.identificationNumber IS NOT NULL THEN 1 ELSE 0 END) " +
-           "FROM OwnerEntity o")
+            "COUNT(o), " +
+            "SUM(CASE WHEN o.phone IS NOT NULL THEN 1 ELSE 0 END), " +
+            "SUM(CASE WHEN o.address IS NOT NULL THEN 1 ELSE 0 END), " +
+            "SUM(CASE WHEN o.identificationNumber IS NOT NULL THEN 1 ELSE 0 END) " +
+            "FROM OwnerEntity o")
     Object[] getOwnerStatistics();
-    
+
     // ========== CONSULTAS DE ORDENAMIENTO ==========
-    
+
     /**
      * Obtiene todos los dueños ordenados por nombre completo.
      * Útil para listados alfabéticos.
-     * 
+     *
      * @return Lista de entidades ordenadas por firstName, lastName
      */
     @Query("SELECT o FROM OwnerEntity o ORDER BY o.firstName, o.lastName")
     List<OwnerEntity> findAllOrderByName();
-    
+
     /**
      * Obtiene dueños recientes (últimos 30 días).
      * Útil para reportes de nuevos clientes.
-     * 
+     *
      * @return Lista de entidades creadas recientemente
      */
     @Query("SELECT o FROM OwnerEntity o WHERE o.createdAt >= CURRENT_DATE - 30 ORDER BY o.createdAt DESC")
     List<OwnerEntity> findRecentOwners();
-    
+
     // ========== CONSULTAS PERSONALIZADAS AVANZADAS ==========
-    
+
     /**
      * Busca dueños con criterios múltiples.
      * Consulta flexible que permite buscar por varios campos a la vez.
-     * 
+     *
      * @param name Texto a buscar en nombre (opcional)
      * @param email Email a buscar (opcional)
      * @param city Ciudad a buscar (opcional)
      * @return Lista de entidades que coinciden con los criterios
      */
     @Query("SELECT o FROM OwnerEntity o WHERE " +
-           "(:name IS NULL OR LOWER(o.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR LOWER(o.lastName) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
-           "(:email IS NULL OR o.email = :email) AND " +
-           "(:city IS NULL OR (o.address IS NOT NULL AND LOWER(o.address) LIKE LOWER(CONCAT('%', :city, '%'))))")
+            "(:name IS NULL OR LOWER(o.firstName) LIKE LOWER(CONCAT('%', :name, '%')) OR LOWER(o.lastName) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+            "(:email IS NULL OR o.email = :email) AND " +
+            "(:city IS NULL OR (o.address IS NOT NULL AND LOWER(o.address) LIKE LOWER(CONCAT('%', :city, '%'))))")
     List<OwnerEntity> findByMultipleCriteria(
             @Param("name") String name,
             @Param("email") Email email,
@@ -5915,7 +5913,6 @@ package com.datavet.datavet.owner.infrastructure.persistence.repository;
 
 import com.datavet.datavet.owner.application.port.out.OwnerRepositoryPort;
 import com.datavet.datavet.owner.domain.model.Owner;
-import com.datavet.datavet.owner.infrastructure.persistence.entity.OwnerEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -5928,14 +5925,14 @@ import java.util.stream.Collectors;
 
 /**
  * Adaptador que implementa el puerto de salida OwnerRepositoryPort usando JPA.
- * 
+ *
  * Este adaptador:
  * - Implementa OwnerRepositoryPort (puerto de salida del dominio)
  * - Usa JpaOwnerRepository para acceso a datos
  * - Convierte entre modelos de dominio (Owner) y entidades JPA (OwnerEntity)
  * - Maneja la lógica de persistencia y consultas
  * - Proporciona logging para operaciones importantes
- * 
+ *
  * Responsabilidades:
  * - Traducir llamadas del dominio a operaciones JPA
  * - Convertir entidades JPA a modelos de dominio y viceversa
@@ -5946,15 +5943,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class JpaOwnerRepositoryAdapter implements OwnerRepositoryPort {
-    
+
     private final JpaOwnerRepository jpaRepository;
-    
+
     // ========== OPERACIONES BÁSICAS CRUD ==========
-    
+
     @Override
     public Owner save(Owner owner) {
         log.debug("Saving owner: {}", owner.getFullName());
-        
+
         OwnerEntity entity;
         if (owner.getId() == null) {
             // Nuevo dueño - crear entidad
@@ -5967,233 +5964,233 @@ public class JpaOwnerRepositoryAdapter implements OwnerRepositoryPort {
             entity.updateFromDomainModel(owner);
             log.debug("Updating existing owner entity with ID: {}", owner.getId());
         }
-        
+
         OwnerEntity savedEntity = jpaRepository.save(entity);
         Owner savedOwner = savedEntity.toDomainModel();
-        
+
         log.debug("Owner saved successfully with ID: {}", savedOwner.getId());
         return savedOwner;
     }
-    
+
     @Override
     public Optional<Owner> findById(Long id) {
         log.debug("Finding owner by ID: {}", id);
-        
+
         Optional<OwnerEntity> entity = jpaRepository.findById(id);
         Optional<Owner> owner = entity.map(OwnerEntity::toDomainModel);
-        
+
         if (owner.isPresent()) {
             log.debug("Owner found with ID: {}", id);
         } else {
             log.debug("Owner not found with ID: {}", id);
         }
-        
+
         return owner;
     }
-    
+
     @Override
     public List<Owner> findAll() {
         log.debug("Finding all owners");
-        
+
         List<OwnerEntity> entities = jpaRepository.findAll();
         List<Owner> owners = entities.stream()
                 .map(OwnerEntity::toDomainModel)
                 .collect(Collectors.toList());
-        
+
         log.debug("Found {} owners", owners.size());
         return owners;
     }
-    
+
     @Override
     public void deleteById(Long id) {
         log.info("Deleting owner with ID: {}", id);
-        
+
         if (!jpaRepository.existsById(id)) {
             log.warn("Attempted to delete non-existent owner with ID: {}", id);
             return;
         }
-        
+
         jpaRepository.deleteById(id);
         log.info("Owner deleted successfully with ID: {}", id);
     }
-    
+
     @Override
     public boolean existsById(Long id) {
         log.debug("Checking if owner exists with ID: {}", id);
-        
+
         boolean exists = jpaRepository.existsById(id);
-        
+
         log.debug("Owner exists with ID {}: {}", id, exists);
         return exists;
     }
-    
+
     @Override
     public long count() {
         log.debug("Counting total owners");
-        
+
         long count = jpaRepository.count();
-        
+
         log.debug("Total owners count: {}", count);
         return count;
     }
-    
+
     // ========== CONSULTAS ESPECÍFICAS DEL DOMINIO ==========
-    
+
     @Override
     public Optional<Owner> findByEmail(String email) {
         log.debug("Finding owner by email: {}", email);
-        
+
         // Convertir string a Value Object Email para la consulta
         Email emailVO = Email.of(email);
         Optional<OwnerEntity> entity = jpaRepository.findByEmail(emailVO);
         Optional<Owner> owner = entity.map(OwnerEntity::toDomainModel);
-        
+
         if (owner.isPresent()) {
             log.debug("Owner found with email: {}", email);
         } else {
             log.debug("Owner not found with email: {}", email);
         }
-        
+
         return owner;
     }
-    
+
     @Override
     public List<Owner> findByNameContaining(String name) {
         log.debug("Finding owners with name containing: {}", name);
-        
+
         List<OwnerEntity> entities = jpaRepository.findByNameContaining(name);
         List<Owner> owners = entities.stream()
                 .map(OwnerEntity::toDomainModel)
                 .collect(Collectors.toList());
-        
+
         log.debug("Found {} owners with name containing: {}", owners.size(), name);
         return owners;
     }
-    
+
     @Override
     public Optional<Owner> findByIdentificationNumber(String identificationNumber) {
         log.debug("Finding owner by identification number: {}", identificationNumber);
-        
+
         Optional<OwnerEntity> entity = jpaRepository.findByIdentificationNumber(identificationNumber);
         Optional<Owner> owner = entity.map(OwnerEntity::toDomainModel);
-        
+
         if (owner.isPresent()) {
             log.debug("Owner found with identification number: {}", identificationNumber);
         } else {
             log.debug("Owner not found with identification number: {}", identificationNumber);
         }
-        
+
         return owner;
     }
-    
+
     @Override
     public List<Owner> findByAddressCity(String city) {
         log.debug("Finding owners by city: {}", city);
-        
+
         List<OwnerEntity> entities = jpaRepository.findByAddressContainingCity(city);
         List<Owner> owners = entities.stream()
                 .map(OwnerEntity::toDomainModel)
                 .collect(Collectors.toList());
-        
+
         log.debug("Found {} owners in city: {}", owners.size(), city);
         return owners;
     }
-    
+
     // ========== OPERACIONES DE VERIFICACIÓN ==========
-    
+
     @Override
     public boolean existsByEmail(String email) {
         log.debug("Checking if owner exists with email: {}", email);
-        
+
         Email emailVO = Email.of(email);
         boolean exists = jpaRepository.existsByEmail(emailVO);
-        
+
         log.debug("Owner exists with email {}: {}", email, exists);
         return exists;
     }
-    
+
     @Override
     public boolean existsByIdentificationNumber(String identificationNumber) {
         log.debug("Checking if owner exists with identification number: {}", identificationNumber);
-        
+
         boolean exists = jpaRepository.existsByIdentificationNumber(identificationNumber);
-        
+
         log.debug("Owner exists with identification number {}: {}", identificationNumber, exists);
         return exists;
     }
-    
+
     @Override
     public boolean existsByEmailAndIdNot(String email, Long excludeOwnerId) {
         log.debug("Checking if another owner exists with email: {} (excluding ID: {})", email, excludeOwnerId);
-        
+
         Email emailVO = Email.of(email);
         boolean exists = jpaRepository.existsByEmailAndOwnerIdNot(emailVO, excludeOwnerId);
-        
+
         log.debug("Another owner exists with email {} (excluding ID {}): {}", email, excludeOwnerId, exists);
         return exists;
     }
-    
+
     @Override
     public boolean existsByIdentificationNumberAndIdNot(String identificationNumber, Long excludeOwnerId) {
-        log.debug("Checking if another owner exists with identification number: {} (excluding ID: {})", 
-                 identificationNumber, excludeOwnerId);
-        
+        log.debug("Checking if another owner exists with identification number: {} (excluding ID: {})",
+                identificationNumber, excludeOwnerId);
+
         boolean exists = jpaRepository.existsByIdentificationNumberAndOwnerIdNot(identificationNumber, excludeOwnerId);
-        
-        log.debug("Another owner exists with identification number {} (excluding ID {}): {}", 
-                 identificationNumber, excludeOwnerId, exists);
+
+        log.debug("Another owner exists with identification number {} (excluding ID {}): {}",
+                identificationNumber, excludeOwnerId, exists);
         return exists;
     }
-    
+
     // ========== OPERACIONES DE PAGINACIÓN ==========
-    
+
     @Override
     public List<Owner> findAll(int page, int size) {
         log.debug("Finding owners with pagination - page: {}, size: {}", page, size);
-        
+
         Pageable pageable = PageRequest.of(page, size);
         List<OwnerEntity> entities = jpaRepository.findAll(pageable).getContent();
         List<Owner> owners = entities.stream()
                 .map(OwnerEntity::toDomainModel)
                 .collect(Collectors.toList());
-        
+
         log.debug("Found {} owners on page {} (size: {})", owners.size(), page, size);
         return owners;
     }
-    
+
     @Override
     public List<Owner> findByNameContaining(String name, int page, int size) {
         log.debug("Finding owners by name with pagination - name: {}, page: {}, size: {}", name, page, size);
-        
+
         Pageable pageable = PageRequest.of(page, size);
         List<OwnerEntity> entities = jpaRepository.findByNameContaining(name, pageable).getContent();
         List<Owner> owners = entities.stream()
                 .map(OwnerEntity::toDomainModel)
                 .collect(Collectors.toList());
-        
-        log.debug("Found {} owners with name containing '{}' on page {} (size: {})", 
-                 owners.size(), name, page, size);
+
+        log.debug("Found {} owners with name containing '{}' on page {} (size: {})",
+                owners.size(), name, page, size);
         return owners;
     }
-    
+
     // ========== OPERACIONES DE ESTADÍSTICAS ==========
-    
+
     @Override
     public long countByAddressCity(String city) {
         log.debug("Counting owners by city: {}", city);
-        
+
         long count = jpaRepository.countByAddressContainingCity(city);
-        
+
         log.debug("Owners count in city {}: {}", city, count);
         return count;
     }
-    
+
     @Override
     public long countByCompleteContactInfo() {
         log.debug("Counting owners with complete contact info");
-        
+
         long count = jpaRepository.countByCompleteContactInfo();
-        
+
         log.debug("Owners with complete contact info: {}", count);
         return count;
     }
@@ -6548,13 +6545,12 @@ package com.datavet.datavet.owner.infrastructure.config;
 
 import com.datavet.datavet.owner.application.port.out.OwnerRepositoryPort;
 import com.datavet.datavet.owner.infrastructure.persistence.repository.JpaOwnerRepository;
-import com.datavet.datavet.owner.infrastructure.persistence.repository.JpaOwnerRepositoryAdapter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * Configuración específica del dominio Owner.
- * 
+ *
  * Normalmente no necesitas esta clase porque Spring Boot
  * maneja la inyección automáticamente, pero puede ser útil para:
  * - Configuraciones complejas
@@ -6563,7 +6559,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class OwnerConfig {
-    
+
     /**
      * Ejemplo de bean personalizado (normalmente no necesario).
      * Spring Boot ya maneja esto automáticamente.
@@ -6572,7 +6568,7 @@ public class OwnerConfig {
     public OwnerRepositoryPort ownerRepositoryPort(JpaOwnerRepository jpaRepository) {
         return new JpaOwnerRepositoryAdapter(jpaRepository);
     }
-    
+
     // Otros beans personalizados si son necesarios...
 }
 ```
@@ -8292,7 +8288,6 @@ src/test/java/com/datavet/datavet/owner/infrastructure/persistence/repository/Ow
 ```java
 package com.datavet.datavet.owner.infrastructure.persistence.repository;
 
-import com.datavet.datavet.owner.infrastructure.persistence.entity.OwnerEntity;
 import com.datavet.datavet.shared.application.port.Repository;
 import com.datavet.datavet.shared.domain.valueobject.Address;
 import com.datavet.datavet.shared.domain.valueobject.Email;
@@ -8335,7 +8330,7 @@ class OwnerRepositoryIntegrationTest {
         testAddress = new Address("Av. Lima 123", "Lima", "15001");
         testEmail = new Email("juan.perez@example.com");
         testPhone = new Phone("+51987654321");
-        
+
         testOwner = OwnerEntity.builder()
                 .firstName("Juan")
                 .lastName("Pérez")
@@ -8359,34 +8354,34 @@ class OwnerRepositoryIntegrationTest {
     void repository_ShouldSaveAndRetrieveOwnerWithValueObjects() {
         // Save the owner
         OwnerEntity savedOwner = repository.save(testOwner);
-        
+
         assertNotNull(savedOwner, "Saved owner should not be null");
         assertNotNull(savedOwner.getOwnerId(), "Saved owner should have an ID");
-        
+
         // Flush to ensure database persistence
         entityManager.flush();
         entityManager.clear();
-        
+
         // Retrieve the owner
         Optional<OwnerEntity> retrievedOwner = repository.findById(savedOwner.getOwnerId());
-        
+
         assertTrue(retrievedOwner.isPresent(), "Retrieved owner should be present");
-        
+
         OwnerEntity owner = retrievedOwner.get();
         assertEquals("Juan", owner.getFirstName());
         assertEquals("Pérez", owner.getLastName());
         assertEquals("12345678", owner.getIdentificationNumber());
         assertEquals("Cliente VIP", owner.getNotes());
-        
+
         // Verify value objects are properly persisted and retrieved
         assertNotNull(owner.getAddress(), "Address should not be null");
         assertEquals("Av. Lima 123", owner.getAddress().getStreet());
         assertEquals("Lima", owner.getAddress().getCity());
         assertEquals("15001", owner.getAddress().getPostalCode());
-        
+
         assertNotNull(owner.getEmail(), "Email should not be null");
         assertEquals("juan.perez@example.com", owner.getEmail().getValue());
-        
+
         assertNotNull(owner.getPhone(), "Phone should not be null");
         assertEquals("+51987654321", owner.getPhone().getValue());
     }
@@ -8398,10 +8393,10 @@ class OwnerRepositoryIntegrationTest {
         OwnerEntity savedOwner = repository.save(testOwner);
         entityManager.flush();
         entityManager.clear();
-        
+
         // Find by email
         Optional<OwnerEntity> foundOwner = repository.findByEmail(testEmail);
-        
+
         assertTrue(foundOwner.isPresent(), "Owner should be found by email");
         assertEquals(savedOwner.getOwnerId(), foundOwner.get().getOwnerId());
         assertEquals("juan.perez@example.com", foundOwner.get().getEmail().getValue());
@@ -8412,11 +8407,11 @@ class OwnerRepositoryIntegrationTest {
     void repository_ShouldCheckIfOwnerExistsByEmail() {
         // Initially should not exist
         assertFalse(repository.existsByEmail(testEmail), "Owner should not exist initially");
-        
+
         // Save the owner
         repository.save(testOwner);
         entityManager.flush();
-        
+
         // Now should exist
         assertTrue(repository.existsByEmail(testEmail), "Owner should exist after saving");
     }
@@ -8428,10 +8423,10 @@ class OwnerRepositoryIntegrationTest {
         OwnerEntity savedOwner = repository.save(testOwner);
         entityManager.flush();
         entityManager.clear();
-        
+
         // Find by identification number
         Optional<OwnerEntity> foundOwner = repository.findByIdentificationNumber("12345678");
-        
+
         assertTrue(foundOwner.isPresent(), "Owner should be found by identification number");
         assertEquals(savedOwner.getOwnerId(), foundOwner.get().getOwnerId());
         assertEquals("12345678", foundOwner.get().getIdentificationNumber());
@@ -8441,16 +8436,16 @@ class OwnerRepositoryIntegrationTest {
     @DisplayName("Should check if owner exists by identification number")
     void repository_ShouldCheckIfOwnerExistsByIdentificationNumber() {
         // Initially should not exist
-        assertFalse(repository.existsByIdentificationNumber("12345678"), 
-                   "Owner should not exist initially");
-        
+        assertFalse(repository.existsByIdentificationNumber("12345678"),
+                "Owner should not exist initially");
+
         // Save the owner
         repository.save(testOwner);
         entityManager.flush();
-        
+
         // Now should exist
-        assertTrue(repository.existsByIdentificationNumber("12345678"), 
-                  "Owner should exist after saving");
+        assertTrue(repository.existsByIdentificationNumber("12345678"),
+                "Owner should exist after saving");
     }
 
     @Test
@@ -8466,14 +8461,14 @@ class OwnerRepositoryIntegrationTest {
                 .identificationNumber("87654321")
                 .notes("Cliente Premium")
                 .build();
-        
+
         repository.save(testOwner);
         repository.save(owner2);
         entityManager.flush();
-        
+
         // Find all
         List<OwnerEntity> allOwners = repository.findAll();
-        
+
         assertEquals(2, allOwners.size(), "Should find exactly 2 owners");
         assertTrue(allOwners.stream().anyMatch(o -> "Juan".equals(o.getFirstName())));
         assertTrue(allOwners.stream().anyMatch(o -> "María".equals(o.getFirstName())));
@@ -8486,14 +8481,14 @@ class OwnerRepositoryIntegrationTest {
         OwnerEntity savedOwner = repository.save(testOwner);
         Long ownerId = savedOwner.getOwnerId();
         entityManager.flush();
-        
+
         // Verify it exists
         assertTrue(repository.findById(ownerId).isPresent(), "Owner should exist before deletion");
-        
+
         // Delete the owner
         repository.deleteById(ownerId);
         entityManager.flush();
-        
+
         // Verify it's deleted
         assertFalse(repository.findById(ownerId).isPresent(), "Owner should not exist after deletion");
     }
@@ -8511,17 +8506,17 @@ class OwnerRepositoryIntegrationTest {
                 .identificationNumber(null) // Optional field
                 .notes(null) // Optional field
                 .build();
-        
+
         // Save and retrieve
         OwnerEntity savedOwner = repository.save(ownerWithNulls);
         entityManager.flush();
         entityManager.clear();
-        
+
         Optional<OwnerEntity> retrievedOwner = repository.findById(savedOwner.getOwnerId());
-        
+
         assertTrue(retrievedOwner.isPresent());
         OwnerEntity owner = retrievedOwner.get();
-        
+
         assertEquals("Test", owner.getFirstName());
         assertEquals("User", owner.getLastName());
         assertNotNull(owner.getEmail());
@@ -8538,19 +8533,19 @@ class OwnerRepositoryIntegrationTest {
         // Save using shared interface method
         OwnerEntity savedOwner = repository.save(testOwner);
         assertNotNull(savedOwner.getOwnerId());
-        
+
         // Find by ID using shared interface method
         Optional<OwnerEntity> foundOwner = repository.findById(savedOwner.getOwnerId());
         assertTrue(foundOwner.isPresent());
-        
+
         // Find all using shared interface method
         List<OwnerEntity> allOwners = repository.findAll();
         assertEquals(1, allOwners.size());
-        
+
         // Delete by ID using shared interface method
         repository.deleteById(savedOwner.getOwnerId());
         entityManager.flush();
-        
+
         // Verify deletion using shared interface method
         assertFalse(repository.findById(savedOwner.getOwnerId()).isPresent());
     }

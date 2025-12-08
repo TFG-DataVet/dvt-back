@@ -1,16 +1,14 @@
 package com.datavet.datavet.clinic.infrastructure.persistence.repository;
 
-import com.datavet.datavet.clinic.infrastructure.persistence.entity.ClinicEntity;
-import com.datavet.datavet.clinic.infrastructure.persistence.repository.JpaClinicRepositoryAdapter;
-import com.datavet.datavet.shared.application.port.Repository;
+import com.datavet.datavet.clinic.infrastructure.persistence.entity.ClinicDocument;
 import com.datavet.datavet.shared.domain.valueobject.Address;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.BeforeEach;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.junit.jupiter.api.AfterEach;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -20,33 +18,32 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Integration tests for JpaClinicRepositoryAdapter shared repository implementation.
- * Verifies that the repository properly implements the shared Repository interface.
+ * Integration tests for MongoClinicRepositoryAdapter MongoDB repository implementation.
+ * Verifies that the repository properly works with MongoDB.
  * Requirements: 5.3
  */
-@DataJpaTest
+@DataMongoTest
 @ActiveProfiles("test")
 class ClinicRepositoryIntegrationTest {
 
     @Autowired
-    private TestEntityManager entityManager;
+    private MongoClinicRepositoryAdapter repository;
 
-    @Autowired
-    private JpaClinicRepositoryAdapter repository;
-
-    private ClinicEntity testClinic;
+    private ClinicDocument testClinic;
     private Address testAddress;
     private Email testEmail;
     private Phone testPhone;
 
     @BeforeEach
     void setUp() {
+        repository.deleteAll();
+        
         testAddress = new Address("123 Test St", "Test City", "12345");
         testEmail = new Email("test@clinic.com");
         testPhone = new Phone("+1234567890");
         
-        testClinic = ClinicEntity.builder()
-                .clinicName("Test Clinic")
+        testClinic = ClinicDocument.builder()
+                .name("Test Clinic")
                 .legalName("Test Clinic Legal")
                 .legalNumber("TEST123")
                 .address(testAddress)
@@ -57,33 +54,27 @@ class ClinicRepositoryIntegrationTest {
                 .build();
     }
 
-    @Test
-    @DisplayName("Repository should implement shared Repository interface")
-    void repository_ShouldImplementSharedRepositoryInterface() {
-        assertTrue(Repository.class.isAssignableFrom(JpaClinicRepositoryAdapter.class),
-                "JpaClinicRepositoryAdapter should implement Repository interface");
+    @AfterEach
+    void tearDown() {
+        repository.deleteAll();
     }
 
     @Test
-    @DisplayName("Repository should save and retrieve clinic entity with value objects")
+    @DisplayName("Repository should save and retrieve clinic document with value objects")
     void repository_ShouldSaveAndRetrieveClinicWithValueObjects() {
         // Save the clinic
-        ClinicEntity savedClinic = repository.save(testClinic);
+        ClinicDocument savedClinic = repository.save(testClinic);
         
         assertNotNull(savedClinic, "Saved clinic should not be null");
-        assertNotNull(savedClinic.getClinicId(), "Saved clinic should have an ID");
-        
-        // Flush to ensure database persistence
-        entityManager.flush();
-        entityManager.clear();
+        assertNotNull(savedClinic.getId(), "Saved clinic should have an ID");
         
         // Retrieve the clinic
-        Optional<ClinicEntity> retrievedClinic = repository.findById(savedClinic.getClinicId());
+        Optional<ClinicDocument> retrievedClinic = repository.findById(savedClinic.getId());
         
         assertTrue(retrievedClinic.isPresent(), "Retrieved clinic should be present");
         
-        ClinicEntity clinic = retrievedClinic.get();
-        assertEquals("Test Clinic", clinic.getClinicName());
+        ClinicDocument clinic = retrievedClinic.get();
+        assertEquals("Test Clinic", clinic.getName());
         assertEquals("Test Clinic Legal", clinic.getLegalName());
         assertEquals("TEST123", clinic.getLegalNumber());
         
@@ -104,10 +95,10 @@ class ClinicRepositoryIntegrationTest {
     @DisplayName("Repository should handle findAll operation")
     void repository_ShouldHandleFindAllOperation() {
         // Save multiple clinics
-        ClinicEntity clinic1 = repository.save(testClinic);
+        repository.save(testClinic);
         
-        ClinicEntity clinic2 = ClinicEntity.builder()
-                .clinicName("Second Clinic")
+        ClinicDocument clinic2 = ClinicDocument.builder()
+                .name("Second Clinic")
                 .legalName("Second Legal")
                 .legalNumber("SECOND123")
                 .address(new Address("456 Second St", "Second City", "67890"))
@@ -116,21 +107,19 @@ class ClinicRepositoryIntegrationTest {
                 .suscriptionStatus("INACTIVE")
                 .build();
         
-        ClinicEntity savedClinic2 = repository.save(clinic2);
-        
-        entityManager.flush();
+        repository.save(clinic2);
         
         // Retrieve all clinics
-        List<ClinicEntity> allClinics = repository.findAll();
+        List<ClinicDocument> allClinics = repository.findAll();
         
         assertNotNull(allClinics, "All clinics list should not be null");
-        assertTrue(allClinics.size() >= 2, "Should have at least 2 clinics");
+        assertEquals(2, allClinics.size(), "Should have exactly 2 clinics");
         
         // Verify both clinics are in the list
         boolean hasFirstClinic = allClinics.stream()
-                .anyMatch(c -> "Test Clinic".equals(c.getClinicName()));
+                .anyMatch(c -> "Test Clinic".equals(c.getName()));
         boolean hasSecondClinic = allClinics.stream()
-                .anyMatch(c -> "Second Clinic".equals(c.getClinicName()));
+                .anyMatch(c -> "Second Clinic".equals(c.getName()));
         
         assertTrue(hasFirstClinic, "Should contain first clinic");
         assertTrue(hasSecondClinic, "Should contain second clinic");
@@ -140,15 +129,14 @@ class ClinicRepositoryIntegrationTest {
     @DisplayName("Repository should handle existsById operation")
     void repository_ShouldHandleExistsByIdOperation() {
         // Save clinic
-        ClinicEntity savedClinic = repository.save(testClinic);
-        entityManager.flush();
+        ClinicDocument savedClinic = repository.save(testClinic);
         
         // Test exists
-        boolean exists = repository.existsById(savedClinic.getClinicId());
+        boolean exists = repository.existsById(savedClinic.getId());
         assertTrue(exists, "Clinic should exist");
         
         // Test non-existent ID
-        boolean notExists = repository.existsById(999L);
+        boolean notExists = repository.existsById("non-existent-id");
         assertFalse(notExists, "Non-existent clinic should not exist");
     }
 
@@ -156,22 +144,19 @@ class ClinicRepositoryIntegrationTest {
     @DisplayName("Repository should handle deleteById operation")
     void repository_ShouldHandleDeleteByIdOperation() {
         // Save clinic
-        ClinicEntity savedClinic = repository.save(testClinic);
-        entityManager.flush();
-        
-        Long clinicId = savedClinic.getClinicId();
+        ClinicDocument savedClinic = repository.save(testClinic);
+        String clinicId = savedClinic.getId();
         
         // Verify it exists
         assertTrue(repository.existsById(clinicId), "Clinic should exist before deletion");
         
         // Delete clinic
         repository.deleteById(clinicId);
-        entityManager.flush();
         
         // Verify it's deleted
         assertFalse(repository.existsById(clinicId), "Clinic should not exist after deletion");
         
-        Optional<ClinicEntity> deletedClinic = repository.findById(clinicId);
+        Optional<ClinicDocument> deletedClinic = repository.findById(clinicId);
         assertFalse(deletedClinic.isPresent(), "Deleted clinic should not be found");
     }
 
@@ -180,7 +165,6 @@ class ClinicRepositoryIntegrationTest {
     void repository_ShouldHandleDomainSpecificQueriesWithEmail() {
         // Save clinic
         repository.save(testClinic);
-        entityManager.flush();
         
         // Test existsByEmail with Email value object
         boolean existsByEmail = repository.existsByEmail(testEmail);
@@ -197,7 +181,6 @@ class ClinicRepositoryIntegrationTest {
     void repository_ShouldHandleDomainSpecificQueriesWithLegalNumber() {
         // Save clinic
         repository.save(testClinic);
-        entityManager.flush();
         
         // Test existsByLegalNumber
         boolean existsByLegalNumber = repository.existsByLegalNumber("TEST123");
@@ -212,24 +195,22 @@ class ClinicRepositoryIntegrationTest {
     @DisplayName("Repository should handle exclusion queries for updates")
     void repository_ShouldHandleExclusionQueriesForUpdates() {
         // Save clinic
-        ClinicEntity savedClinic = repository.save(testClinic);
-        entityManager.flush();
+        ClinicDocument savedClinic = repository.save(testClinic);
+        String clinicId = savedClinic.getId();
         
-        Long clinicId = savedClinic.getClinicId();
-        
-        // Test existsByEmailAndClinicIdNot - should return false for same clinic
-        boolean existsByEmailExcludingSelf = repository.existsByEmailAndClinicIdNot(testEmail, clinicId);
+        // Test existsByEmailAndIdNot - should return false for same clinic
+        boolean existsByEmailExcludingSelf = repository.existsByEmailAndIdNot(testEmail, clinicId);
         assertFalse(existsByEmailExcludingSelf, 
                 "Should not find email conflict when excluding the same clinic");
         
-        // Test existsByLegalNumberAndClinicIdNot - should return false for same clinic
-        boolean existsByLegalNumberExcludingSelf = repository.existsByLegalNumberAndClinicIdNot("TEST123", clinicId);
+        // Test existsByLegalNumberAndIdNot - should return false for same clinic
+        boolean existsByLegalNumberExcludingSelf = repository.existsByLegalNumberAndIdNot("TEST123", clinicId);
         assertFalse(existsByLegalNumberExcludingSelf, 
                 "Should not find legal number conflict when excluding the same clinic");
         
         // Save another clinic with different email and legal number
-        ClinicEntity anotherClinic = ClinicEntity.builder()
-                .clinicName("Another Clinic")
+        ClinicDocument anotherClinic = ClinicDocument.builder()
+                .name("Another Clinic")
                 .legalName("Another Legal")
                 .legalNumber("ANOTHER123")
                 .address(new Address("789 Another St", "Another City", "99999"))
@@ -238,36 +219,32 @@ class ClinicRepositoryIntegrationTest {
                 .suscriptionStatus("ACTIVE")
                 .build();
         
-        ClinicEntity savedAnotherClinic = repository.save(anotherClinic);
-        entityManager.flush();
+        repository.save(anotherClinic);
         
         // Now test exclusion with the other clinic's email - should return true
-        boolean existsByOtherEmailExcludingSelf = repository.existsByEmailAndClinicIdNot(
+        boolean existsByOtherEmailExcludingSelf = repository.existsByEmailAndIdNot(
                 new Email("another@clinic.com"), clinicId);
         assertTrue(existsByOtherEmailExcludingSelf, 
                 "Should find email conflict when checking other clinic's email");
     }
 
     @Test
-    @DisplayName("Repository should properly handle BaseEntity audit fields")
-    void repository_ShouldHandleBaseEntityAuditFields() {
+    @DisplayName("Repository should properly handle MongoDB audit fields")
+    void repository_ShouldHandleMongoAuditFields() {
         // Save clinic
-        ClinicEntity savedClinic = repository.save(testClinic);
-        entityManager.flush();
-        entityManager.clear();
+        ClinicDocument savedClinic = repository.save(testClinic);
         
         // Retrieve and verify audit fields
-        Optional<ClinicEntity> retrievedClinic = repository.findById(savedClinic.getClinicId());
+        Optional<ClinicDocument> retrievedClinic = repository.findById(savedClinic.getId());
         assertTrue(retrievedClinic.isPresent(), "Clinic should be found");
         
-        ClinicEntity clinic = retrievedClinic.get();
+        ClinicDocument clinic = retrievedClinic.get();
         assertNotNull(clinic.getCreatedAt(), "CreatedAt should be set");
         assertNotNull(clinic.getUpdatedAt(), "UpdatedAt should be set");
         
         // Update the clinic
-        clinic.setClinicName("Updated Clinic Name");
-        ClinicEntity updatedClinic = repository.save(clinic);
-        entityManager.flush();
+        clinic.setName("Updated Clinic Name");
+        ClinicDocument updatedClinic = repository.save(clinic);
         
         assertNotNull(updatedClinic.getUpdatedAt(), "UpdatedAt should be updated");
     }

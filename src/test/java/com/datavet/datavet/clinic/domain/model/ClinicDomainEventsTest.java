@@ -21,7 +21,7 @@ class ClinicDomainEventsTest {
     @DisplayName("Should raise ClinicCreatedEvent when clinic is created")
     void shouldRaiseClinicCreatedEventWhenClinicIsCreated() {
         // Given
-        Long clinicId = 1L;
+        String clinicId = "DataVet";
         String clinicName = "Test Clinic";
         String legalName = "Test Legal Name";
         String legalNumber = "123456789";
@@ -58,7 +58,7 @@ class ClinicDomainEventsTest {
         Phone originalPhone = new Phone("+1234567890");
         Email originalEmail = new Email("test@example.com");
         
-        Clinic clinic = Clinic.create(1L, "Original Clinic", "Original Legal Name", "123456789",
+        Clinic clinic = Clinic.create("ClinicId", "Original Clinic", "Original Legal Name", "123456789",
                 originalAddress, originalPhone, originalEmail, "http://example.com/logo.png", "ACTIVE");
         
         // Clear the creation event
@@ -94,7 +94,7 @@ class ClinicDomainEventsTest {
         Phone phone = new Phone("+1234567890");
         Email email = new Email("test@example.com");
         
-        Clinic clinic = Clinic.create(1L, "Test Clinic", "Test Legal Name", "123456789",
+        Clinic clinic = Clinic.create("ClinicId", "Test Clinic", "Test Legal Name", "123456789",
                 address, phone, email, "http://example.com/logo.png", "ACTIVE");
         
         // Clear the creation event
@@ -125,7 +125,7 @@ class ClinicDomainEventsTest {
         Phone phone = new Phone("+1234567890");
         Email email = new Email("test@example.com");
         
-        Clinic clinic = Clinic.create(1L, "Test Clinic", "Test Legal Name", "123456789",
+        Clinic clinic = Clinic.create("ClinicId", "Test Clinic", "Test Legal Name", "123456789",
                 address, phone, email, "http://example.com/logo.png", "ACTIVE");
 
         // When & Then
@@ -137,12 +137,12 @@ class ClinicDomainEventsTest {
                 "Clinic should implement Entity interface");
         
         // Test entity identity consistency
-        Clinic sameClinic = Clinic.create(1L, "Different Name", "Different Legal Name", "987654321",
+        Clinic sameClinic = Clinic.create("ClinicId", "Different Name", "Different Legal Name", "987654321",
                 address, phone, email, "http://example.com/different-logo.png", "PREMIUM");
         assertEquals(clinic.getId(), sameClinic.getId(), "Clinics with same ID should have same identity");
         
         // Test different entity identity
-        Clinic differentClinic = Clinic.create(2L, "Test Clinic", "Test Legal Name", "123456789",
+        Clinic differentClinic = Clinic.create("ClinicId2", "Test Clinic", "Test Legal Name", "123456789",
                 address, phone, email, "http://example.com/logo.png", "ACTIVE");
         assertNotEquals(clinic.getId(), differentClinic.getId(), "Clinics with different IDs should have different identity");
     }
@@ -156,7 +156,7 @@ class ClinicDomainEventsTest {
         Email email = new Email("test@example.com");
         
         // When
-        Clinic clinic = Clinic.create(1L, "Test Clinic", "Test Legal Name", "123456789",
+        Clinic clinic = Clinic.create("ClinicId", "Test Clinic", "Test Legal Name", "123456789",
                 address, phone, email, "http://example.com/logo.png", "ACTIVE");
 
         // Then
@@ -180,7 +180,7 @@ class ClinicDomainEventsTest {
         Phone originalPhone = new Phone("+1234567890");
         Email originalEmail = new Email("test@example.com");
         
-        Clinic clinic = Clinic.create(1L, "Test Clinic", "Test Legal Name", "123456789",
+        Clinic clinic = Clinic.create("ClinicId", "Test Clinic", "Test Legal Name", "123456789",
                 originalAddress, originalPhone, originalEmail, "http://example.com/logo.png", "ACTIVE");
         
         // When
@@ -214,7 +214,7 @@ class ClinicDomainEventsTest {
         Email email = new Email("test@example.com");
         
         // When
-        Clinic clinic = Clinic.create(1L, "Test Clinic", "Test Legal Name", "123456789",
+        Clinic clinic = Clinic.create("ClinicId", "Test Clinic", "Test Legal Name", "123456789",
                 address, phone, email, "http://example.com/logo.png", "ACTIVE");
 
         // Then
@@ -249,7 +249,7 @@ class ClinicDomainEventsTest {
         Phone phone = new Phone("+1234567890");
         Email email = new Email("test@example.com");
         
-        Clinic clinic = Clinic.create(1L, "Test Clinic", "Test Legal Name", "123456789",
+        Clinic clinic = Clinic.create("ClinicId", "Test Clinic", "Test Legal Name", "123456789",
                 address, phone, email, "http://example.com/logo.png", "ACTIVE");
         
         // When - perform multiple operations without clearing events
@@ -318,7 +318,7 @@ class ClinicDomainEventsTest {
         Phone phone = new Phone("+1234567890");
         Email email = new Email("test@example.com");
         
-        Clinic clinic = Clinic.create(1L, "Test Clinic", "Test Legal Name", "123456789",
+        Clinic clinic = Clinic.create("ClinicId", "Test Clinic", "Test Legal Name", "123456789",
                 address, phone, email, "http://example.com/logo.png", "ACTIVE");
 
         // When - get value objects

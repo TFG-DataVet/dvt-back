@@ -12,7 +12,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class OwnerResponse {
 
-    private Long ownerId;
+    private String ownerId;
     private String firstName;
     private String lastName;
     private String dni;
