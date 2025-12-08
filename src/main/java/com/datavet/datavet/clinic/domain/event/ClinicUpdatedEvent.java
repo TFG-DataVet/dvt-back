@@ -15,11 +15,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ClinicUpdatedEvent implements DomainEvent {
     
-    private Long clinicId;
+    private String clinicId;
     private String clinicName;
     private LocalDateTime occurredOn;
     
-    public static ClinicUpdatedEvent of(Long clinicId, String clinicName) {
+    public static ClinicUpdatedEvent of(String clinicId, String clinicName) {
         return new ClinicUpdatedEvent(clinicId, clinicName, LocalDateTime.now());
     }
     

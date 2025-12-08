@@ -1,11 +1,12 @@
 package com.datavet.datavet.owner.application.service;
 
-import com.datavet.datavet.owner.application.port.command.UpdateOwnerCommand;
+import com.datavet.datavet.owner.application.port.in.command.UpdateOwnerCommand;
 import com.datavet.datavet.owner.application.port.in.OwnerUseCase;
 import com.datavet.datavet.owner.application.port.out.OwnerRepositoryPort;
 import com.datavet.datavet.owner.application.port.in.command.CreateOwnerCommand;
 import com.datavet.datavet.owner.application.validation.CreateOwnerCommandValidator;
 import com.datavet.datavet.owner.domain.exception.OwnerAlreadyExistsException;
+import com.datavet.datavet.owner.domain.exception.OwnerNotFoundException;
 import com.datavet.datavet.owner.domain.exception.OwnerValidationException;
 import com.datavet.datavet.owner.domain.model.Owner;
 import com.datavet.datavet.shared.application.service.ApplicationService;
@@ -53,7 +54,7 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
         // Use Factory method to create owner with domain events
         Owner owner = Owner.create(
                 null,
-                10L,
+                "10",
                 command.getOwnerName(),
                 command.getOwnerLastName(),
                 command.getOwnerDni(),
@@ -76,18 +77,22 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
     }
 
     @Override
-    public void deleteOwner(Long id) {
-
+    public void deleteOwner(String id) {
+        Owner owner = getOwnerById(id);
+        owner.delete();
+        publishDomainEvent(owner);
+        ownerRepositoryPort.deleteById(id);
     }
 
     @Override
-    public Owner getOwnerById(Long id) {
-        return null;
+    public Owner getOwnerById(String id) {
+        return ownerRepositoryPort.findById(id)
+                .orElseThrow(() -> new OwnerNotFoundException(id));
     }
 
     @Override
     public List<Owner> getAllOwners() {
-        return List.of();
+        return ownerRepositoryPort.findAll();
     }
 
     private void publishDomainEvent(Owner owner) {

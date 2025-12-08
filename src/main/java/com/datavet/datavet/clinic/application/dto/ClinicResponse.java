@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @AllArgsConstructor
 public class ClinicResponse {
 
-    private Long clinicId;
+    private String clinicId;
     private String clinicName;
     private String legalName;
     private String legalNumber;

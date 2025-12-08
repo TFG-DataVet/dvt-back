@@ -2,8 +2,8 @@ package com.datavet.datavet.owner.infrastructure.adapter.output;
 
 import com.datavet.datavet.owner.application.port.out.OwnerRepositoryPort;
 import com.datavet.datavet.owner.domain.model.Owner;
-import com.datavet.datavet.owner.infrastructure.persistence.entity.OwnerEntity;
-import com.datavet.datavet.owner.infrastructure.persistence.repository.JpaOwnerRepositoryAdapter;
+import com.datavet.datavet.owner.infrastructure.persistence.entity.OwnerDocument;
+import com.datavet.datavet.owner.infrastructure.persistence.repository.MongoOwnerRepositoryAdapter;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +16,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OwnerRepositoryAdapter implements OwnerRepositoryPort {
 
-    private final JpaOwnerRepositoryAdapter repository;
+    private final MongoOwnerRepositoryAdapter repository;
 
-    private OwnerEntity toEntity(Owner owner){
-        return OwnerEntity.builder()
-                .ownerID(owner.getOwnerID())
-                .clinicID(owner.getClinicID())
+    private OwnerDocument toDocument(Owner owner){
+        return OwnerDocument.builder()
+                .id(owner.getOwnerID())
+                .clinicId(owner.getClinicID())
                 .firstName(owner.getOwnerName())
                 .lastName(owner.getOwnerLastName())
                 .dni(owner.getOwnerDni())
@@ -31,26 +31,26 @@ public class OwnerRepositoryAdapter implements OwnerRepositoryPort {
                 .build();
     }
 
-    private Owner toDomain(OwnerEntity ownerEntity){
+    private Owner toDomain(OwnerDocument document){
         return Owner.builder()
-                .ownerID(ownerEntity.getOwnerID())
-                .clinicID(10L)
-                .ownerLastName(ownerEntity.getLastName())
-                .ownerName(ownerEntity.getFirstName())
-                .ownerDni(ownerEntity.getDni())
-                .ownerPhone(ownerEntity.getPhone())
-                .ownerEmail(ownerEntity.getEmail())
-                .ownerAddress(ownerEntity.getAddress())
+                .ownerID(document.getId())
+                .clinicID(document.getClinicId())
+                .ownerLastName(document.getLastName())
+                .ownerName(document.getFirstName())
+                .ownerDni(document.getDni())
+                .ownerPhone(document.getPhone())
+                .ownerEmail(document.getEmail())
+                .ownerAddress(document.getAddress())
                 .build();
     }
 
     @Override
     public Owner save(Owner owner) {
-        return toDomain(repository.save(toEntity(owner)));
+        return toDomain(repository.save(toDocument(owner)));
     }
 
     @Override
-    public Optional<Owner> findById(Long id) {
+    public Optional<Owner> findById(String id) {
         return repository.findById(id).map(this::toDomain);
     }
 
@@ -60,12 +60,12 @@ public class OwnerRepositoryAdapter implements OwnerRepositoryPort {
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(String id) {
         repository.deleteById(id);
     }
 
     @Override
-    public boolean existsById(Long id) {
+    public boolean existsById(String id) {
         return repository.existsById(id);
     }
 
@@ -85,8 +85,8 @@ public class OwnerRepositoryAdapter implements OwnerRepositoryPort {
     }
 
     @Override
-    public boolean existsByDniAndOwnerIdNot(String dni, Long id) {
-        return repository.existsByDniAndOwnerIDNot(dni,id);
+    public boolean existsByDniAndOwnerIdNot(String dni, String id) {
+        return repository.existsByDniAndIdNot(dni, id);
     }
 
 }

@@ -19,11 +19,11 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class Owner extends AggregateRoot<Long> implements Entity<Long> {
+public class Owner extends AggregateRoot<String> implements Entity<String> {
 
-    private Long ownerID;
+    private String ownerID;
 
-    private Long clinicID;
+    private String clinicID;
 
     @NotBlank
     @Size(max = 50)
@@ -50,13 +50,13 @@ public class Owner extends AggregateRoot<Long> implements Entity<Long> {
     private LocalDateTime updateAt;
 
     @Override
-    public Long getId() {
+    public String getId() {
         return this.ownerID;
     }
 
     public static Owner create(
-            Long ownerID,
-            Long clinicID,
+            String ownerID,
+            String clinicID,
             String name,
             String lastName,
             String dni,

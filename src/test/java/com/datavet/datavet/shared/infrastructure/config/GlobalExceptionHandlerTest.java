@@ -126,7 +126,7 @@ class GlobalExceptionHandlerTest {
     @Test
     void handleEntityNotFoundException_WithIdConstructor_ShouldReturnNotFoundWithFormattedMessage() {
         // Given
-        ClinicNotFoundException exception = new ClinicNotFoundException(1L);
+        ClinicNotFoundException exception = new ClinicNotFoundException("hola");
 
         // When
         ResponseEntity<ErrorResponse> response = globalExceptionHandler.handleEntityNotFoundException(exception, webRequest);

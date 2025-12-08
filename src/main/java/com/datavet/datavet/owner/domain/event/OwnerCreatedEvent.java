@@ -10,12 +10,12 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class OwnerCreatedEvent implements DomainEvent {
 
-    private final Long ownerID;
+    private final String ownerID;
     private final String name;
     private final String dni;
     private final LocalDateTime occurredOn;
 
-    public static OwnerCreatedEvent of(Long ownerID, String name, String dni){
+    public static OwnerCreatedEvent of(String ownerID, String name, String dni){
         return new OwnerCreatedEvent(ownerID, name, dni, LocalDateTime.now());
     }
 
@@ -27,7 +27,7 @@ public class OwnerCreatedEvent implements DomainEvent {
 
     @Override
     public String toString(){
-        return String.format("OwnerCreatedEvent{ownerID=%d, ownerName='%s', dni='%s', ocurredOn=%s´}",
+        return String.format("OwnerCreatedEvent{ownerID=%s, ownerName='%s', dni='%s', ocurredOn=%s´}",
                 ownerID, name, dni, occurredOn());
     }
 

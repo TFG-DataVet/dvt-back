@@ -17,8 +17,10 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class Clinic extends AggregateRoot<Long> implements Entity<Long> {
-    private Long clinicID;
+public class Clinic extends AggregateRoot<String> implements Entity<String> {
+
+
+    private String clinicID;
     
     @NotBlank
     @Size(max = 100)
@@ -54,7 +56,7 @@ public class Clinic extends AggregateRoot<Long> implements Entity<Long> {
      * Implementation of Entity<Long> interface.
      */
     @Override
-    public Long getId() {
+    public String getId() {
         return this.clinicID;
     }
 
@@ -62,7 +64,7 @@ public class Clinic extends AggregateRoot<Long> implements Entity<Long> {
      * Creates a new clinic and raises a ClinicCreatedEvent.
      * This method should be called when a clinic is first created.
      */
-    public static Clinic create(Long clinicID, String clinicName, String legalName, String legalNumber,
+    public static Clinic create(String clinicID, String clinicName, String legalName, String legalNumber,
                                Address address, Phone phone, Email email, String logoUrl, String subscriptionStatus) {
         Clinic clinic = Clinic.builder()
                 .clinicID(clinicID)
