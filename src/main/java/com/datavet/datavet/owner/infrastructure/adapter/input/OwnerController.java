@@ -1,10 +1,12 @@
 package com.datavet.datavet.owner.infrastructure.adapter.input;
 
+import com.datavet.datavet.clinic.application.port.in.ClinicUseCase;
 import com.datavet.datavet.owner.application.dto.OwnerResponse;
 import com.datavet.datavet.owner.application.mapper.OwnerMapper;
 import com.datavet.datavet.owner.application.port.in.command.CreateOwnerCommand;
 import com.datavet.datavet.owner.application.port.in.command.UpdateOwnerCommand;
 import com.datavet.datavet.owner.application.port.in.OwnerUseCase;
+import com.datavet.datavet.owner.application.port.in.command.UpdateOwnerCommand;
 import com.datavet.datavet.owner.domain.model.Owner;
 import com.datavet.datavet.owner.infrastructure.adapter.input.dto.CreateOwnerRequest;
 import com.datavet.datavet.owner.infrastructure.adapter.input.dto.UpdateOwnerRequest;
@@ -42,6 +44,7 @@ public class OwnerController {
     }
 
     @GetMapping("/{id}")
+
     public ResponseEntity<OwnerResponse> getOwner(@PathVariable String id) {
         Owner owner = ownerUseCase.getOwnerById(id);
         return ResponseEntity.ok(OwnerMapper.toResponse(owner));
