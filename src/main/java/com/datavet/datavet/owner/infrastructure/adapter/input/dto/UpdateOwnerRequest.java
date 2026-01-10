@@ -12,11 +12,11 @@ import lombok.Setter;
 public class UpdateOwnerRequest {
 
     @NotBlank(message = "Owner name is required")
-    @Size(max = 50, message = "Clinic name must not exceed 50 chararters")
+    @Size(max = 50, message = "Owner name must not exceed 50 characters")
     private String name;
 
     @NotBlank(message = "Owner lastname is required")
-    @Size(max = 50, message = "Clinic lastnet must not exceed 50 chararters")
+    @Size(max = 50, message = "Owner lastname must not exceed 50 characters")
     private String lastName;
 
     @NotBlank(message = "Owner dni must not be empty")
@@ -30,7 +30,6 @@ public class UpdateOwnerRequest {
     @Email(message = "Email format is invalid")
     @Size(max = 100, message = "Email must not exceed 100 characters")
     private String email;
-
 
     @NotBlank(message = "Address is required")
     @Size(max = 200, message = "Address must not exceed 200 characters")

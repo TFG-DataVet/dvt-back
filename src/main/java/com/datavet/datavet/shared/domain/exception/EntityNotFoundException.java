@@ -14,8 +14,8 @@ public abstract class EntityNotFoundException extends DomainException {
         super(message, cause);
     }
     
-    protected EntityNotFoundException(String entityType, Long id) {
-        super(entityType + " not found with id: " + id);
+    protected EntityNotFoundException(String entityType, String id) {
+        super(entityType + " not found with id: " + id.toString());
     }
     
     protected EntityNotFoundException(String entityType, String fieldName, String fieldValue) {

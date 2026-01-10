@@ -10,11 +10,11 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class OwnerDeletedEvent implements DomainEvent {
 
-    private final Long ownerID;
+    private final String ownerID;
     private final String name;
     private final LocalDateTime occurredOn;
 
-    public static OwnerDeletedEvent of(Long ownerID, String name) {
+    public static OwnerDeletedEvent of(String ownerID, String name) {
         return new OwnerDeletedEvent(ownerID, name, LocalDateTime.now());
     }
 

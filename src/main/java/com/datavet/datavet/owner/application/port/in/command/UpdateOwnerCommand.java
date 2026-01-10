@@ -14,8 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Builder
 public class UpdateOwnerCommand {
     @NotBlank
-    @Size(min = 1, max = 255)
-    private Long ownerID;
+
+    private String ownerID;
+
 
     @NotBlank
     @Size(max = 50, message = "Owner name is required")

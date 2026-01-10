@@ -4,6 +4,7 @@ import com.datavet.datavet.clinic.application.port.in.ClinicUseCase;
 import com.datavet.datavet.owner.application.dto.OwnerResponse;
 import com.datavet.datavet.owner.application.mapper.OwnerMapper;
 import com.datavet.datavet.owner.application.port.in.command.CreateOwnerCommand;
+import com.datavet.datavet.owner.application.port.in.command.UpdateOwnerCommand;
 import com.datavet.datavet.owner.application.port.in.OwnerUseCase;
 import com.datavet.datavet.owner.application.port.in.command.UpdateOwnerCommand;
 import com.datavet.datavet.owner.domain.model.Owner;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/owner")
@@ -42,40 +44,43 @@ public class OwnerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OwnerResponse> getById(@PathVariable Long id) {
+
+    public ResponseEntity<OwnerResponse> getOwner(@PathVariable String id) {
         Owner owner = ownerUseCase.getOwnerById(id);
-        return ResponseEntity.status(200).body(OwnerMapper.toResponse(owner));
+        return ResponseEntity.ok(OwnerMapper.toResponse(owner));
     }
 
     @GetMapping
-    public ResponseEntity<List<OwnerResponse>> getAll() {
+    public ResponseEntity<List<OwnerResponse>> getAllOwners() {
         List<Owner> owners = ownerUseCase.getAllOwners();
         List<OwnerResponse> responses = owners.stream()
                 .map(OwnerMapper::toResponse)
-                .toList();
-        return ResponseEntity.status(200).body(responses);
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<OwnerResponse> update(@PathVariable Long id, @Valid @RequestBody UpdateOwnerRequest request) {
+    public ResponseEntity<OwnerResponse> updateOwner(
+            @PathVariable String id,
+            @Valid @RequestBody UpdateOwnerRequest request) {
         UpdateOwnerCommand command = UpdateOwnerCommand.builder()
                 .ownerID(id)
                 .ownerName(request.getName())
                 .ownerLastName(request.getLastName())
                 .ownerDni(request.getDni())
-                .ownerPhone(new Phone(request.getPhone()))
-                .ownerEmail(new Email(request.getEmail()))
+                .ownerPhone(request.getPhone())
+                .ownerEmail(request.getEmail())
                 .ownerAddress(new Address(request.getAddress(), request.getCity(), request.getPostalCode()))
                 .build();
 
         Owner owner = ownerUseCase.updateOwner(command);
-        return ResponseEntity.status(200).body(OwnerMapper.toResponse(owner));
+        return ResponseEntity.ok(OwnerMapper.toResponse(owner));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        ownerUseCase.getOwnerById(id);
+    public ResponseEntity<Void> deleteOwner(@PathVariable String id) {
         ownerUseCase.deleteOwner(id);
-        return ResponseEntity.status(204).build();
+        return ResponseEntity.noContent().build();
     }
+
 }

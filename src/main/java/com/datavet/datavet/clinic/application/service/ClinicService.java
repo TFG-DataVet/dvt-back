@@ -108,7 +108,7 @@ public class ClinicService implements ClinicUseCase, ApplicationService {
     }
 
     @Override
-    public void deleteClinic(Long id) {
+    public void deleteClinic(String id) {
         Clinic clinic = getClinicById(id); // This will throw if not found
         clinic.delete(); // This creates the domain event
         
@@ -119,7 +119,7 @@ public class ClinicService implements ClinicUseCase, ApplicationService {
     }
 
     @Override
-    public Clinic getClinicById(Long id) {
+    public Clinic getClinicById(String id) {
         return clinicRepositoryPort.findById(id).orElseThrow(() -> new ClinicNotFoundException(id));
     }
 

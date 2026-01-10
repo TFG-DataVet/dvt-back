@@ -44,7 +44,7 @@ public class ClinicController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ClinicResponse> update(@PathVariable Long id, @Valid @RequestBody UpdateClinicRequest request) {
+    public ResponseEntity<ClinicResponse> update(@PathVariable String id, @Valid @RequestBody UpdateClinicRequest request) {
         // Convert request to command with value objects
         UpdateClinicCommand command = UpdateClinicCommand.builder()
                 .clinicId(id)
@@ -63,7 +63,7 @@ public class ClinicController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ClinicResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<ClinicResponse> getById(@PathVariable String id) {
         Clinic clinic = clinicUseCase.getClinicById(id);
         return ResponseEntity.ok(ClinicMapper.toResponse(clinic));
     }
@@ -78,7 +78,7 @@ public class ClinicController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable String id) {
         // Check if clinic exists before deleting
         clinicUseCase.getClinicById(id); // This will throw ClinicNotFoundException if not found
         clinicUseCase.deleteClinic(id);

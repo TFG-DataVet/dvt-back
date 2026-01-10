@@ -10,7 +10,7 @@ import java.util.List;
 public interface OwnerUseCase extends UseCase {
     Owner       createOwner     (CreateOwnerCommand command);
     Owner       updateOwner     (UpdateOwnerCommand command);
-    void        deleteOwner     (Long id);
-    Owner       getOwnerById   (Long id);
+    void        deleteOwner     (String id);
+    Owner       getOwnerById   (String id);
     List<Owner> getAllOwners();
 }
