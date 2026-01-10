@@ -17,6 +17,7 @@ public class UpdateOwnerRequest {
 
     @NotBlank(message = "Owner lastname is required")
     @Size(max = 50, message = "Owner lastname must not exceed 50 characters")
+
     private String lastName;
 
     @NotBlank(message = "Owner dni must not be empty")
