@@ -54,10 +54,10 @@ class ClinicControllerIntegrationTest {
 
     /**
      * Test successful creation of clinic with valid data.
-     * Requirements: 4.1, 4.3
+     * Requirements: 9.1
      */
     @Test
-    void createClinic_WithValidData_ShouldReturn201AndClinicResponse() throws Exception {
+    void shouldCreateClinicWithValidData() throws Exception {
         // Create request DTO (not command) for the REST endpoint
         String requestJson = """
             {
@@ -101,11 +101,57 @@ class ClinicControllerIntegrationTest {
     }
 
     /**
-     * Test creation with validation errors returns 400.
-     * Requirements: 3.2
+     * Test that created clinic returns with generated ID.
+     * Requirements: 9.1
      */
     @Test
-    void createClinic_WithInvalidData_ShouldReturn400WithValidationErrors() throws Exception {
+    void shouldReturnCreatedClinicWithGeneratedId() throws Exception {
+        String requestJson = """
+            {
+                "clinicName": "%s",
+                "legalName": "%s",
+                "legalNumber": "%s",
+                "address": "%s",
+                "city": "%s",
+                "codePostal": "%s",
+                "phone": "%s",
+                "email": "%s",
+                "logoUrl": "%s"
+            }
+            """.formatted(
+                VALID_CLINIC_NAME,
+                VALID_LEGAL_NAME,
+                VALID_LEGAL_NUMBER,
+                VALID_ADDRESS,
+                VALID_CITY,
+                VALID_CODE_POSTAL,
+                VALID_PHONE,
+                VALID_EMAIL,
+                VALID_LOGO_URL
+            );
+
+        mockMvc.perform(post("/clinic")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.clinicId").exists())
+                .andExpect(jsonPath("$.clinicId").isNumber())
+                .andExpect(jsonPath("$.clinicId").value(greaterThan(0)))
+                .andExpect(jsonPath("$.clinicName").value(VALID_CLINIC_NAME))
+                .andExpect(jsonPath("$.legalName").value(VALID_LEGAL_NAME))
+                .andExpect(jsonPath("$.legalNumber").value(VALID_LEGAL_NUMBER))
+                .andExpect(jsonPath("$.email").value(VALID_EMAIL))
+                .andExpect(jsonPath("$.phone").value(VALID_PHONE))
+                .andExpect(jsonPath("$.suscriptionStatus").value("ACTIVE"));
+    }
+
+    /**
+     * Test creation with validation errors returns 400.
+     * Requirements: 9.5
+     */
+    @Test
+    void shouldReturn400WhenCreatingWithInvalidData() throws Exception {
         // Create invalid request JSON to test validation
         String invalidRequestJson = """
             {
@@ -137,10 +183,10 @@ class ClinicControllerIntegrationTest {
 
     /**
      * Test retrieval of clinic by ID with valid data.
-     * Requirements: 1.1, 4.3
+     * Requirements: 9.3
      */
     @Test
-    void getClinicById_WithValidId_ShouldReturn200AndClinicResponse() throws Exception {
+    void shouldGetClinicById() throws Exception {
         // First create a clinic
         String request = createValidRequestJson();
         String response = mockMvc.perform(post("/clinic")
@@ -166,10 +212,10 @@ class ClinicControllerIntegrationTest {
 
     /**
      * Test retrieval of non-existent clinic returns 404.
-     * Requirements: 3.1
+     * Requirements: 9.6
      */
     @Test
-    void getClinicById_WithNonExistentId_ShouldReturn404() throws Exception {
+    void shouldReturn404WhenClinicNotFound() throws Exception {
         Long nonExistentId = 99999L;
 
         mockMvc.perform(get("/clinic/{id}", nonExistentId))
@@ -183,11 +229,52 @@ class ClinicControllerIntegrationTest {
     }
 
     /**
-     * Test retrieval of all clinics.
-     * Requirements: 1.2, 4.3
+     * Test that GET returns all fields including Value Objects.
+     * Requirements: 9.3
      */
     @Test
-    void getAllClinics_ShouldReturn200AndListOfClinicResponses() throws Exception {
+    void shouldReturnAllFieldsIncludingValueObjects() throws Exception {
+        // Create a clinic
+        String request = createValidRequestJson();
+        String response = mockMvc.perform(post("/clinic")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Long clinicId = objectMapper.readTree(response).get("clinicId").asLong();
+
+        // Test GET by ID returns all fields including Value Objects
+        mockMvc.perform(get("/clinic/{id}", clinicId))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.clinicId").value(clinicId))
+                .andExpect(jsonPath("$.clinicName").value(VALID_CLINIC_NAME))
+                .andExpect(jsonPath("$.legalName").value(VALID_LEGAL_NAME))
+                .andExpect(jsonPath("$.legalNumber").value(VALID_LEGAL_NUMBER))
+                // Verify Address Value Object
+                .andExpect(jsonPath("$.address").exists())
+                .andExpect(jsonPath("$.address.street").value(VALID_ADDRESS))
+                .andExpect(jsonPath("$.address.city").value(VALID_CITY))
+                .andExpect(jsonPath("$.address.postalCode").value(VALID_CODE_POSTAL))
+                .andExpect(jsonPath("$.address.fullAddress").exists())
+                // Verify Phone Value Object
+                .andExpect(jsonPath("$.phone").value(VALID_PHONE))
+                // Verify Email Value Object
+                .andExpect(jsonPath("$.email").value(VALID_EMAIL))
+                // Verify optional fields
+                .andExpect(jsonPath("$.logoUrl").value(VALID_LOGO_URL))
+                .andExpect(jsonPath("$.suscriptionStatus").exists());
+    }
+
+    /**
+     * Test retrieval of all clinics.
+     * Requirements: 9.4
+     */
+    @Test
+    void shouldGetAllClinics() throws Exception {
         // Create two clinics
         String request1 = createValidRequestJson();
         String request2 = """
@@ -222,6 +309,20 @@ class ClinicControllerIntegrationTest {
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].clinicId").exists())
                 .andExpect(jsonPath("$[1].clinicId").exists());
+    }
+
+    /**
+     * Test that GET all returns empty array when no clinics exist.
+     * Requirements: 9.4
+     */
+    @Test
+    void shouldReturnEmptyArrayWhenNoClinics() throws Exception {
+        // Test GET all without creating any clinics
+        mockMvc.perform(get("/clinic"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(0)));
     }
 
     /**
@@ -339,22 +440,62 @@ class ClinicControllerIntegrationTest {
 
 
     /**
-     * Test creation of duplicate clinic returns 409.
-     * Requirements: 3.4
+     * Test update with duplicate email returns 409.
+     * Requirements: 9.7
      */
     @Test
-    void createClinic_WithDuplicateData_ShouldReturn409() throws Exception {
-        // First create a clinic
-        String request = createValidRequestJson();
+    void updateClinic_WithDuplicateEmail_ShouldReturn409() throws Exception {
+        // Create first clinic
+        String request1 = createValidRequestJson();
         mockMvc.perform(post("/clinic")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(request))
+                .content(request1))
                 .andExpect(status().isCreated());
 
-        // Try to create the same clinic again
-        mockMvc.perform(post("/clinic")
+        // Create second clinic with different email
+        String request2 = """
+            {
+                "clinicName": "Veterinaria Norte",
+                "legalName": "Veterinaria Norte S.A.C.",
+                "legalNumber": "98765432101",
+                "address": "Av. Norte 456",
+                "city": "Trujillo",
+                "codePostal": "13001",
+                "phone": "+51912345678",
+                "email": "info@vetnorte.com",
+                "logoUrl": "https://example.com/logo2.png"
+            }
+            """;
+        
+        String createResponse = mockMvc.perform(post("/clinic")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(request))
+                .content(request2))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Long clinicId = objectMapper.readTree(createResponse).get("clinicId").asLong();
+
+        // Try to update second clinic with email from first clinic
+        String updateRequestJson = """
+            {
+                "clinicName": "Veterinaria Norte",
+                "legalName": "Veterinaria Norte S.A.C.",
+                "legalNumber": "98765432101",
+                "address": "Av. Norte 456",
+                "city": "Trujillo",
+                "codePostal": "13001",
+                "phone": "+51912345678",
+                "email": "%s",
+                "logoUrl": "https://example.com/logo2.png",
+                "suscriptionStatus": "ACTIVE"
+            }
+            """.formatted(VALID_EMAIL);
+
+        mockMvc.perform(put("/clinic/{id}", clinicId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(updateRequestJson))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.status").value(409))
@@ -364,10 +505,208 @@ class ClinicControllerIntegrationTest {
     }
 
     /**
-     * Test deletion of clinic.
+     * Test update with same email (own email) should succeed.
+     * Requirements: 9.2
      */
     @Test
-    void deleteClinic_WithValidId_ShouldReturn200() throws Exception {
+    void updateClinic_WithSameEmail_ShouldReturn200() throws Exception {
+        // Create a clinic
+        String createRequest = createValidRequestJson();
+        String createResponse = mockMvc.perform(post("/clinic")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(createRequest))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Long clinicId = objectMapper.readTree(createResponse).get("clinicId").asLong();
+
+        // Update the clinic keeping the same email
+        String updateRequestJson = """
+            {
+                "clinicName": "Updated Clinic Name",
+                "legalName": "Updated Legal Name S.A.",
+                "legalNumber": "%s",
+                "address": "Updated Address 789",
+                "city": "Updated City",
+                "codePostal": "15002",
+                "phone": "+51987654322",
+                "email": "%s",
+                "logoUrl": "https://example.com/updated-logo.png",
+                "suscriptionStatus": "ACTIVE"
+            }
+            """.formatted(VALID_LEGAL_NUMBER, VALID_EMAIL);
+
+        mockMvc.perform(put("/clinic/{id}", clinicId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(updateRequestJson))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.clinicId").value(clinicId))
+                .andExpect(jsonPath("$.clinicName").value("Updated Clinic Name"))
+                .andExpect(jsonPath("$.email").value(VALID_EMAIL));
+    }
+
+    /**
+     * Test creation with duplicate email returns 409.
+     * Requirements: 9.7
+     */
+    @Test
+    void shouldReturn409WhenEmailAlreadyExists() throws Exception {
+        // First create a clinic
+        String request = createValidRequestJson();
+        mockMvc.perform(post("/clinic")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+                .andExpect(status().isCreated());
+
+        // Try to create another clinic with the same email but different legal number
+        String duplicateEmailRequest = """
+            {
+                "clinicName": "Different Clinic",
+                "legalName": "Different Legal Name",
+                "legalNumber": "99999999999",
+                "address": "Different Address",
+                "city": "Different City",
+                "codePostal": "99999",
+                "phone": "+51999999999",
+                "email": "%s",
+                "logoUrl": "https://example.com/different-logo.png"
+            }
+            """.formatted(VALID_EMAIL);
+
+        mockMvc.perform(post("/clinic")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(duplicateEmailRequest))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.error").value("Conflict"))
+                .andExpect(jsonPath("$.message").value(containsString("already exists")))
+                .andExpect(jsonPath("$.message").value(containsString("email")))
+                .andExpect(jsonPath("$.timestamp").exists());
+    }
+
+    /**
+     * Test creation with duplicate legal number returns 409.
+     * Requirements: 9.7
+     */
+    @Test
+    void shouldReturn409WhenLegalNumberAlreadyExists() throws Exception {
+        // First create a clinic
+        String request = createValidRequestJson();
+        mockMvc.perform(post("/clinic")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+                .andExpect(status().isCreated());
+
+        // Try to create another clinic with the same legal number but different email
+        String duplicateLegalNumberRequest = """
+            {
+                "clinicName": "Different Clinic",
+                "legalName": "Different Legal Name",
+                "legalNumber": "%s",
+                "address": "Different Address",
+                "city": "Different City",
+                "codePostal": "99999",
+                "phone": "+51999999999",
+                "email": "different@clinic.com",
+                "logoUrl": "https://example.com/different-logo.png"
+            }
+            """.formatted(VALID_LEGAL_NUMBER);
+
+        mockMvc.perform(post("/clinic")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(duplicateLegalNumberRequest))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.error").value("Conflict"))
+                .andExpect(jsonPath("$.message").value(containsString("already exists")))
+                .andExpect(jsonPath("$.message").value(containsString("legalNumber")))
+                .andExpect(jsonPath("$.timestamp").exists());
+    }
+
+    /**
+     * Test that Value Objects are validated on creation.
+     * Requirements: 9.7
+     */
+    @Test
+    void shouldValidateValueObjectsOnCreation() throws Exception {
+        // Test with invalid email format
+        String invalidEmailRequest = """
+            {
+                "clinicName": "Test Clinic",
+                "legalName": "Test Legal Name",
+                "legalNumber": "12345678901",
+                "address": "Valid Address",
+                "city": "Valid City",
+                "codePostal": "12345",
+                "phone": "+1234567890",
+                "email": "invalid-email-format",
+                "logoUrl": "https://example.com/logo.png"
+            }
+            """;
+
+        mockMvc.perform(post("/clinic")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(invalidEmailRequest))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(400));
+
+        // Test with invalid phone format
+        String invalidPhoneRequest = """
+            {
+                "clinicName": "Test Clinic",
+                "legalName": "Test Legal Name",
+                "legalNumber": "12345678901",
+                "address": "Valid Address",
+                "city": "Valid City",
+                "codePostal": "12345",
+                "phone": "invalid-phone",
+                "email": "valid@clinic.com",
+                "logoUrl": "https://example.com/logo.png"
+            }
+            """;
+
+        mockMvc.perform(post("/clinic")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(invalidPhoneRequest))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(400));
+
+        // Test with empty address fields
+        String invalidAddressRequest = """
+            {
+                "clinicName": "Test Clinic",
+                "legalName": "Test Legal Name",
+                "legalNumber": "12345678901",
+                "address": "",
+                "city": "",
+                "codePostal": "",
+                "phone": "+1234567890",
+                "email": "valid@clinic.com",
+                "logoUrl": "https://example.com/logo.png"
+            }
+            """;
+
+        mockMvc.perform(post("/clinic")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(invalidAddressRequest))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    /**
+     * Test deletion of clinic.
+     * Requirements: 9.4
+     */
+    @Test
+    void shouldDeleteClinicSuccessfully() throws Exception {
         // First create a clinic
         String request = createValidRequestJson();
         String response = mockMvc.perform(post("/clinic")
@@ -380,20 +719,17 @@ class ClinicControllerIntegrationTest {
 
         Long clinicId = objectMapper.readTree(response).get("clinicId").asLong();
 
-        // Delete the clinic
+        // Delete the clinic - should return 204 No Content per REST standards
         mockMvc.perform(delete("/clinic/{id}", clinicId))
-                .andExpect(status().isOk());
-
-        // Verify it's deleted by trying to get it
-        mockMvc.perform(get("/clinic/{id}", clinicId))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNoContent());
     }
 
     /**
      * Test deletion of non-existent clinic returns 404.
+     * Requirements: 9.6
      */
     @Test
-    void deleteClinic_WithNonExistentId_ShouldReturn404() throws Exception {
+    void shouldReturn404WhenDeletingNonExistentClinic() throws Exception {
         Long nonExistentId = 99999L;
 
         mockMvc.perform(delete("/clinic/{id}", nonExistentId))
@@ -403,6 +739,41 @@ class ClinicControllerIntegrationTest {
                 .andExpect(jsonPath("$.error").value("Not Found"))
                 .andExpect(jsonPath("$.message").value("Clinic not found with id: " + nonExistentId))
                 .andExpect(jsonPath("$.timestamp").exists());
+    }
+
+    /**
+     * Test that deleted clinic cannot be retrieved.
+     * Requirements: 9.4
+     */
+    @Test
+    void shouldNotBeAbleToGetDeletedClinic() throws Exception {
+        // First create a clinic
+        String request = createValidRequestJson();
+        String response = mockMvc.perform(post("/clinic")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Long clinicId = objectMapper.readTree(response).get("clinicId").asLong();
+
+        // Verify clinic exists
+        mockMvc.perform(get("/clinic/{id}", clinicId))
+                .andExpect(status().isOk());
+
+        // Delete the clinic
+        mockMvc.perform(delete("/clinic/{id}", clinicId))
+                .andExpect(status().isNoContent());
+
+        // Verify it's deleted by trying to get it - should return 404
+        mockMvc.perform(get("/clinic/{id}", clinicId))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Clinic not found with id: " + clinicId));
     }
 
     /**

@@ -37,7 +37,7 @@ class UpdateClinicCommandTest {
         Email email = new Email("updated@example.com");
         
         UpdateClinicCommand command = UpdateClinicCommand.builder()
-                .clinicId(1L)
+                .clinicId("ClinicId")
                 .clinicName("Updated Clinic")
                 .legalName("Updated Legal Name")
                 .legalNumber("87654321")
@@ -85,14 +85,14 @@ class UpdateClinicCommandTest {
 
     @Test
     @DisplayName("Should fail validation when clinic ID is not positive")
-    void shouldFailValidationWhenClinicIdIsNotPositive() {
+    void shouldFailValidationWhenClinicIdIsEmpty() {
         // Given
         Address address = new Address("456 Updated Street", "Updated City", "54321");
         Phone phone = new Phone("+0987654321");
         Email email = new Email("updated@example.com");
         
         UpdateClinicCommand command = UpdateClinicCommand.builder()
-                .clinicId(-1L)
+                .clinicId("")
                 .clinicName("Updated Clinic")
                 .legalName("Updated Legal Name")
                 .legalNumber("87654321")
@@ -120,7 +120,7 @@ class UpdateClinicCommandTest {
         Email email = new Email("updated@example.com");
         
         UpdateClinicCommand command = UpdateClinicCommand.builder()
-                .clinicId(1L)
+                .clinicId("ClinicId")
                 .clinicName("")
                 .legalName("Updated Legal Name")
                 .legalNumber("87654321")
@@ -149,7 +149,7 @@ class UpdateClinicCommandTest {
         Email email = new Email("updated@example.com");
         
         UpdateClinicCommand command = UpdateClinicCommand.builder()
-                .clinicId(1L)
+                .clinicId("ClinicId")
                 .clinicName(longName)
                 .legalName("Updated Legal Name")
                 .legalNumber("87654321")
@@ -179,7 +179,7 @@ class UpdateClinicCommandTest {
         Email email = new Email("updated@example.com");
         
         UpdateClinicCommand command = UpdateClinicCommand.builder()
-                .clinicId(1L)
+                .clinicId("ClinicId")
                 .clinicName("Updated Clinic")
                 .legalName("")
                 .legalNumber("87654321")
@@ -243,7 +243,7 @@ class UpdateClinicCommandTest {
             assertDoesNotThrow(() -> {
                 Phone phone = new Phone(phoneValue);
                 UpdateClinicCommand command = UpdateClinicCommand.builder()
-                        .clinicId(1L)
+                        .clinicId("ClinicId")
                         .clinicName("Updated Clinic")
                         .legalName("Updated Legal Name")
                         .legalNumber("87654321")
@@ -267,7 +267,7 @@ class UpdateClinicCommandTest {
         Email email = new Email("updated@example.com");
         
         UpdateClinicCommand command = UpdateClinicCommand.builder()
-                .clinicId(1L)
+                .clinicId("ClinicId")
                 .clinicName("Updated Clinic")
                 .legalName("Updated Legal Name")
                 .legalNumber("87654321")
@@ -298,7 +298,7 @@ class UpdateClinicCommandTest {
         assertDoesNotThrow(() -> {
             Address address = new Address(longStreet, "Updated City", "54321");
             UpdateClinicCommand command = UpdateClinicCommand.builder()
-                    .clinicId(1L)
+                    .clinicId("ClinicId")
                     .clinicName("Updated Clinic")
                     .legalName("Updated Legal Name")
                     .legalNumber("87654321")
@@ -349,7 +349,7 @@ class UpdateClinicCommandTest {
         Email email = new Email("updated@example.com");
         
         UpdateClinicCommand command = UpdateClinicCommand.builder()
-                .clinicId(1L)
+                .clinicId("ClinicId")
                 .clinicName("Updated Clinic")
                 .legalName("Updated Legal Name")
                 .legalNumber("")
@@ -378,7 +378,7 @@ class UpdateClinicCommandTest {
         Email email = new Email("updated@example.com");
         
         UpdateClinicCommand command = UpdateClinicCommand.builder()
-                .clinicId(1L)
+                .clinicId("ClinicId")
                 .clinicName("Updated Clinic")
                 .legalName(longLegalName)
                 .legalNumber("87654321")
@@ -409,7 +409,7 @@ class UpdateClinicCommandTest {
         Email email = new Email("updated@example.com");
         
         UpdateClinicCommand command = UpdateClinicCommand.builder()
-                .clinicId(1L)
+                .clinicId("ClinicId")
                 .clinicName("Updated Clinic")
                 .legalName("Updated Legal Name")
                 .legalNumber(longLegalNumber)
@@ -438,7 +438,7 @@ class UpdateClinicCommandTest {
         Email email = new Email("updated@example.com");
         
         UpdateClinicCommand command = UpdateClinicCommand.builder()
-                .clinicId(1L)
+                .clinicId("ClinicId")
                 .clinicName("Updated Clinic")
                 .legalName("Updated Legal Name")
                 .legalNumber("87654321")
@@ -465,7 +465,7 @@ class UpdateClinicCommandTest {
         Email email = new Email("updated@example.com");
         
         UpdateClinicCommand command = UpdateClinicCommand.builder()
-                .clinicId(1L)
+                .clinicId("ClinicId")
                 .clinicName("Updated Clinic")
                 .legalName("Updated Legal Name")
                 .legalNumber("87654321")
@@ -492,7 +492,7 @@ class UpdateClinicCommandTest {
         Phone phone = new Phone("+0987654321");
         
         UpdateClinicCommand command = UpdateClinicCommand.builder()
-                .clinicId(1L)
+                .clinicId("ClinicId")
                 .clinicName("Updated Clinic")
                 .legalName("Updated Legal Name")
                 .legalNumber("87654321")

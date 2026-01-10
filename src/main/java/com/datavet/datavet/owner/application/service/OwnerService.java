@@ -1,8 +1,5 @@
 package com.datavet.datavet.owner.application.service;
 
-import com.datavet.datavet.clinic.application.port.in.command.UpdateClinicCommand;
-import com.datavet.datavet.clinic.application.port.out.ClinicRepositoryPort;
-import com.datavet.datavet.clinic.application.validation.UpdateClinicCommandValidator;
 import com.datavet.datavet.owner.application.port.in.command.UpdateOwnerCommand;
 import com.datavet.datavet.owner.application.port.in.OwnerUseCase;
 import com.datavet.datavet.owner.application.port.out.OwnerRepositoryPort;
@@ -58,7 +55,7 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
         // Use Factory method to create owner with domain events
         Owner owner = Owner.create(
                 null,
-                10L,
+                "10",
                 command.getOwnerName(),
                 command.getOwnerLastName(),
                 command.getOwnerDni(),
@@ -102,18 +99,19 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
     }
 
     @Override
-    public void deleteOwner(Long id) {
+
+    public void deleteOwner(String id) {
         Owner owner = getOwnerById(id);
         owner.delete();
-
         publishDomainEvent(owner);
 
         ownerRepositoryPort.deleteById(id);
     }
 
     @Override
-    public Owner getOwnerById(Long id) {
-        return ownerRepositoryPort.findById(id).orElseThrow(() -> new OwnerNotFoundException(id));
+    public Owner getOwnerById(String id) {
+        return ownerRepositoryPort.findById(id)
+                .orElseThrow(() -> new OwnerNotFoundException(id));
     }
 
     @Override

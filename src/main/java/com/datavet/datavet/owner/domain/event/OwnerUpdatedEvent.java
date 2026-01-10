@@ -13,16 +13,16 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class OwnerUpdatedEvent implements DomainEvent {
 
-    private Long ownerId;
-    private String ownerName;
-    private LocalDateTime occurredOn;
+    private final String ownerId;
+    private final String ownerName;
+    private final LocalDateTime timestamp;
 
-    public static OwnerUpdatedEvent of(Long ownerId, String ownerName) {
+    public static OwnerUpdatedEvent of(String ownerId, String ownerName) {
         return new OwnerUpdatedEvent(ownerId, ownerName, LocalDateTime.now());
     }
 
     @Override
     public LocalDateTime occurredOn() {
-        return this.occurredOn;
+        return this.timestamp;
     }
 }

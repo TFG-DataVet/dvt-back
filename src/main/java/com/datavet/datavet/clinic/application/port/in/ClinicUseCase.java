@@ -10,7 +10,7 @@ import java.util.List;
 public interface ClinicUseCase extends UseCase {
     Clinic          createClinic    (CreateClinicCommand command);
     Clinic          updateClinic    (UpdateClinicCommand command);
-    void            deleteClinic    (Long id);
-    Clinic          getClinicById   (Long id);
+    void            deleteClinic    (String id);
+    Clinic          getClinicById   (String id);
     List<Clinic>    getAllClinics    ();
 }

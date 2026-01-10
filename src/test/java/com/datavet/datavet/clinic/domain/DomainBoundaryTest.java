@@ -118,7 +118,7 @@ class DomainBoundaryTest {
     @DisplayName("Domain exceptions should provide meaningful error messages")
     void domainExceptions_ShouldProvideMeaningfulErrorMessages() {
         // Test ClinicNotFoundException with ID
-        Long testId = 123L;
+        String testId = "123L";
         ClinicNotFoundException exception = new ClinicNotFoundException(testId);
         
         assertNotNull(exception.getMessage(), "Exception should have a message");

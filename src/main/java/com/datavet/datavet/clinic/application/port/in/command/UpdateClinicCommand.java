@@ -12,8 +12,7 @@ import jakarta.validation.Valid;
 @Builder
 public class UpdateClinicCommand {
     @NotNull(message = "Clinic ID is required")
-    @Positive(message = "Clinic ID must be positive")
-    Long clinicId;
+    String clinicId;
     
     @NotBlank(message = "Clinic name is required")
     @Size(max = 100, message = "Clinic name must not exceed 100 characters")

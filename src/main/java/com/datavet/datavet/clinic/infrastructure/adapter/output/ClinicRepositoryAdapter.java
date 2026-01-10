@@ -2,8 +2,8 @@ package com.datavet.datavet.clinic.infrastructure.adapter.output;
 
 import com.datavet.datavet.clinic.application.port.out.ClinicRepositoryPort;
 import com.datavet.datavet.clinic.domain.model.Clinic;
-import com.datavet.datavet.clinic.infrastructure.persistence.entity.ClinicEntity;
-import com.datavet.datavet.clinic.infrastructure.persistence.repository.JpaClinicRepositoryAdapter;
+import com.datavet.datavet.clinic.infrastructure.persistence.entity.ClinicDocument;
+import com.datavet.datavet.clinic.infrastructure.persistence.repository.MongoClinicRepositoryAdapter;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,12 +15,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ClinicRepositoryAdapter implements ClinicRepositoryPort {
 
-    private final JpaClinicRepositoryAdapter repository;
+    private final MongoClinicRepositoryAdapter repository;
 
-    private ClinicEntity toEntity(Clinic clinic) {
-        return ClinicEntity.builder()
-                .clinicId(clinic.getClinicID())
-                .clinicName(clinic.getClinicName())
+    private ClinicDocument toDocument(Clinic clinic) {
+        return ClinicDocument.builder()
+                .id(clinic.getClinicID())
+                .name(clinic.getClinicName())
                 .legalName(clinic.getLegalName())
                 .legalNumber(clinic.getLegalNumber())
                 .address(clinic.getAddress())
@@ -31,29 +31,29 @@ public class ClinicRepositoryAdapter implements ClinicRepositoryPort {
                 .build();
     }
 
-    private Clinic toDomain(ClinicEntity entity) {
+    private Clinic toDomain(ClinicDocument clinicDoc) {
         return Clinic.builder()
-                .clinicID(entity.getClinicId())
-                .clinicName(entity.getClinicName())
-                .legalName(entity.getLegalName())
-                .legalNumber(entity.getLegalNumber())
-                .address(entity.getAddress())
-                .phone(entity.getPhone())
-                .email(entity.getEmail())
-                .logoUrl(entity.getLogoUrl())
-                .suscriptionStatus(entity.getSuscriptionStatus())
-                .createdAt(entity.getCreatedAt())
-                .updatedAt(entity.getUpdatedAt())
+                .clinicID(clinicDoc.getId())
+                .clinicName(clinicDoc.getName())
+                .legalName(clinicDoc.getLegalName())
+                .legalNumber(clinicDoc.getLegalNumber())
+                .address(clinicDoc.getAddress())
+                .phone(clinicDoc.getPhone())
+                .email(clinicDoc.getEmail())
+                .logoUrl(clinicDoc.getLogoUrl())
+                .suscriptionStatus(clinicDoc.getSuscriptionStatus())
+                .createdAt(clinicDoc.getCreatedAt())
+                .updatedAt(clinicDoc.getUpdatedAt())
                 .build();
     }
 
     @Override
     public Clinic save(Clinic clinic) {
-        return toDomain(repository.save(toEntity(clinic)));
+        return toDomain(repository.save(toDocument(clinic)));
     }
 
     @Override
-    public Optional<Clinic> findById(Long id) {
+    public Optional<Clinic> findById(String id) {
         return repository.findById(id).map(this::toDomain);
     }
 
@@ -63,12 +63,12 @@ public class ClinicRepositoryAdapter implements ClinicRepositoryPort {
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(String id) {
         repository.deleteById(id);
     }
 
     @Override
-    public boolean existsById(Long id) {
+    public boolean existsById(String id) {
         return repository.existsById(id);
     }
 
@@ -83,12 +83,12 @@ public class ClinicRepositoryAdapter implements ClinicRepositoryPort {
     }
 
     @Override
-    public boolean existsByEmailAndIdNot(Email email, Long id) {
-        return repository.existsByEmailAndClinicIdNot(email, id);
+    public boolean existsByEmailAndIdNot(Email email, String id) {
+        return repository.existsByEmailAndIdNot(email, id);
     }
 
     @Override
-    public boolean existsByLegalNumberAndIdNot(String legalNumber, Long id) {
-        return repository.existsByLegalNumberAndClinicIdNot(legalNumber, id);
+    public boolean existsByLegalNumberAndIdNot(String legalNumber, String id) {
+        return repository.existsByLegalNumberAndIdNot(legalNumber, id);
     }
 }
