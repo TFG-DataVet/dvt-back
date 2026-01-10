@@ -2,7 +2,7 @@ package com.datavet.datavet.owner.infrastructure.adapter.output;
 
 import com.datavet.datavet.owner.application.port.out.OwnerRepositoryPort;
 import com.datavet.datavet.owner.domain.model.Owner;
-import com.datavet.datavet.owner.infrastructure.persistence.entity.OwnerDocument;
+import com.datavet.datavet.owner.infrastructure.persistence.document.OwnerDocument;
 import com.datavet.datavet.owner.infrastructure.persistence.repository.MongoOwnerRepositoryAdapter;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
@@ -20,27 +20,27 @@ public class OwnerRepositoryAdapter implements OwnerRepositoryPort {
 
     private OwnerDocument toDocument(Owner owner){
         return OwnerDocument.builder()
-                .id(owner.getOwnerID())
-                .clinicId(owner.getClinicID())
-                .firstName(owner.getOwnerName())
-                .lastName(owner.getOwnerLastName())
-                .dni(owner.getOwnerDni())
-                .phone(owner.getOwnerPhone())
-                .email(owner.getOwnerEmail())
-                .address(owner.getOwnerAddress())
+                .id(owner.getId())
+                .clinicId(owner.getClinicId())
+                .firstName(owner.getName())
+                .lastName(owner.getLastName())
+                .dni(owner.getDocumentNumber())
+                .phone(owner.getPhone())
+                .email(owner.getEmail())
+                .address(owner.getAddress())
                 .build();
     }
 
     private Owner toDomain(OwnerDocument document){
         return Owner.builder()
-                .ownerID(document.getId())
-                .clinicID(document.getClinicId())
-                .ownerLastName(document.getLastName())
-                .ownerName(document.getFirstName())
-                .ownerDni(document.getDni())
-                .ownerPhone(document.getPhone())
-                .ownerEmail(document.getEmail())
-                .ownerAddress(document.getAddress())
+                .id(document.getId())
+                .clinicId(document.getClinicId())
+                .lastName(document.getLastName())
+                .name(document.getFirstName())
+                .documentNumber(document.getDni())
+                .phone(document.getPhone())
+                .email(document.getEmail())
+                .address(document.getAddress())
                 .build();
     }
 

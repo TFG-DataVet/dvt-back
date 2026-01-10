@@ -1,11 +1,9 @@
-package com.datavet.datavet.clinic.infrastructure.persistence.entity;
-
+package com.datavet.datavet.owner.infrastructure.persistence.document;
 
 import com.datavet.datavet.shared.domain.valueobject.Address;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -18,51 +16,49 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 
-@Document(collection = "clinic")
+/**
+ * MongoDB document representing an Owner entity.
+ * Maps to the "owners" collection in MongoDB.
+ */
+@Document(collection = "owners")
 @CompoundIndexes({
-    @CompoundIndex(name = "email_idx", def = "{'email.value':1}", unique = true),
-    @CompoundIndex(name = "legal_number_idx", def = "{'legalNumber':1}", unique = true)
+    @CompoundIndex(name = "email_idx", def = "{'email.value': 1}", unique = true),
+    @CompoundIndex(name = "dni_idx", def = "{'dni': 1}", unique = true),
+    @CompoundIndex(name = "phone_idx", def = "{'phone.value': 1}", unique = true),
+    @CompoundIndex(name = "clinic_idx", def = "{'clinic_id': 1}")
 })
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ClinicDocument {
+public class OwnerDocument {
 
     @Id
     private String id;
 
+    @Field("clinic_id")
+    private String clinicId;
+
+    @Field("first_name")
     @NotBlank
     @Size(max = 50)
-    private String name;
+    private String firstName;
 
-    @Field("legal_name")
+    @Field("last_name")
     @NotBlank
     @Size(max = 100)
-    private String legalName;
+    private String lastName;
 
-    @Field("legal_number")
     @NotBlank
-    @Size(max = 150)
-    private String legalNumber;
+    @Size(min = 9, max = 9)
+    private String dni;
 
-    @NotNull
-    private Address address;
-
-    @NotNull
     private Phone phone;
 
-    @NotNull
     private Email email;
 
-    @Field("logo_url")
-    private String logoUrl;
-
-    @Field("suscription_status")
-    @NotBlank
-    private String suscriptionStatus;
+    private Address address;
 
     @CreatedDate
     @Field("created_at")

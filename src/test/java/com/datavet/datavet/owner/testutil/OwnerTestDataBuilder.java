@@ -32,14 +32,14 @@ public class OwnerTestDataBuilder {
      */
     public static Owner.OwnerBuilder aValidOwner() {
         return Owner.builder()
-                .ownerID(new ObjectId().toString())
-                .clinicID(new ObjectId().toString())
-                .ownerName(DEFAULT_OWNER_NAME)
-                .ownerLastName(DEFAULT_OWNER_LAST_NAME)
-                .ownerDni(DEFAULT_DNI)
-                .ownerPhone(aValidPhone())
-                .ownerEmail(aValidEmail())
-                .ownerAddress(aValidAddress());
+                .id(new ObjectId().toString())
+                .clinicId(new ObjectId().toString())
+                .name(DEFAULT_OWNER_NAME)
+                .lastName(DEFAULT_OWNER_LAST_NAME)
+                .documentNumber(DEFAULT_DNI)
+                .phone(aValidPhone())
+                .email(aValidEmail())
+                .address(aValidAddress());
     }
 
     /**

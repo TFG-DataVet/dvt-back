@@ -23,13 +23,13 @@ class OwnerTestDataBuilderTest {
 
         // Then
         assertNotNull(owner);
-        assertNotNull(owner.getOwnerID());
-        assertNotNull(owner.getClinicID());
-        assertTrue(ObjectId.isValid(owner.getOwnerID()), "Owner ID should be a valid ObjectId string");
-        assertTrue(ObjectId.isValid(owner.getClinicID()), "Clinic ID should be a valid ObjectId string");
-        assertEquals("Juan", owner.getOwnerName());
-        assertEquals("Pérez", owner.getOwnerLastName());
-        assertEquals("12345678A", owner.getOwnerDni());
+        assertNotNull(owner.getId());
+        assertNotNull(owner.getClinicId());
+        assertTrue(ObjectId.isValid(owner.getId()), "Owner ID should be a valid ObjectId string");
+        assertTrue(ObjectId.isValid(owner.getClinicId()), "Clinic ID should be a valid ObjectId string");
+        assertEquals("Juan", owner.getName());
+        assertEquals("Pérez", owner.getLastName());
+        assertEquals("12345678A", owner.getDocumentNumber());
     }
 
     @Test
@@ -42,8 +42,8 @@ class OwnerTestDataBuilderTest {
 
         // Then
         assertNotNull(owner);
-        assertEquals(specificId, owner.getOwnerID());
-        assertTrue(ObjectId.isValid(owner.getClinicID()));
+        assertEquals(specificId, owner.getId());
+        assertTrue(ObjectId.isValid(owner.getClinicId()));
     }
 
     @Test
@@ -57,8 +57,8 @@ class OwnerTestDataBuilderTest {
 
         // Then
         assertNotNull(owner);
-        assertEquals(ownerId, owner.getOwnerID());
-        assertEquals(clinicId, owner.getClinicID());
+        assertEquals(ownerId, owner.getId());
+        assertEquals(clinicId, owner.getClinicId());
     }
 
     @Test
@@ -72,7 +72,7 @@ class OwnerTestDataBuilderTest {
 
         // Then
         assertNotNull(owner);
-        assertEquals(email, owner.getOwnerEmail().getValue());
+        assertEquals(email, owner.getEmail().getValue());
     }
 
     @Test
@@ -86,7 +86,7 @@ class OwnerTestDataBuilderTest {
 
         // Then
         assertNotNull(owner);
-        assertEquals(dni, owner.getOwnerDni());
+        assertEquals(dni, owner.getDocumentNumber());
     }
 
     @Test
@@ -100,7 +100,7 @@ class OwnerTestDataBuilderTest {
 
         // Then
         assertNotNull(owner);
-        assertEquals(phone, owner.getOwnerPhone().getValue());
+        assertEquals(phone, owner.getPhone().getValue());
     }
 
     @Test

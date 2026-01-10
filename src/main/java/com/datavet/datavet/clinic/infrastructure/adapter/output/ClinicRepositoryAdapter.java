@@ -2,7 +2,7 @@ package com.datavet.datavet.clinic.infrastructure.adapter.output;
 
 import com.datavet.datavet.clinic.application.port.out.ClinicRepositoryPort;
 import com.datavet.datavet.clinic.domain.model.Clinic;
-import com.datavet.datavet.clinic.infrastructure.persistence.entity.ClinicDocument;
+import com.datavet.datavet.clinic.infrastructure.persistence.document.ClinicDocument;
 import com.datavet.datavet.clinic.infrastructure.persistence.repository.MongoClinicRepositoryAdapter;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import lombok.RequiredArgsConstructor;

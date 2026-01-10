@@ -4,7 +4,7 @@ import com.datavet.datavet.owner.domain.event.OwnerCreatedEvent;
 import com.datavet.datavet.owner.domain.event.OwnerDeletedEvent;
 import com.datavet.datavet.owner.domain.event.OwnerUpdatedEvent;
 import com.datavet.datavet.shared.domain.model.AggregateRoot;
-import com.datavet.datavet.shared.domain.model.Entity;
+import com.datavet.datavet.shared.domain.model.Document;
 import com.datavet.datavet.shared.domain.valueobject.Address;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
@@ -14,71 +14,83 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class Owner extends AggregateRoot<String> implements Entity<String> {
+public class Owner extends AggregateRoot<String> implements Document<String> {
 
-    private String ownerID;
+    private String id;
 
-    private String clinicID;
+    private String clinicId;
 
     @NotBlank
     @Size(max = 50)
-    private String ownerName;
+    private String name;
 
     @NotBlank
     @Size(max = 100)
-    private String ownerLastName;
+    private String lastName;
 
     @NotNull
     @Size(min = 9, max = 9)
-    private String ownerDni;
+    private String documentNumber;
 
     @NotNull
-    private Phone ownerPhone;
+    private Phone phone;
 
     @NotBlank
-    private Email ownerEmail;
+    private Email email;
 
     @NotNull
-    private Address ownerAddress;
+    private Address address;
+
+    @Builder.Default
+    private List<String> petIds = new ArrayList<>();
+
+    private String avatarUrl;
+
+    private boolean active;
 
     private LocalDateTime createdAt;
     private LocalDateTime updateAt;
 
     @Override
     public String getId() {
-        return this.ownerID;
+        return this.id;
     }
 
     public static Owner create(
-            String ownerID,
-            String clinicID,
+            String id,
+            String clinicId,
             String name,
             String lastName,
-            String dni,
+            String documentNumber,
             Phone phone,
             Email email,
-            Address address
-    )
-         {
+            Address address,
+            String avatarUrl) {
         Owner  owner = Owner.builder()
-                .ownerID(ownerID)
-                .clinicID(clinicID)
-                .ownerName(name)
-                .ownerLastName(lastName)
-                .ownerDni(dni)
-                .ownerPhone(phone)
-                .ownerEmail(email)
-                .ownerAddress(address)
+                .id(id)
+                .clinicId(clinicId)
+                .name(name)
+                .lastName(lastName)
+                .documentNumber(documentNumber)
+                .phone(phone)
+                .email(email)
+                .address(address)
+                .avatarUrl(avatarUrl)
+                .petIds(new ArrayList<>())
                 .createdAt(LocalDateTime.now())
                 .updateAt(LocalDateTime.now())
+                .active(true)
                 .build();
 
-        owner.addDomainEvent(OwnerCreatedEvent.of(ownerID, name, dni));
+        owner.addDomainEvent(OwnerCreatedEvent.of(id, name, documentNumber));
         return owner;
     }
 
@@ -90,19 +102,21 @@ public class Owner extends AggregateRoot<String> implements Entity<String> {
             String name,
             String lastName,
             Email email,
-            String dni,
+            String DocumentNumber,
             Address address,
-            Phone phone
+            Phone phone,
+            String avatarUrl
     ){
-        this.ownerName = name;
-        this.ownerLastName = lastName;
-        this.ownerEmail = email;
-        this.ownerDni = dni;
-        this.ownerAddress = address;
-        this.ownerPhone = phone;
+        this.name = name;
+        this.lastName = lastName;
+        this.email = email;
+        this.documentNumber = DocumentNumber;
+        this.address = address;
+        this.phone = phone;
+        this.avatarUrl = avatarUrl;
         this.updateAt = LocalDateTime.now();
 
-        addDomainEvent(OwnerUpdatedEvent.of(ownerID, name));
+        addDomainEvent(OwnerUpdatedEvent.of(id, name));
     }
 
     /**
@@ -110,7 +124,43 @@ public class Owner extends AggregateRoot<String> implements Entity<String> {
      */
 
     public void delete(){
-        addDomainEvent(OwnerDeletedEvent.of(this.ownerID, this.ownerName));
+        addDomainEvent(OwnerDeletedEvent.of(this.id, this.name));
     }
 
+    public List<String> getPetIds() {
+        return Collections.unmodifiableList(petIds);
+    }
+
+    public void addPet(String petId) {
+        if(petId == null || petId.isBlank()) {
+            throw new IllegalArgumentException("Pet ID cannot be null or blank");
+        }
+
+        if (!this.petIds.contains(petId)) {
+            this.petIds.add(petId);
+            this.updateAt = LocalDateTime.now();
+        }
+    }
+
+    public void removePet(String petId) {
+        if (this.petIds.remove(petId)) {
+            this.updateAt = LocalDateTime.now();
+        }
+    }
+
+    public void desactivate() {
+        this.active = false;
+        this.updateAt = LocalDateTime.now();
+        addDomainEvent(OwnerUpdatedEvent.of(this.id, this.name));
+    }
+
+    public void activate() {
+        this.active = true;
+        this.updateAt = LocalDateTime.now();
+    }
+
+    public int getPetCount() {
+        return this.petIds.size();
+    }
 }
+
