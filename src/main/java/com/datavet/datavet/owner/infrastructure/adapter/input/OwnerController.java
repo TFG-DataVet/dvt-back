@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @RestController
 @RequestMapping("/owner")
 @RequiredArgsConstructor
@@ -69,10 +68,8 @@ public class OwnerController {
                 .ownerName(request.getName())
                 .ownerLastName(request.getLastName())
                 .ownerDni(request.getDni())
-
                 .ownerPhone(request.getPhone())
                 .ownerEmail(request.getEmail())
-
                 .ownerAddress(new Address(request.getAddress(), request.getCity(), request.getPostalCode()))
                 .build();
 
@@ -85,4 +82,5 @@ public class OwnerController {
         ownerUseCase.deleteOwner(id);
         return ResponseEntity.noContent().build();
     }
+
 }

@@ -111,7 +111,6 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
     public Owner getOwnerById(String id) {
         return ownerRepositoryPort.findById(id)
                 .orElseThrow(() -> new OwnerNotFoundException(id));
-
     }
 
     @Override

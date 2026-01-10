@@ -17,8 +17,8 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class Clinic extends AggregateRoot<String> implements Document<String> {
 
+public class Clinic extends AggregateRoot<String> implements Document<String> {
 
     private String clinicID;
     
