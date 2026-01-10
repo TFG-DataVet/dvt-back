@@ -167,7 +167,7 @@ class DomainArchitectureIntegrationTest {
             "Use case interface should exist");
         assertDoesNotThrow(() -> Class.forName("com.datavet.datavet.clinic.infrastructure.adapter.input.ClinicController"),
             "Infrastructure controller should exist");
-        assertDoesNotThrow(() -> Class.forName("com.datavet.datavet.clinic.infrastructure.persistence.entity.ClinicDocument"),
+        assertDoesNotThrow(() -> Class.forName("com.datavet.datavet.clinic.infrastructure.persistence.document.ClinicDocument"),
             "Infrastructure document should exist");
     }
 
