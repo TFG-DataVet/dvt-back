@@ -1,5 +1,6 @@
 package com.datavet.datavet.pet.domain.model.details;
 
+import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import com.datavet.datavet.pet.domain.valueobject.WeightUnit;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +16,10 @@ public class WeightDetails implements MedicalRecordDetails{
     private Double value;
     private WeightUnit unit;
 
+    @Override
+    public MedicalRecordType getType(){
+        return MedicalRecordType.WEIGHT;
+    }
 
     @Override
     public void validate() {
