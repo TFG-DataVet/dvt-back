@@ -99,7 +99,6 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
     }
 
     @Override
-
     public void deleteOwner(String id) {
         Owner owner = getOwnerById(id);
         owner.delete();

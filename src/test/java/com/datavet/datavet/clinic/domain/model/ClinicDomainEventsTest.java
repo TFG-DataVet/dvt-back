@@ -4,6 +4,7 @@ import com.datavet.datavet.clinic.domain.event.ClinicCreatedEvent;
 import com.datavet.datavet.clinic.domain.event.ClinicDeletedEvent;
 import com.datavet.datavet.clinic.domain.event.ClinicUpdatedEvent;
 import com.datavet.datavet.shared.domain.event.DomainEvent;
+import com.datavet.datavet.shared.domain.model.Document;
 import com.datavet.datavet.shared.domain.valueobject.Address;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
@@ -118,7 +119,7 @@ class ClinicDomainEventsTest {
     }
 
     @Test
-    @DisplayName("Should implement Entity interface correctly")
+    @DisplayName("Should implement Document interface correctly")
     void shouldImplementEntityInterfaceCorrectly() {
         // Given
         Address address = new Address("123 Test Street", "Test City", "12345");
@@ -132,9 +133,9 @@ class ClinicDomainEventsTest {
         assertEquals(1L, clinic.getId(), "getId() should return the clinic ID");
         assertEquals(1L, clinic.getClinicID(), "getClinicID() should return the same value as getId()");
         
-        // Test that clinic is an instance of Entity
-        assertTrue(clinic instanceof com.datavet.datavet.shared.domain.model.Entity, 
-                "Clinic should implement Entity interface");
+        // Test that clinic is an instance of Document
+        assertTrue(clinic instanceof Document,
+                "Clinic should implement Document interface");
         
         // Test entity identity consistency
         Clinic sameClinic = Clinic.create("ClinicId", "Different Name", "Different Legal Name", "987654321",

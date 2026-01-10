@@ -1,6 +1,6 @@
 package com.datavet.datavet.clinic.infrastructure.persistence.repository;
 
-import com.datavet.datavet.clinic.infrastructure.persistence.entity.ClinicDocument;
+import com.datavet.datavet.clinic.infrastructure.persistence.document.ClinicDocument;
 import com.datavet.datavet.shared.domain.valueobject.Address;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
