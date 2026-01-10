@@ -4,7 +4,7 @@ import com.datavet.datavet.clinic.domain.event.ClinicCreatedEvent;
 import com.datavet.datavet.clinic.domain.event.ClinicDeletedEvent;
 import com.datavet.datavet.clinic.domain.event.ClinicUpdatedEvent;
 import com.datavet.datavet.shared.domain.model.AggregateRoot;
-import com.datavet.datavet.shared.domain.model.Entity;
+import com.datavet.datavet.shared.domain.model.Document;
 import com.datavet.datavet.shared.domain.valueobject.Address;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
@@ -17,8 +17,8 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class Clinic extends AggregateRoot<String> implements Entity<String> {
 
+public class Clinic extends AggregateRoot<String> implements Document<String> {
 
     private String clinicID;
     
@@ -53,7 +53,7 @@ public class Clinic extends AggregateRoot<String> implements Entity<String> {
 
     /**
      * Returns the unique identifier of this clinic entity.
-     * Implementation of Entity<Long> interface.
+     * Implementation of Document<Long> interface.
      */
     @Override
     public String getId() {

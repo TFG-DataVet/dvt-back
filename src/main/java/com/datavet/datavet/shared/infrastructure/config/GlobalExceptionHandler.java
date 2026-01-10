@@ -88,7 +88,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleEntityNotFoundException(
             EntityNotFoundException ex, WebRequest request) {
         
-        log.warn("Entity not found: {}", ex.getMessage());
+        log.warn("Document not found: {}", ex.getMessage());
         
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
@@ -109,7 +109,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleEntityAlreadyExistsException(
             EntityAlreadyExistsException ex, WebRequest request) {
         
-        log.warn("Entity already exists: {}", ex.getMessage());
+        log.warn("Document already exists: {}", ex.getMessage());
         
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
