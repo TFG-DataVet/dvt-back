@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 public class MedicalRecord extends AggregateRoot<String> implements Document<String> {
 
@@ -53,7 +52,11 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
                                        MedicalRecordDetails details){
 
         if ( details == null) {
-            throw new IllegalArgumentException("MedicalRecord details cannot be null");
+            throw new IllegalArgumentException("El tipo de registro médico no puede ser nulo.");
+        }
+
+        if ( type != details.getType()){
+            throw new IllegalArgumentException("El tipo de registro seleccionado debe de ser del mismo tipo que el registrado.");
         }
 
         details.validate();
@@ -73,15 +76,13 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
         return medicalRecord;
     }
 
-    public void update(MedicalRecordType type, MedicalRecordStatus status, MedicalRecordDetails details){
-
-        if (details == null){
-            throw new IllegalArgumentException("MedicalRecord details cannot be null");
+    public void changeStatus(MedicalRecordStatus newStatus, String notes){
+        if (status == newStatus) {
+            throw new IllegalArgumentException("Para modificar el estado del registro médico debe seleccionar otro estado diferente al actual.");
         }
 
-        this.type = type;
-        this.status = status;
-        this.details = details;
+        this.status = newStatus;
+        this.notes = notes;
         this.updatedAt = LocalDateTime.now();
     }
 
