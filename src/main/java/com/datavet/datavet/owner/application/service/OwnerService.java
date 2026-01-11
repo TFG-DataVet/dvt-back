@@ -61,7 +61,8 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
                 command.getOwnerDni(),
                 command.getOwnerPhone(),
                 command.getOwnerEmail(),
-                command.getOwnerAddress()
+                command.getOwnerAddress(),
+                command.getUrl()
         );
 
         // Publish domain events BEFORE saving (While ew still have them)
@@ -88,7 +89,8 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
                 command.getOwnerEmail(),
                 command.getOwnerDni(),
                 command.getOwnerAddress(),
-                command.getOwnerPhone()
+                command.getOwnerPhone(),
+                command.getUrl()
         );
 
         publishDomainEvent(existing);
