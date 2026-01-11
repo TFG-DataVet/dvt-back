@@ -1,20 +1,21 @@
 package com.datavet.datavet.pet.domain.model.details;
 
+import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import com.datavet.datavet.pet.domain.valueobject.WeightUnit;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class WeightDetails implements MedicalRecordDetails{
 
     private Double value;
     private WeightUnit unit;
 
+    @Override
+    public MedicalRecordType getType(){
+        return MedicalRecordType.WEIGHT;
+    }
 
     @Override
     public void validate() {
@@ -37,10 +38,4 @@ public class WeightDetails implements MedicalRecordDetails{
 
         return weightDetails;
     }
-
-    public void update(Double value, WeightUnit unit){
-        this.value = value;
-        this.unit = unit;
-    }
-
 }
