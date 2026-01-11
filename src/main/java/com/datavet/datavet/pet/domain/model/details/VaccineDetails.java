@@ -5,11 +5,9 @@ import lombok.*;
 
 import java.time.LocalDate;
 
-
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@NoArgsConstructor
 public class VaccineDetails implements MedicalRecordDetails{
 
     private String vaccineName;
