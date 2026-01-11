@@ -35,4 +35,6 @@ public class CreateOwnerCommand {
     @NotBlank
     @Size(max = 50, message = "Owner password is required")
     private Address ownerAddress;
+
+    private String url;
 }
