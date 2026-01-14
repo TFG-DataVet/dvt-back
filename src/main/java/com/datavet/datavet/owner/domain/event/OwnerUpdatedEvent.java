@@ -13,9 +13,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class OwnerUpdatedEvent implements DomainEvent {
 
-    private final String ownerId;
-    private final String ownerName;
-    private final LocalDateTime timestamp;
+    private  String ownerId;
+    private  String ownerName;
+    private  LocalDateTime timestamp;
 
     public static OwnerUpdatedEvent of(String ownerId, String ownerName) {
         return new OwnerUpdatedEvent(ownerId, ownerName, LocalDateTime.now());

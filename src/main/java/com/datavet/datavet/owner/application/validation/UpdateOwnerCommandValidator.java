@@ -16,7 +16,7 @@ public class UpdateOwnerCommandValidator implements Validator<UpdateOwnerCommand
 
         if (command.getOwnerID() == null) {
             result.addError("ownerID", "Owner ID is required");
-        } else if (command.getOwnerID() <= 0) {
+        } else if (command.getOwnerID().isBlank()) {
             result.addError("ownerID", "Owner ID must be greater than zero");
         }
 
