@@ -36,7 +36,8 @@ public class OwnerController {
                 request.getDni(),
                 new Phone(request.getPhone()),
                 new Email(request.getEmail()),
-                new Address(request.getAddress(), request.getCity(), request.getPostalCode())
+                new Address(request.getAddress(), request.getCity(), request.getPostalCode()),
+                request.getUrl()
         );
 
         Owner owner = ownerUseCase.createOwner(command);
@@ -63,6 +64,7 @@ public class OwnerController {
     public ResponseEntity<OwnerResponse> updateOwner(
             @PathVariable String id,
             @Valid @RequestBody UpdateOwnerRequest request) {
+
         UpdateOwnerCommand command = UpdateOwnerCommand.builder()
                 .ownerID(id)
                 .ownerName(request.getName())

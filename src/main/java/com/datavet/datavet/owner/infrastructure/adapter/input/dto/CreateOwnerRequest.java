@@ -43,4 +43,6 @@ public class CreateOwnerRequest {
     @Size(max = 10, message = "Postal code must not exceed 10 characters")
     private String postalCode;
 
+    private String url;
+
 }
