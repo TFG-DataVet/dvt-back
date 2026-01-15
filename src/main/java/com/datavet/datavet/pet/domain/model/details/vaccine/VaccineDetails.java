@@ -1,5 +1,6 @@
-package com.datavet.datavet.pet.domain.model.details;
+package com.datavet.datavet.pet.domain.model.details.vaccine;
 
+import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import lombok.*;
 
@@ -8,7 +9,7 @@ import java.time.LocalDate;
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class VaccineDetails implements MedicalRecordDetails{
+public class VaccineDetails implements MedicalRecordDetails {
 
     private String vaccineName;
 
