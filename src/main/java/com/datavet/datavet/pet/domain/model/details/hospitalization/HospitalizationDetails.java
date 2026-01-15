@@ -1,5 +1,6 @@
-package com.datavet.datavet.pet.domain.model.details;
+package com.datavet.datavet.pet.domain.model.details.hospitalization;
 
+import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class HospitalizationDetails implements MedicalRecordDetails{
+public class HospitalizationDetails implements MedicalRecordDetails {
 
     private LocalDateTime admissionDate;
     private LocalDateTime dischargeDate;
