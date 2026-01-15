@@ -1,4 +1,4 @@
-package com.datavet.datavet.pet.domain.valueobject;
+package com.datavet.datavet.pet.domain.model.details.surgery;
 
 public enum SurgeryType {
     PREVENTIVE,

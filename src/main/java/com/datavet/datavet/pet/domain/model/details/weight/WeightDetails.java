@@ -1,13 +1,13 @@
-package com.datavet.datavet.pet.domain.model.details;
+package com.datavet.datavet.pet.domain.model.details.weight;
 
+import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
-import com.datavet.datavet.pet.domain.valueobject.WeightUnit;
 import lombok.*;
 
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class WeightDetails implements MedicalRecordDetails{
+public class WeightDetails implements MedicalRecordDetails {
 
     private Double value;
     private WeightUnit unit;
