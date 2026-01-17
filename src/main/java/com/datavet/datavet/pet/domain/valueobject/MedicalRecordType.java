@@ -8,5 +8,6 @@ public enum MedicalRecordType {
     WEIGHT,
     DIAGNOSIS,
     ALLERGY,
-    DOCUMENT
+    DOCUMENT,
+    HOSPITALIZATION
 }
