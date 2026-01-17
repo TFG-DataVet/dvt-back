@@ -1,5 +1,6 @@
-package com.datavet.datavet.pet.domain.model.details;
+package com.datavet.datavet.pet.domain.model.details.consultation;
 
+import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -12,7 +13,7 @@ import java.util.List;
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ConsultationDetails implements MedicalRecordDetails{
+public class ConsultationDetails implements MedicalRecordDetails {
 
     private String reason;
 

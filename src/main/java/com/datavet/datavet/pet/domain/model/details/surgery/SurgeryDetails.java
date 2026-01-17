@@ -1,10 +1,7 @@
-package com.datavet.datavet.pet.domain.model.details;
+package com.datavet.datavet.pet.domain.model.details.surgery;
 
-import com.datavet.datavet.pet.domain.model.details.surgery.SurgeryMedication;
-import com.datavet.datavet.pet.domain.model.details.surgery.SurgeryProcedure;
+import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
-import com.datavet.datavet.pet.domain.valueobject.SurgeryOutcome;
-import com.datavet.datavet.pet.domain.valueobject.SurgeryType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
