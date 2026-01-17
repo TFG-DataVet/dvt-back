@@ -1,7 +1,6 @@
-package com.datavet.datavet.pet.domain.model.details;
+package com.datavet.datavet.pet.domain.model.details.diagnosis;
 
-import com.datavet.datavet.pet.domain.model.details.diagnosis.DiagnosisCategory;
-import com.datavet.datavet.pet.domain.model.details.diagnosis.DiagnosisSeverity;
+import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -14,7 +13,7 @@ import java.util.List;
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class DiagnosisDetails implements MedicalRecordDetails{
+public class DiagnosisDetails implements MedicalRecordDetails {
 
     private String diagnosisName;
     private DiagnosisCategory category;
