@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class PetCreatedEvent implements DomainEvent {
 
+    private final String id;
     private final String name;
     private final String clinicId;
     private final OwnerInfo owner;
@@ -19,12 +20,14 @@ public class PetCreatedEvent implements DomainEvent {
 
 
     public static PetCreatedEvent of(
+            String id,
             String name,
             String clinicId,
             OwnerInfo owner,
             String chipNumber
     ) {
         return new PetCreatedEvent(
+                id,
                 name,
                 clinicId,
                 owner,
