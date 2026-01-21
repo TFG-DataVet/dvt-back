@@ -1,4 +1,4 @@
-package com.datavet.datavet.pet.domain.event;
+package com.datavet.datavet.pet.domain.event.pet;
 
 import com.datavet.datavet.pet.domain.model.Sex;
 import com.datavet.datavet.shared.domain.event.DomainEvent;

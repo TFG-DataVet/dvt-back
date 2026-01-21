@@ -1,6 +1,6 @@
 package com.datavet.datavet.pet.domain.model;
 
-import com.datavet.datavet.pet.domain.event.*;
+import com.datavet.datavet.pet.domain.event.pet.*;
 import com.datavet.datavet.shared.domain.model.AggregateRoot;
 import com.datavet.datavet.shared.domain.model.Document;
 import lombok.*;
