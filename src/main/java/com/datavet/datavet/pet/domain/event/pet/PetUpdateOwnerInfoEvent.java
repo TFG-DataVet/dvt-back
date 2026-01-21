@@ -1,11 +1,10 @@
-package com.datavet.datavet.pet.domain.event;
+package com.datavet.datavet.pet.domain.event.pet;
 
 import com.datavet.datavet.pet.domain.model.OwnerInfo;
 import com.datavet.datavet.shared.domain.event.DomainEvent;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
