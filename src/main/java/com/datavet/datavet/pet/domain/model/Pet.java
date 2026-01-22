@@ -1,6 +1,6 @@
 package com.datavet.datavet.pet.domain.model;
 
-import com.datavet.datavet.pet.domain.event.*;
+import com.datavet.datavet.pet.domain.event.pet.*;
 import com.datavet.datavet.shared.domain.model.AggregateRoot;
 import com.datavet.datavet.shared.domain.model.Document;
 import lombok.*;
@@ -8,6 +8,7 @@ import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.UUID;
 
 @Getter
 @Builder
@@ -60,7 +61,6 @@ public class Pet extends AggregateRoot<String> implements Document<String> {
     public String getId() { return this.id; }
 
     public static Pet create(
-            String id,
             String clinicId,
             String name,
             String species,
@@ -71,8 +71,10 @@ public class Pet extends AggregateRoot<String> implements Document<String> {
             String avatarUrl,
             OwnerInfo owner) {
 
+        String uuid = UUID.randomUUID().toString();
+
         Pet pet = Pet.builder()
-                .id(id)
+                .id(uuid)
                 .clinicId(clinicId)
                 .name(name)
                 .species(species)
@@ -88,13 +90,12 @@ public class Pet extends AggregateRoot<String> implements Document<String> {
 
         pet.validate();
 
-        pet.addDomainEvent(PetCreatedEvent.of(name, clinicId, owner, chipNumber));
+        pet.addDomainEvent(PetCreatedEvent.of(uuid, name, clinicId, owner, chipNumber));
         return pet;
     }
 
-    public void update(String name, String avatarUrl) {
+    public void update(String id, String name, String avatarUrl) {
         if(this.name.equals(name)) return;
-
 
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("El nuevo nombre de la mascota no puede ser nulo o estar vacio");
@@ -111,11 +112,10 @@ public class Pet extends AggregateRoot<String> implements Document<String> {
         this.updatedAt = LocalDateTime.now();
         validate();
 
-
-        addDomainEvent(PetUpdateEvent.of(this.id, previousName, name));
+        addDomainEvent(PetUpdateEvent.of(id, previousName, name));
     }
 
-    public void correctBreed(String newBreed, String reason) {
+    public void correctBreed(String id, String newBreed, String reason) {
         if(this.breed.equals(newBreed)) return;
 
         if (newBreed == null || newBreed.isBlank()) {
@@ -131,10 +131,10 @@ public class Pet extends AggregateRoot<String> implements Document<String> {
         this.breed = newBreed;
         this.updatedAt = LocalDateTime.now();
 
-        addDomainEvent(PetBreedCorrectedEvent.of(this.id, previousBreed, this.breed, reason));
+        addDomainEvent(PetBreedCorrectedEvent.of(id, previousBreed, this.breed, reason));
     }
 
-    public void correctBirthDate(LocalDate newBirthDate, String reason) {
+    public void correctBirthDate(String id, LocalDate newBirthDate, String reason) {
         if(this.dateOfBirth.equals(newBirthDate)) return;
 
         if (newBirthDate == null || newBirthDate.isAfter(LocalDate.now())) {
@@ -150,10 +150,10 @@ public class Pet extends AggregateRoot<String> implements Document<String> {
         this.dateOfBirth = newBirthDate;
         this.updatedAt = LocalDateTime.now();
 
-        addDomainEvent(PetBirthDateCorrectedEvent.of(this.id, previousBirthDate, this.dateOfBirth, reason));
+        addDomainEvent(PetBirthDateCorrectedEvent.of(id, previousBirthDate, this.dateOfBirth, reason));
     }
 
-    public void correctSex(Sex newSex, String reason) {
+    public void correctSex(String id, Sex newSex, String reason) {
         if(this.sex.equals(newSex)) return;
 
         if (newSex == null) {
@@ -169,10 +169,10 @@ public class Pet extends AggregateRoot<String> implements Document<String> {
         this.sex = newSex;
         this.updatedAt = LocalDateTime.now();
 
-        addDomainEvent(PetSexCorrectedEvent.of(this.id, previousSex, this.sex, reason));
+        addDomainEvent(PetSexCorrectedEvent.of(id, previousSex, this.sex, reason));
     }
 
-    public void updateOwnerInfo(OwnerInfo newOwnerInfo) {
+    public void updateOwnerInfo(String id, OwnerInfo newOwnerInfo) {
         if (newOwnerInfo == null) {
             throw  new IllegalArgumentException("Owner cannot be null");
         }
@@ -181,21 +181,21 @@ public class Pet extends AggregateRoot<String> implements Document<String> {
 
         this.owner = newOwnerInfo;
         this.updatedAt = LocalDateTime.now();
-        addDomainEvent(PetUpdateOwnerInfoEvent.of(this.id, previousOwnerInfo , owner));
+        addDomainEvent(PetUpdateOwnerInfoEvent.of(id, previousOwnerInfo , owner));
     }
 
-    public void deactivate(String reason) {
+    public void deactivate(String id, String reason) {
         this.active = false;
         this.updatedAt = LocalDateTime.now();
 
-        addDomainEvent(PetDeactivatedEvent.of(this.id, reason));
+        addDomainEvent(PetDeactivatedEvent.of(id, reason));
     }
 
-    public void activate() {
+    public void activate(String id) {
         this.active = true;
         this.updatedAt = LocalDateTime.now();
 
-        addDomainEvent(PetActivateEvent.of(this.id));
+        addDomainEvent(PetActivateEvent.of(id));
     }
 
     public int getAgeInYears() {
