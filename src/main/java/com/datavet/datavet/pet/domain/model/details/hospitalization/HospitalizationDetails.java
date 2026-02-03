@@ -21,10 +21,26 @@ public class HospitalizationDetails implements MedicalRecordDetails {
     private Boolean intensiveCare;
     private String ward;
     private String notes;
+    private HospitalizationStatus status;
 
     @Override
     public MedicalRecordType getType() {
         return MedicalRecordType.HOSPITALIZATION;
+    }
+
+    @Override
+    public boolean canCorrect(MedicalRecordDetails previous) {
+        if (!(previous instanceof HospitalizationDetails )) return false;
+
+        HospitalizationDetails prev = (HospitalizationDetails) previous;
+
+        boolean reasonChanged = !this.reason.equals(prev.reason);
+        boolean diagnosisAtAdmissionChanged = !this.diagnosisAtAdmission.equals(prev.diagnosisAtAdmission);
+        boolean notesChanged = !this.notes.equals(prev.notes);
+        boolean wardChanges = !this.ward.equals(prev.ward);
+        boolean intensiveCareChanged = !this.intensiveCare.equals(prev.intensiveCare);
+
+        return reasonChanged || diagnosisAtAdmissionChanged || notesChanged || wardChanges || intensiveCareChanged;
     }
 
     @Override
@@ -34,7 +50,7 @@ public class HospitalizationDetails implements MedicalRecordDetails {
         }
 
         if (dischargeDate != null && dischargeDate.isBefore(admissionDate)) {
-            throw new IllegalArgumentException("La fecha de salida no puede ser posterior a la fecha de ingreso");
+            throw new IllegalArgumentException("La fecha de salida no puede ser anterior a la fecha de ingreso");
         }
 
         if (reason == null || reason.isBlank()) {
@@ -48,6 +64,14 @@ public class HospitalizationDetails implements MedicalRecordDetails {
         if (ward == null || ward.isBlank()) {
             throw new IllegalArgumentException("El area de hospitalización no puede ser nula o estar vacia.");
         }
+
+        if (notes == null || notes.isBlank()) {
+            throw new IllegalArgumentException("La nota hospitalaria no puede ser nula o estar vacia.");
+        }
+
+        if (status == null) {
+            throw new IllegalArgumentException("El estado de la hospitalización no debe estar vacio.");
+        }
     }
 
     public static HospitalizationDetails create(
@@ -57,7 +81,8 @@ public class HospitalizationDetails implements MedicalRecordDetails {
             String diagnosisAtAdmission,
             Boolean intensiveCare,
             String ward,
-            String notes
+            String notes,
+            HospitalizationStatus status
     ) {
         HospitalizationDetails hospitalizationDetails = HospitalizationDetails.builder()
                 .admissionDate(admissionDate)
@@ -67,6 +92,7 @@ public class HospitalizationDetails implements MedicalRecordDetails {
                 .intensiveCare(intensiveCare)
                 .ward(ward)
                 .notes(notes)
+                .status(status)
                 .build();
 
         hospitalizationDetails.validate();
@@ -74,4 +100,20 @@ public class HospitalizationDetails implements MedicalRecordDetails {
         return hospitalizationDetails;
     }
 
+    public void markAsCompleted(){
+        if (status != HospitalizationStatus.IN_TREATMENT){
+            throw new IllegalArgumentException("Solo una hospitalización EN TRATAMIENTO puede ser dada de alta");
+        }
+
+        this.status = HospitalizationStatus.DISCHARGED;
+        dischargeDate = LocalDateTime.now();
+    }
+
+    public void markAsInTreatment(){
+        if (this.status != HospitalizationStatus.ADMITTED) {
+            throw new IllegalArgumentException("Solo una hospitalización admitida puede ser pasada como en tratamiento");
+        }
+
+        this.status = HospitalizationStatus.IN_TREATMENT;
+    }
 }
