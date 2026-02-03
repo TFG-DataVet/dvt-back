@@ -16,22 +16,29 @@ import java.util.List;
 public class ConsultationDetails implements MedicalRecordDetails {
 
     private String reason;
-
     private List<String> symptoms;
-
     private String clinicalFindings;
-
     private String diagnosis;
-
     private String treatmentPlan;
-
+    private ConsultationStatus status;
     private boolean followUpRequired;
-
     private LocalDate followUpDate;
 
     @Override
     public MedicalRecordType getType(){
         return MedicalRecordType.CONSULTATION;
+    }
+
+    @Override
+    public boolean canCorrect(MedicalRecordDetails previous) {
+        if (!(previous instanceof ConsultationDetails)) return false;
+        ConsultationDetails prev = (ConsultationDetails) previous;
+
+        boolean reasonChanged = !this.reason.equals(prev.reason);
+        boolean diagnosisChanged = !this.diagnosis.equals(prev.diagnosis);
+        boolean treatmentChanged = !this.treatmentPlan.equals(prev.treatmentPlan);
+
+        return reasonChanged || diagnosisChanged || treatmentChanged;
     }
 
     @Override
@@ -55,6 +62,10 @@ public class ConsultationDetails implements MedicalRecordDetails {
                 }
             }
         }
+
+        if (status == null){
+            throw new IllegalArgumentException("El estado de la consulta no puede estar vacio.");
+        }
     }
 
     public static ConsultationDetails create(String reason,
@@ -70,6 +81,7 @@ public class ConsultationDetails implements MedicalRecordDetails {
                 .clinicalFindings(clinicalFindings)
                 .diagnosis(diagnosis)
                 .treatmentPlan(treatmentPlan)
+                .status(ConsultationStatus.SCHEDULED)
                 .followUpRequired(followUpRequired)
                 .followUpDate(followUpDate)
                 .build();
@@ -77,5 +89,21 @@ public class ConsultationDetails implements MedicalRecordDetails {
         consultationDetails.validate();
 
         return consultationDetails;
+    }
+
+    public void markAsCompleted(){
+        if (status != ConsultationStatus.SCHEDULED){
+            throw new IllegalArgumentException("Solo una consulta programada puede completarse");
+        }
+
+        this.status = ConsultationStatus.COMPLETED;
+    }
+
+    public void markAsNoShow(){
+        if (status != ConsultationStatus.SCHEDULED){
+            throw new IllegalArgumentException("Solo una consulta programada puede ocultarse");
+        }
+
+        this.status = ConsultationStatus.NO_SHOW;
     }
 }
