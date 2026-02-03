@@ -1,5 +1,7 @@
 package com.datavet.datavet.pet.domain.model;
 
+import com.datavet.datavet.pet.domain.event.medicalrecord.MedicalRecordCreatedEvent;
+import com.datavet.datavet.pet.domain.event.medicalrecord.MedicalRecordStatusChangeEvent;
 import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordStatus;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
@@ -11,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Builder
@@ -42,15 +45,13 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
     @Override
     public String getId() { return this.id; }
 
-    public static MedicalRecord create(String id,
-                                       String petId,
+    public static MedicalRecord create(String petId,
                                        String clinicId,
                                        MedicalRecordType type,
                                        MedicalRecordStatus status,
                                        String veterinarianId,
                                        String notes,
                                        MedicalRecordDetails details){
-
         if ( details == null) {
             throw new IllegalArgumentException("El tipo de registro médico no puede ser nulo.");
         }
@@ -59,19 +60,24 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
             throw new IllegalArgumentException("El tipo de registro seleccionado debe de ser del mismo tipo que el registrado.");
         }
 
+        String uuid = UUID.randomUUID().toString();
+
         details.validate();
 
         MedicalRecord medicalRecord = MedicalRecord.builder()
-                .id(id)
+                .id(uuid)
                 .petId(petId)
                 .clinicId(clinicId)
                 .type(type)
                 .status(status)
-                .recordedAt(LocalDateTime.now())
                 .veterinarianId(veterinarianId)
                 .notes(notes)
                 .details(details)
+                .recordedAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
+
+        medicalRecord.addDomainEvent(MedicalRecordCreatedEvent.of(uuid, petId, clinicId, type));
 
         return medicalRecord;
     }
@@ -81,9 +87,13 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
             throw new IllegalArgumentException("Para modificar el estado del registro médico debe seleccionar otro estado diferente al actual.");
         }
 
+        MedicalRecordStatus previousStatus = this.status;
+
         this.status = newStatus;
         this.notes = notes;
         this.updatedAt = LocalDateTime.now();
+
+        addDomainEvent(MedicalRecordStatusChangeEvent.of(this.id, this.petId, this.clinicId, previousStatus, newStatus, notes));
     }
 
 }
