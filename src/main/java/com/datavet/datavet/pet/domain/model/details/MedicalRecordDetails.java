@@ -5,4 +5,5 @@ import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 public interface MedicalRecordDetails {
     MedicalRecordType getType();
     void validate();
+    boolean canCorrect(MedicalRecordDetails previous);
 }
