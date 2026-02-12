@@ -11,13 +11,9 @@ import lombok.Getter;
 public class TreatmentMedication {
 
     private String name;
-
     private String dosage;
-
     private String frequency;
-
     private Integer durationInDays;
-
     private String notes;
 
     public void validate() {

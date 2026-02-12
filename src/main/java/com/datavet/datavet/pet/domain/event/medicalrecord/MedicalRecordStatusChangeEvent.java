@@ -1,5 +1,6 @@
 package com.datavet.datavet.pet.domain.event.medicalrecord;
 
+import com.datavet.datavet.pet.domain.model.result.StatusChangeResult;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordStatus;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import com.datavet.datavet.shared.domain.event.DomainEvent;
@@ -15,18 +16,16 @@ public class MedicalRecordStatusChangeEvent implements DomainEvent {
     private final String medicalRecordId;
     private final String petId;
     private final String clinicId;
-    private final MedicalRecordStatus previousStatus;
-    private final MedicalRecordStatus newStatus;
-    private final String notes;
+    private final String previousStatus;
+    private final String newStatus;
     private final LocalDateTime occurredOn = LocalDateTime.now();
 
     public static MedicalRecordStatusChangeEvent of(String medicalRecordId,
                                                  String petId,
                                                  String clinicId,
-                                                 MedicalRecordStatus previousStatus,
-                                                 MedicalRecordStatus newStatus,
-                                                 String notes) {
-        return new MedicalRecordStatusChangeEvent(medicalRecordId, petId, clinicId, previousStatus, newStatus, notes);
+                                                 String previousStatus,
+                                                 String newStatus){
+        return new MedicalRecordStatusChangeEvent(medicalRecordId, petId, clinicId, previousStatus, newStatus);
     }
 
     @Override
