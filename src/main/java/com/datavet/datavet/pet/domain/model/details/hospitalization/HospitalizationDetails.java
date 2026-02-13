@@ -6,25 +6,23 @@ import com.datavet.datavet.pet.domain.model.result.StatusChangeResult;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Getter
-@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class HospitalizationDetails implements MedicalRecordDetails {
 
-    private LocalDateTime admissionDate;
-    private LocalDateTime dischargeDate;
     private String reason;
     private String diagnosisAtAdmission;
     private Boolean intensiveCare;
     private String ward;
     private String notes;
     private HospitalizationStatus status;
+    private LocalDateTime admissionDate;
+    private LocalDateTime dischargeDate;
     private ClinicalCondition condition;
 
     @Override
@@ -150,14 +148,16 @@ public class HospitalizationDetails implements MedicalRecordDetails {
             String ward,
             String notes
     ) {
-        HospitalizationDetails hospitalizationDetails = HospitalizationDetails.builder()
-                .reason(reason)
-                .diagnosisAtAdmission(diagnosisAtAdmission)
-                .intensiveCare(intensiveCare)
-                .ward(ward)
-                .notes(notes)
-                .status(HospitalizationStatus.SCHEDULED)
-                .build();
+        HospitalizationDetails hospitalizationDetails = new HospitalizationDetails(
+                reason,
+                diagnosisAtAdmission,
+                intensiveCare,
+                ward,
+                notes,
+                HospitalizationStatus.SCHEDULED,
+                null,
+                null,
+                null);
         hospitalizationDetails.validate();
 
         return hospitalizationDetails;
