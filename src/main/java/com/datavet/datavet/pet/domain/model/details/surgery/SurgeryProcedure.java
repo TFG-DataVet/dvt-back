@@ -6,12 +6,10 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class SurgeryProcedure {
 
     private String name;
-
     private String description;
 
     public void validate(){
@@ -25,10 +23,9 @@ public class SurgeryProcedure {
     }
 
     public static SurgeryProcedure create(String name, String description){
-        SurgeryProcedure surgeryProcedure = SurgeryProcedure.builder()
-                .name(name)
-                .description(description)
-                .build();
+        SurgeryProcedure surgeryProcedure = new SurgeryProcedure(
+                name,
+                description);
 
         surgeryProcedure.validate();
 
