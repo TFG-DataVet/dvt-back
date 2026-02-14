@@ -1,11 +1,8 @@
 package com.datavet.datavet.pet.domain.model;
 
 import com.datavet.datavet.pet.domain.event.medicalrecord.*;
+import com.datavet.datavet.pet.domain.model.action.RecordAction;
 import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
-import com.datavet.datavet.pet.domain.model.details.consultation.ConsultationDetails;
-import com.datavet.datavet.pet.domain.model.details.consultation.ConsultationStatus;
-import com.datavet.datavet.pet.domain.model.details.hospitalization.HospitalizationStatus;
-import com.datavet.datavet.pet.domain.model.details.hospitalization.HospitalizationDetails;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordLifecycleStatus;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import com.datavet.datavet.shared.domain.model.AggregateRoot;
@@ -136,80 +133,18 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
         );
     }
 
-    public void completeConsultation(String veterinarianId){
-        if (this.type != MedicalRecordType.CONSULTATION) {
-            throw new IllegalArgumentException("El registro no es una consulta médica.");
-        }
+    public void applyAction(RecordAction action, String veterinarianId){
+        var result = this.details.applyAction(action);
 
-        ConsultationDetails consultation = (ConsultationDetails) this.details;
-
-        ConsultationStatus previous = consultation.getStatus();
-        consultation.markAsCompleted();
+        this.updatedAt = LocalDateTime.now();
 
         addDomainEvent(
-                ConsultationStatusChangedEvent.of(
+                MedicalRecordStatusChangeEvent.of(
                         this.id,
-                        previous,
-                        consultation.getStatus(),
-                        veterinarianId
-                )
-        );
-    }
-
-    public void noShowConsultation(String veterinarianId){
-        if (this.type != MedicalRecordType.CONSULTATION)
-            throw new IllegalArgumentException("El registro no es un consulta médica.");
-
-        ConsultationDetails consultation = (ConsultationDetails) this.details;
-
-        ConsultationStatus previuos = consultation.getStatus();
-        consultation.markAsNoShow();
-
-        addDomainEvent(
-                ConsultationStatusChangedEvent.of(
-                        this.id,
-                        previuos,
-                        consultation.getStatus(),
-                        veterinarianId
-                )
-        );
-    }
-
-    public void dischargeHospitalization(String veterinarianId){
-        if (this.type != MedicalRecordType.HOSPITALIZATION){
-            throw new IllegalArgumentException("El registro no es un registro hospitalario.");
-        }
-
-        HospitalizationDetails hospitalization = (HospitalizationDetails) this.details;
-
-        HospitalizationStatus previous = hospitalization.getStatus();
-        hospitalization.markAsCompleted();
-        updatedAt = LocalDateTime.now();
-
-        addDomainEvent(HospitalizationStatusChangedEvent.of(
-                this.id,
-                previous,
-                hospitalization.getStatus(),
-                veterinarianId
-        ));
-    }
-
-    public void inTreatmentHospitalization(String veterinarianId){
-        if (this.type != MedicalRecordType.HOSPITALIZATION){
-            throw new IllegalArgumentException("El registro no es un registro hospitalario.");
-        }
-        HospitalizationDetails hospitalization = (HospitalizationDetails) this.details;
-
-        HospitalizationStatus previous = hospitalization.getStatus();
-        hospitalization.markAsInTreatment();
-        updatedAt = LocalDateTime.now();
-
-        addDomainEvent(
-                HospitalizationStatusChangedEvent.of(
-                        this.id,
-                        previous,
-                        hospitalization.getStatus(),
-                        veterinarianId
+                        this.petId,
+                        this.clinicId,
+                        result.getPreviousStatus(),
+                        result.getNewStatus()
                 )
         );
     }
