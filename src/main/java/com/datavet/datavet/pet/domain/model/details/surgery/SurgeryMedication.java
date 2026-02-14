@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class SurgeryMedication {
 
@@ -41,13 +40,12 @@ public class SurgeryMedication {
             Integer durationInDays,
             String notes
     ){
-        SurgeryMedication surgeryMedication = SurgeryMedication.builder()
-                .name(name)
-                .dosage(dosage)
-                .frequency(frequency)
-                .durationInDays(durationInDays)
-                .notes(notes)
-                .build();
+        SurgeryMedication surgeryMedication = new SurgeryMedication(
+                name,
+                dosage,
+                frequency,
+                durationInDays,
+                notes);
 
         surgeryMedication.validate();
 
