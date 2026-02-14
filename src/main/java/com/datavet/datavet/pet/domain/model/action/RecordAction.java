@@ -1,11 +1,20 @@
 package com.datavet.datavet.pet.domain.model.action;
 
 public enum RecordAction {
+    /*TREATMENT*/
     ACTIVATE,
     REACTIVE,
     SUSPEND,
-    FINISH,
-    MARK_NO_SHOW,
+    FINISH
+
+    /*Hospitalization*/,
+    ADMIT,
+    START_TREATMENT,
     COMPLETE,
-    DISCHARGE
+    CANCEL,
+    DECLARE_DECEASED,
+
+
+    DISCHARGE,
+    MARK_NO_SHOW
 }
