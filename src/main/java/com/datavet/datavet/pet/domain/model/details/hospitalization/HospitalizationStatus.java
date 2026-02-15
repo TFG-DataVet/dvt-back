@@ -17,7 +17,7 @@ public enum HospitalizationStatus {
         @Override
         public HospitalizationStatus next(RecordAction action){
             return switch (action) {
-                case START_TREATMENT -> IN_PROGRESS;
+                case START -> IN_PROGRESS;
                 default -> throw new IllegalStateException("No se puede ejecutar " + action + " desde " + this);
             };
         }
