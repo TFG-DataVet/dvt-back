@@ -54,13 +54,6 @@ public class SurgeryDetails implements MedicalRecordDetails {
             throw new IllegalArgumentException("La cirugía debe tener al menos un procedimiento.");
         }
 
-
-        if (this.status == SurgeryStatus.IN_PROGRESS) {
-            if (anesthesiaType == null) {
-                throw new IllegalArgumentException("El tipo de anestecia no puede estar vaci en el estado " + status);
-            }
-        }
-
         if (this.status == SurgeryStatus.SCHEDULED) {
             if (surgeryDate == null) {
                 throw new IllegalArgumentException("La cirugía en estado de " + status + " debe de tener una fecha de admición.");
@@ -75,6 +68,12 @@ public class SurgeryDetails implements MedicalRecordDetails {
             }
         }
 
+        if (this.status == SurgeryStatus.IN_PROGRESS) {
+            if (anesthesiaType == null) {
+                throw new IllegalArgumentException("El tipo de anestecia no puede estar vaci en el estado " + status);
+            }
+        }
+
         if (this.status == SurgeryStatus.ADMITTED ||
             this.status == SurgeryStatus.IN_PROGRESS) {
             if (surgeryDate == null) {
@@ -82,7 +81,7 @@ public class SurgeryDetails implements MedicalRecordDetails {
             }
         }
 
-        if (this.status != SurgeryStatus.COMPLETED ||
+        if (this.status != SurgeryStatus.COMPLETED &&
             this.status != SurgeryStatus.DECEASED) {
             if (outcome != null) {
                 throw new IllegalArgumentException("La cirugía en estado de " + status + " no puede contener resultado, hasta ser completada.");
@@ -186,13 +185,72 @@ public class SurgeryDetails implements MedicalRecordDetails {
 
         this.status = next;
 
-        if (next == SurgeryStatus.COMPLETED || next == SurgeryStatus.DECEASED || next == SurgeryStatus.CANCELLED){
+        if (next == SurgeryStatus.COMPLETED || next == SurgeryStatus.DECEASED) {
+
+            if (this.outcome == null) {
+                throw new IllegalArgumentException(
+                        "No se puede completar la cirugía sin resultado."
+                );
+            }
+
+            if (this.postOpMedications.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "No se puede completar la cirugía sin medicación post-operatoria."
+                );
+            }
+
             this.completedAt = LocalDateTime.now();
         }
-
 
         this.validate();
 
         return StatusChangeResult.of(previous, next);
     }
+
+    public void changedOutcome(SurgeryOutcome newOutcome){
+        if (this.status != SurgeryStatus.IN_PROGRESS){
+            throw new IllegalArgumentException("El resultado solo puede definirse cuando la cirugía esta en progreso.");
+        }
+
+        if (newOutcome == null) {
+            throw new IllegalArgumentException("El resultado no puede ser nulo.");
+        }
+
+        this.outcome = newOutcome;
+
+        validate();
+    }
+
+    public void addPostOpMedication(SurgeryMedication medication){
+        if (this.status != SurgeryStatus.IN_PROGRESS){
+            throw new IllegalArgumentException("Solo se puede agregar medicación postoperatoria antes de dar como completado el registro de la cirugía.");
+        }
+
+        if (medication == null){
+            throw new IllegalArgumentException("La medicación no puede ser nula.");
+        }
+
+        this.postOpMedications.add(medication);
+
+        validate();
+    }
+
+    public void rescheduled(LocalDateTime newDate){
+        if (this.status != SurgeryStatus.SCHEDULED){
+            throw new IllegalArgumentException("Solo se puede reprogramar una cirugía en estado Porgramada.");
+        }
+
+        if (newDate == null) {
+            throw new IllegalArgumentException("La nueva fecha ser nula.");
+        }
+
+        if (newDate.isBefore(LocalDateTime.now())){
+          throw new IllegalArgumentException("La nueva fecha no puede ser anterior al día actial.");
+        }
+
+        this.surgeryDate = newDate;
+
+        validate();
+    }
+
 }

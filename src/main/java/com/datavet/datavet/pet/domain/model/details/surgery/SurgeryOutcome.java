@@ -5,5 +5,4 @@ public enum SurgeryOutcome {
     SUCCESSFUL,
     SUCCESSFUL_WITH_COMPLICATIONS,
     FAILED,
-    COMPLETED
 }
