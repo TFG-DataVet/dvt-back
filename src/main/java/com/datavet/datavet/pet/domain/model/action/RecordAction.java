@@ -7,9 +7,9 @@ public enum RecordAction {
     SUSPEND,
     FINISH
 
-    /*Hospitalization*/,
+    /*Hospitalization - Surgery*/,
     ADMIT,
-    START_TREATMENT,
+    START,
     COMPLETE,
     CANCEL,
     DECLARE_DECEASED,
