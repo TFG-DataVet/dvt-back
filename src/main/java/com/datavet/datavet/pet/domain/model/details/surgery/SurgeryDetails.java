@@ -88,6 +88,12 @@ public class SurgeryDetails implements MedicalRecordDetails {
             }
         }
 
+        if (this.status == SurgeryStatus.COMPLETED) {
+            if (postOpMedications.isEmpty()){
+                throw new IllegalArgumentException("La cirugía en estado de " + status + " debe de tener medicamentos post-operatorios.");
+            }
+        }
+
         if (this.status == SurgeryStatus.COMPLETED ||
             this.status == SurgeryStatus.DECEASED) {
             if (completedAt == null) {
@@ -100,10 +106,6 @@ public class SurgeryDetails implements MedicalRecordDetails {
 
             if (outcome == null){
                 throw new IllegalArgumentException("La cirugía en estado de " + status + " debe de tener un resultado de cirugía.");
-            }
-
-            if (postOpMedications.isEmpty()){
-                throw new IllegalArgumentException("La cirugía en estado de " + status + " debe de tener medicamentos post-operatorios.");
             }
         }
 
@@ -180,31 +182,37 @@ public class SurgeryDetails implements MedicalRecordDetails {
 
     @Override
     public StatusChangeResult applyAction(RecordAction action) {
-        SurgeryStatus previous = this.status;
-        SurgeryStatus next = this.status.next(action);
+        SurgeryStatus previousStatus = this.status;
+        LocalDateTime previousCompletedAt = completedAt;
 
-        this.status = next;
+        try{
+            SurgeryStatus next = this.status.next(action);
 
-        if (next == SurgeryStatus.COMPLETED || next == SurgeryStatus.DECEASED) {
+            if (next == SurgeryStatus.COMPLETED || next == SurgeryStatus.DECEASED) {
+                if (this.outcome == null) {
+                    throw new IllegalArgumentException(
+                            "No se puede completar la cirugía sin resultado."
+                    );
+                }
 
-            if (this.outcome == null) {
-                throw new IllegalArgumentException(
-                        "No se puede completar la cirugía sin resultado."
-                );
+                if (this.postOpMedications.isEmpty()) {
+                    throw new IllegalArgumentException(
+                            "No se puede completar la cirugía sin medicación post-operatoria."
+                    );
+                }
+
+                this.completedAt = LocalDateTime.now();
             }
 
-            if (this.postOpMedications.isEmpty()) {
-                throw new IllegalArgumentException(
-                        "No se puede completar la cirugía sin medicación post-operatoria."
-                );
-            }
+            this.status = next;
+            this.validate();
 
-            this.completedAt = LocalDateTime.now();
+            return StatusChangeResult.of(previousStatus, next);
+        } catch (RuntimeException e) {
+            this.status = previousStatus;
+            this.completedAt = previousCompletedAt;
+            throw e;
         }
-
-        this.validate();
-
-        return StatusChangeResult.of(previous, next);
     }
 
     public void changedOutcome(SurgeryOutcome newOutcome){

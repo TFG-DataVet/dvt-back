@@ -61,6 +61,10 @@ public class ConsultationDetails implements MedicalRecordDetails {
             throw new IllegalArgumentException("Si el paciente requiere seguimiento, debe de escoger una fecha para la proxima consulta.");
         }
 
+        if( !followUpRequired && followUpDate != null) {
+            throw new IllegalArgumentException("Si el paciente no requiere seguimiento, no debe de tener una fecha de proxima consulta.");
+        }
+
         if (followUpDate != null && followUpDate.isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("La fecha selecciona no puede ser anterior al día de hoy.");
         }

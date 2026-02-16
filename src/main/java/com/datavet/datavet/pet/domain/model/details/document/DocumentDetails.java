@@ -1,6 +1,8 @@
 package com.datavet.datavet.pet.domain.model.details.document;
 
+import com.datavet.datavet.pet.domain.model.action.RecordAction;
 import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
+import com.datavet.datavet.pet.domain.model.result.StatusChangeResult;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -71,6 +73,16 @@ public class DocumentDetails implements MedicalRecordDetails {
                 throw new IllegalArgumentException("La integridad del archivo no puede estar vacia.");
             }
         }
+    }
+
+    @Override
+    public boolean canCorrect(MedicalRecordDetails previous) {
+        return false;
+    }
+
+    @Override
+    public StatusChangeResult applyAction(RecordAction action) {
+        return MedicalRecordDetails.super.applyAction(action);
     }
 
     public static DocumentDetails create(

@@ -38,6 +38,11 @@ public class TreatmentDetails implements MedicalRecordDetails{
             return false;
         }
 
+        if (prev.status == TreatmentStatus.FINISHED) {
+            throw new IllegalArgumentException(
+                    "No se puede corregir un tratamiento en estado terminal.");
+        }
+
         // 🔒 Campos que NO deben cambiar
         if (!java.util.Objects.equals(this.treatmentName, prev.treatmentName)) {
             return false;
@@ -148,14 +153,26 @@ public class TreatmentDetails implements MedicalRecordDetails{
     @Override
     public StatusChangeResult applyAction(RecordAction action) {
         var previous = this.status;
-        var next = this.status.next(action);
+        var previosCompletedAt = completedAt;
 
-        this.status = next;
+        try{
+            var next = this.status.next(action);
 
-        if (next == TreatmentStatus.FINISHED){
-            this.completedAt = LocalDate.now();
+            this.status = next;
+
+            if (next == TreatmentStatus.FINISHED){
+                this.completedAt = LocalDate.now();
+            }
+
+            validate();
+
+            return StatusChangeResult.of(previous, next);
+
+        } catch (RuntimeException e) {
+            this.status = previous;
+            this.completedAt  = previosCompletedAt;
+            throw e;
+
         }
-
-        return StatusChangeResult.of(previous, next);
     }
 }
