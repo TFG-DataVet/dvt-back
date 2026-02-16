@@ -1,6 +1,8 @@
 package com.datavet.datavet.pet.domain.model.details.allergy;
 
+import com.datavet.datavet.pet.domain.model.action.RecordAction;
 import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
+import com.datavet.datavet.pet.domain.model.result.StatusChangeResult;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -62,6 +64,16 @@ public class AllergyDetails implements MedicalRecordDetails {
             }
         }
 
+    }
+
+    @Override
+    public boolean canCorrect(MedicalRecordDetails previous) {
+        return false;
+    }
+
+    @Override
+    public StatusChangeResult applyAction(RecordAction action) {
+        return MedicalRecordDetails.super.applyAction(action);
     }
 
     public static AllergyDetails create(
