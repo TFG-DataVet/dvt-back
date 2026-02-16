@@ -6,14 +6,13 @@ import com.datavet.datavet.pet.domain.model.result.StatusChangeResult;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
-@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class DiagnosisDetails implements MedicalRecordDetails {
 
@@ -28,6 +27,42 @@ public class DiagnosisDetails implements MedicalRecordDetails {
     private List<String> recommendations;
     private boolean followUpRequired;
     private LocalDate followUpDate;
+
+    public static DiagnosisDetails create(
+            String diagnosisName,
+            DiagnosisCategory category,
+            String description,
+            DiagnosisSeverity severity,
+            LocalDate diagnosedAt,
+            boolean chronic,
+            boolean contagious,
+            List<String> symptoms,
+            List<String> recommendations,
+            boolean followUpRequired,
+            LocalDate followUpDate
+    ){
+        try {
+            DiagnosisDetails diagnosisDetails = new DiagnosisDetails(
+                    diagnosisName,
+                    category,
+                    description,
+                    severity,
+                    diagnosedAt,
+                    chronic,
+                    contagious,
+                    symptoms,
+                    recommendations,
+                    followUpRequired,
+                    followUpDate);
+
+            diagnosisDetails.validate();
+
+            return diagnosisDetails;
+        } catch (RuntimeException e) {
+            throw e;
+        }
+    }
+
 
     @Override
     public MedicalRecordType getType() {
@@ -87,45 +122,41 @@ public class DiagnosisDetails implements MedicalRecordDetails {
 
     @Override
     public boolean canCorrect(MedicalRecordDetails previous) {
-        return false;
+        if (!(previous instanceof DiagnosisDetails)) {
+            throw new IllegalArgumentException(
+                    "No es posible corregir un registro con un tipo de detalle diferente."
+            );
+        }
+
+        DiagnosisDetails prev = (DiagnosisDetails) previous;
+
+        boolean diagnosisNameChanged = !Objects.equals(this.diagnosisName, prev.diagnosisName);
+        boolean categoryChanged = !Objects.equals(this.category, prev.category);
+        boolean descriptionChanged = !Objects.equals(this.description, prev.description);
+        boolean severityChanged = !Objects.equals(this.severity, prev.severity);
+        boolean diagnosedAtChanged = !Objects.equals(this.diagnosedAt, prev.diagnosedAt);
+        boolean chronicChanged = this.chronic != prev.chronic;
+        boolean contagiousChanged = this.contagious != prev.contagious;
+        boolean symptomsChanged = !Objects.equals(this.symptoms, prev.symptoms);
+        boolean recommendationsChanged = !Objects.equals(this.recommendations, prev.recommendations);
+        boolean followUpRequiredChanged = this.followUpRequired != prev.followUpRequired;
+
+        return diagnosisNameChanged ||
+                categoryChanged ||
+                descriptionChanged ||
+                severityChanged ||
+                diagnosedAtChanged ||
+                chronicChanged ||
+                contagiousChanged ||
+                symptomsChanged ||
+                recommendationsChanged ||
+                followUpRequiredChanged;
     }
 
     @Override
     public StatusChangeResult applyAction(RecordAction action) {
-        return MedicalRecordDetails.super.applyAction(action);
+        throw new IllegalArgumentException("No se puede aplicar una acción de cambio de estado en un regristro que no tiene estados.");
     }
 
-    public static DiagnosisDetails create(
-            String diagnosisName,
-            DiagnosisCategory category,
-            String description,
-            DiagnosisSeverity severity,
-            LocalDate diagnosedAt,
-            boolean chronic,
-            boolean contagious,
-            List<String> symptoms,
-            List<String> recommendations,
-            boolean followUpRequired,
-            LocalDate followUpDate
-    ){
-
-        DiagnosisDetails diagnosisDetails = DiagnosisDetails.builder()
-                .diagnosisName(diagnosisName)
-                .category(category)
-                .description(description)
-                .severity(severity)
-                .diagnosedAt(diagnosedAt)
-                .chronic(chronic)
-                .contagious(contagious)
-                .symptoms(symptoms)
-                .recommendations(recommendations)
-                .followUpRequired(followUpRequired)
-                .followUpDate(followUpDate)
-                .build();
-
-        diagnosisDetails.validate();
-
-        return diagnosisDetails;
-    }
 
 }

@@ -4,7 +4,6 @@ import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
@@ -85,12 +84,22 @@ public class ConsultationDetails implements MedicalRecordDetails {
                                              String treatmentPlan,
                                              boolean followUpRequired,
                                              LocalDate followUpDate){
-        ConsultationDetails consultationDetails = new ConsultationDetails(
-                reason, symptoms, clinicalFindings, diagnosis, treatmentPlan, followUpRequired, followUpDate);
+        try {
+            ConsultationDetails consultationDetails = new ConsultationDetails(
+                    reason,
+                    symptoms,
+                    clinicalFindings,
+                    diagnosis,
+                    treatmentPlan,
+                    followUpRequired,
+                    followUpDate);
 
-        consultationDetails.validate();
+            consultationDetails.validate();
 
-        return consultationDetails;
+            return consultationDetails;
+        } catch (RuntimeException e) {
+            throw e;
+        }
     }
 
 }

@@ -135,19 +135,23 @@ public class TreatmentDetails implements MedicalRecordDetails{
             boolean followUpRequired,
             LocalDate followUpDate
     ) {
-        TreatmentDetails treatmentDetails = TreatmentDetails.builder()
-                .treatmentName(treatmentName)
-                .startDate(startDate)
-                .instructions(instructions)
-                .estimatedEndDate(endDate)
-                .medications(medications)
-                .status(TreatmentStatus.PLANNED)
-                .followUpRequired(followUpRequired)
-                .followUpDate(followUpDate)
-                .build();
+        try {
+            TreatmentDetails treatmentDetails = TreatmentDetails.builder()
+                    .treatmentName(treatmentName)
+                    .startDate(startDate)
+                    .instructions(instructions)
+                    .estimatedEndDate(endDate)
+                    .medications(medications)
+                    .status(TreatmentStatus.PLANNED)
+                    .followUpRequired(followUpRequired)
+                    .followUpDate(followUpDate)
+                    .build();
 
-        treatmentDetails.validate();
-        return treatmentDetails;
+            treatmentDetails.validate();
+            return treatmentDetails;
+        } catch (RuntimeException e) {
+            throw e;
+        }
     }
 
     @Override
