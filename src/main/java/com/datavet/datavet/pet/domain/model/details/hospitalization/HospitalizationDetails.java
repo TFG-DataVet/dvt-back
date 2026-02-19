@@ -161,19 +161,23 @@ public class HospitalizationDetails implements MedicalRecordDetails {
             String ward,
             String notes
     ) {
-        HospitalizationDetails hospitalizationDetails = new HospitalizationDetails(
-                reason,
-                diagnosisAtAdmission,
-                intensiveCare,
-                ward,
-                notes,
-                HospitalizationStatus.SCHEDULED,
-                null,
-                null,
-                null);
-        hospitalizationDetails.validate();
+        try {
+            HospitalizationDetails hospitalizationDetails = new HospitalizationDetails(
+                    reason,
+                    diagnosisAtAdmission,
+                    intensiveCare,
+                    ward,
+                    notes,
+                    HospitalizationStatus.SCHEDULED,
+                    null,
+                    null,
+                    null);
+            hospitalizationDetails.validate();
 
-        return hospitalizationDetails;
+            return hospitalizationDetails;
+        } catch (RuntimeException e) {
+            throw e;
+        }
     }
 
     @Override

@@ -6,14 +6,13 @@ import com.datavet.datavet.pet.domain.model.result.StatusChangeResult;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
-@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class AllergyDetails implements MedicalRecordDetails {
 
@@ -68,12 +67,30 @@ public class AllergyDetails implements MedicalRecordDetails {
 
     @Override
     public boolean canCorrect(MedicalRecordDetails previous) {
-        return false;
+        if (!(previous instanceof AllergyDetails)){
+            throw new IllegalArgumentException("No es posible corregir un registro con un tipo de detalle diferente.");
+        }
+
+        AllergyDetails prev = (AllergyDetails) previous;
+
+        boolean allergenChanged = !Objects.equals(this.allergen, prev.allergen);
+        boolean typeChanged = !Objects.equals(this.type, prev.type);
+        boolean severityChanged = !Objects.equals(this.severity, prev.severity);
+        boolean reactionsChanged = !Objects.equals(this.reactions, prev.reactions);
+        boolean lifeThreateningChanged = this.lifeThreatening != prev.lifeThreatening;
+        boolean identifierDateChanged = !Objects.equals(this.identifiedAt,prev.identifiedAt);
+
+        return allergenChanged ||
+                typeChanged ||
+                severityChanged ||
+                reactionsChanged ||
+                lifeThreateningChanged ||
+                identifierDateChanged;
     }
 
     @Override
     public StatusChangeResult applyAction(RecordAction action) {
-        return MedicalRecordDetails.super.applyAction(action);
+        throw new IllegalArgumentException("No se puede aplicar una acción de cambio de estado en un regristro que no tiene estados.");
     }
 
     public static AllergyDetails create(
@@ -85,19 +102,21 @@ public class AllergyDetails implements MedicalRecordDetails {
             LocalDate identifiedAt,
             String notes
     ) {
-        AllergyDetails allergyDetails = AllergyDetails
-                .builder()
-                .allergen(allergen)
-                .type(type)
-                .severity(severity)
-                .reactions(reactions)
-                .lifeThreatening(lifeThreatening)
-                .identifiedAt(identifiedAt)
-                .notes(notes)
-                .build();
+        try {
+            AllergyDetails allergyDetails = new AllergyDetails(
+                    allergen,
+                    type,
+                    severity,
+                    reactions,
+                    lifeThreatening,
+                    identifiedAt,
+                    notes);
 
-        allergyDetails.validate();
+            allergyDetails.validate();
 
-        return allergyDetails;
+            return allergyDetails;
+        } catch (RuntimeException e) {
+            throw e;
+        }
     }
 }
