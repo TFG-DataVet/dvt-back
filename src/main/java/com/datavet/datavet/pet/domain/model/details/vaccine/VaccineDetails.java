@@ -1,6 +1,8 @@
 package com.datavet.datavet.pet.domain.model.details.vaccine;
 
+import com.datavet.datavet.pet.domain.model.action.RecordAction;
 import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
+import com.datavet.datavet.pet.domain.model.result.StatusChangeResult;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import lombok.*;
 
@@ -43,6 +45,16 @@ public class VaccineDetails implements MedicalRecordDetails {
         if (batchNumber == null || batchNumber.isBlank()) {
             throw new IllegalArgumentException("BatchNumber cannot be null");
         }
+    }
+
+    @Override
+    public boolean canCorrect(MedicalRecordDetails previous) {
+        return false;
+    }
+
+    @Override
+    public StatusChangeResult applyAction(RecordAction action) {
+        return MedicalRecordDetails.super.applyAction(action);
     }
 
     public static VaccineDetails create(String vaccineName,

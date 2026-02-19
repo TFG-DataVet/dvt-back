@@ -79,15 +79,15 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
         String uuid = UUID.randomUUID().toString();
 
         if ( exitingRecord.getType() != correctedDetails.getType()){
-            throw new IllegalArgumentException("El tipo de registro seleccionado debe de ser del mismo tipo que el registrado.");
+            throw new IllegalArgumentException("El tipo del detalle corregido debe coincidir con el tipo del registro original.");
         }
 
         if (exitingRecord.getStatus() != MedicalRecordLifecycleStatus.ACTIVE) {
-            throw new IllegalArgumentException("El estado del nuevo MedicalRecord debe de ser Activo.");
+            throw new IllegalArgumentException("Solo se pueden crear correcciones sobre registros activos.");
         }
 
         if (!correctedDetails.canCorrect(exitingRecord.details))
-            throw new IllegalArgumentException("Los detalles corregidos no corresponden al registro original");
+            throw new IllegalArgumentException("La corrección no contiene cambios relevantes respecto al registro original.");
 
         correctedDetails.validate();
 
@@ -134,18 +134,22 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
     }
 
     public void applyAction(RecordAction action, String veterinarianId){
-        var result = this.details.applyAction(action);
+        try{
+            var result = this.details.applyAction(action);
 
-        this.updatedAt = LocalDateTime.now();
+            this.updatedAt = LocalDateTime.now();
 
-        addDomainEvent(
-                MedicalRecordStatusChangeEvent.of(
-                        this.id,
-                        this.petId,
-                        this.clinicId,
-                        result.getPreviousStatus(),
-                        result.getNewStatus()
-                )
-        );
+            addDomainEvent(
+                    MedicalRecordStatusChangeEvent.of(
+                            this.id,
+                            this.petId,
+                            this.clinicId,
+                            result.getPreviousStatus(),
+                            result.getNewStatus()
+                    )
+            );
+        } catch (RuntimeException e) {
+            throw e;
+        }
     }
 }

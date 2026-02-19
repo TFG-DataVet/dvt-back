@@ -34,21 +34,34 @@ public class HospitalizationDetails implements MedicalRecordDetails {
     public boolean canCorrect(MedicalRecordDetails previous) {
         if (!(previous instanceof HospitalizationDetails )) return false;
 
-        if (this.status == HospitalizationStatus.COMPLETED ||
-            this.status == HospitalizationStatus.CANCELLED ||
-            this.status == HospitalizationStatus.DECEASED) {
-            return false;
-        }
-
         HospitalizationDetails prev = (HospitalizationDetails) previous;
 
-        boolean reasonChanged =  !Objects.equals(this.reason, prev.reason);
-        boolean diagnosisAtAdmissionChanged = !this.diagnosisAtAdmission.equals(prev.diagnosisAtAdmission);
-        boolean notesChanged = !this.notes.equals(prev.notes);
-        boolean wardChanges = !this.ward.equals(prev.ward);
-        boolean intensiveCareChanged = !this.intensiveCare.equals(prev.intensiveCare);
+        if (prev.status == HospitalizationStatus.COMPLETED ||
+            prev.status == HospitalizationStatus.CANCELLED ||
+            prev.status == HospitalizationStatus.DECEASED) {
+            throw new IllegalArgumentException(
+                    "No se puede corregir una hospitalización en estado terminal.");
+        }
 
-        return reasonChanged || diagnosisAtAdmissionChanged || notesChanged || wardChanges || intensiveCareChanged;
+        boolean reasonChanged =  !Objects.equals(this.reason, prev.reason);
+        boolean diagnosisAtAdmissionChanged = !Objects.equals(this.diagnosisAtAdmission,prev.diagnosisAtAdmission);
+        boolean notesChanged = !Objects.equals(this.notes,prev.notes);
+        boolean wardChanges = !Objects.equals(this.ward, prev.ward);
+        boolean intensiveCareChanged = !Objects.equals(this.intensiveCare,prev.intensiveCare);
+        boolean admissionDateChanged = !Objects.equals(this.admissionDate, prev.admissionDate);
+        boolean dischargeDateChanged = !Objects.equals(this.dischargeDate, prev.dischargeDate);
+        boolean conditionChanged = !Objects.equals(this.condition, prev.condition);
+
+
+
+        return reasonChanged ||
+                diagnosisAtAdmissionChanged ||
+                notesChanged ||
+                wardChanges ||
+                intensiveCareChanged ||
+                admissionDateChanged ||
+                dischargeDateChanged ||
+                conditionChanged;
     }
 
     @Override
@@ -105,8 +118,8 @@ public class HospitalizationDetails implements MedicalRecordDetails {
                 throw new IllegalArgumentException("Una hospitalización en estado de " + status + "no puedo tener una fecha de finalización");
             }
 
-            if (condition != null) {
-                throw new IllegalArgumentException("Una hospitalización en estado de " + status + " no puede tener una condición clinica");
+            if (condition == null) {
+                throw new IllegalArgumentException("Una hospitalización en estado de " + status + " debe de tener una condición clinica");
             }
         }
 
@@ -165,24 +178,33 @@ public class HospitalizationDetails implements MedicalRecordDetails {
 
     @Override
     public StatusChangeResult applyAction(RecordAction action){
-        var previuos = this.status;
-        var next = this.status.next(action);
+        HospitalizationStatus previuos = this.status;
+        LocalDateTime prevAdmissionDate = this.admissionDate;
+        LocalDateTime prevDischargeDate = dischargeDate;
 
-        this.status = next;
+        try{
+            var next = this.status.next(action);
 
-        if (next == HospitalizationStatus.ADMITTED) {
-            admissionDate = LocalDateTime.now();
+            if (next == HospitalizationStatus.ADMITTED) {
+                admissionDate = LocalDateTime.now();
+            }
+
+            if (next == HospitalizationStatus.COMPLETED ||
+                    next == HospitalizationStatus.DECEASED ||
+                    next == HospitalizationStatus.CANCELLED) {
+                dischargeDate = LocalDateTime.now();
+            }
+
+            this.status = next;
+            this.validate();
+
+            return StatusChangeResult.of(previuos, next);
+        } catch (RuntimeException e) {
+            this.status = previuos;
+            this.admissionDate = prevAdmissionDate;
+            this.dischargeDate = prevDischargeDate;
+            throw e;
         }
-
-        if (next == HospitalizationStatus.COMPLETED ||
-            next == HospitalizationStatus.DECEASED ||
-            next == HospitalizationStatus.CANCELLED) {
-            dischargeDate = LocalDateTime.now();
-        }
-
-        this.validate();
-
-        return StatusChangeResult.of(previuos, next);
     }
 
     public void changeClinicalCondition(ClinicalCondition condition){
