@@ -161,22 +161,25 @@ public class SurgeryDetails implements MedicalRecordDetails {
             AnesthesiaType anesthesiaType,
             boolean hospitalizationRequired,
             LocalDateTime surgeryDate){
+        try {
+            SurgeryDetails surgeryDetails = new SurgeryDetails(
+                    surgeryName,
+                    surgeryType,
+                    List.copyOf(procedures),
+                    anesthesiaType,
+                    hospitalizationRequired,
+                    surgeryDate,
+                    SurgeryStatus.SCHEDULED,
+                    null,
+                    new ArrayList<>(emptyList()),
+                    null);
 
-        SurgeryDetails surgeryDetails = new SurgeryDetails(
-                surgeryName,
-                surgeryType,
-                List.copyOf(procedures),
-                anesthesiaType,
-                hospitalizationRequired,
-                surgeryDate,
-                SurgeryStatus.SCHEDULED,
-                null,
-                new ArrayList<>(emptyList()),
-                null);
+            surgeryDetails.validate();
 
-        surgeryDetails.validate();
-
-        return surgeryDetails;
+            return surgeryDetails;
+        } catch (RuntimeException e) {
+            throw e;
+        }
     }
 
 

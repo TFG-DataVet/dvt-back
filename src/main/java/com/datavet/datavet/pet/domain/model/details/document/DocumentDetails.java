@@ -82,7 +82,7 @@ public class DocumentDetails implements MedicalRecordDetails {
 
     @Override
     public StatusChangeResult applyAction(RecordAction action) {
-        return MedicalRecordDetails.super.applyAction(action);
+        throw new IllegalArgumentException("No se puede aplicar una acción de cambio de estado en un regristro que no tiene estados.");
     }
 
     public static DocumentDetails create(
@@ -97,21 +97,25 @@ public class DocumentDetails implements MedicalRecordDetails {
             boolean confidential,
             String checksum
     ) {
-        DocumentDetails details = DocumentDetails.builder()
-                .documentName(documentName)
-                .documentType(documentType)
-                .fileUrl(fileUrl)
-                .mimeType(mimeType)
-                .uploadedAt(uploadedAt)
-                .uploadedBy(uploadedBy)
-                .description(description)
-                .fileSizeInBytes(fileSizeInBytes)
-                .confidential(confidential)
-                .checksum(checksum)
-                .build();
+        try {
+            DocumentDetails details = DocumentDetails.builder()
+                    .documentName(documentName)
+                    .documentType(documentType)
+                    .fileUrl(fileUrl)
+                    .mimeType(mimeType)
+                    .uploadedAt(uploadedAt)
+                    .uploadedBy(uploadedBy)
+                    .description(description)
+                    .fileSizeInBytes(fileSizeInBytes)
+                    .confidential(confidential)
+                    .checksum(checksum)
+                    .build();
 
-        details.validate();
-        return details;
+            details.validate();
+            return details;
+        } catch (RuntimeException e){
+            throw e;
+        }
     }
 
 }

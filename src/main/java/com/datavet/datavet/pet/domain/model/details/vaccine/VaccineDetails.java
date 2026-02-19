@@ -7,20 +7,16 @@ import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Getter
-@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class VaccineDetails implements MedicalRecordDetails {
 
     private String vaccineName;
-
     private LocalDate applicationDate;
-
     private LocalDate nextDoseDate;
-
     private String batchNumber;
-
     private String manufacturer;
 
     @Override
@@ -49,12 +45,26 @@ public class VaccineDetails implements MedicalRecordDetails {
 
     @Override
     public boolean canCorrect(MedicalRecordDetails previous) {
-        return false;
+        if (!(previous instanceof VaccineDetails)){
+            throw new IllegalArgumentException("No es posible corregir un registro con un tipo de detalle diferente.");
+        }
+
+        VaccineDetails prev = (VaccineDetails) previous;
+
+        boolean vaccineNameChanged = !Objects.equals(this.vaccineName, prev.vaccineName);
+        boolean applicationDateChanged = !Objects.equals(this.applicationDate, prev.applicationDate);
+        boolean batchNumberChanged = !Objects.equals(this.batchNumber, prev.batchNumber);
+        boolean manufacturer = !Objects.equals(this.manufacturer, prev.manufacturer);
+
+        return  vaccineNameChanged ||
+                applicationDateChanged ||
+                batchNumberChanged ||
+                manufacturer;
     }
 
     @Override
     public StatusChangeResult applyAction(RecordAction action) {
-        return MedicalRecordDetails.super.applyAction(action);
+        throw new IllegalArgumentException("No se puede aplicar una acción de cambio de estado en un regristro que no tiene estados.");
     }
 
     public static VaccineDetails create(String vaccineName,
@@ -62,17 +72,19 @@ public class VaccineDetails implements MedicalRecordDetails {
                                  LocalDate nextDoseDate,
                                  String batchNumber,
                                  String manufacturer) {
+        try{
+            VaccineDetails vaccineDetails = new VaccineDetails(
+                    vaccineName,
+                    applicationDate,
+                    nextDoseDate,
+                    batchNumber,
+                    manufacturer);
 
-        VaccineDetails vaccineDetails = VaccineDetails.builder()
-                .vaccineName(vaccineName)
-                .applicationDate(applicationDate)
-                .nextDoseDate(nextDoseDate)
-                .batchNumber(batchNumber)
-                .manufacturer(manufacturer)
-                .build();
+            vaccineDetails.validate();
 
-        vaccineDetails.validate();
-
-        return vaccineDetails;
+            return vaccineDetails;
+        } catch (RuntimeException e) {
+            throw e;
+        }
     }
 }

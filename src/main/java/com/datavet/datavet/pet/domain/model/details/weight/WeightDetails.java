@@ -32,22 +32,23 @@ public class WeightDetails implements MedicalRecordDetails {
 
     @Override
     public boolean canCorrect(MedicalRecordDetails previous) {
-        return false;
+        return true;
     }
 
     @Override
     public StatusChangeResult applyAction(RecordAction action) {
-        return MedicalRecordDetails.super.applyAction(action);
+        throw new IllegalArgumentException("No se puede aplicar una acción de cambio de estado en un regristro que no tiene estados.");
     }
 
     public static WeightDetails create(Double value, WeightUnit unit){
-        WeightDetails weightDetails = WeightDetails.builder()
-                .value(value)
-                .unit(unit)
-                .build();
+        try {
+            WeightDetails weightDetails = new WeightDetails(value,unit);
+            weightDetails.validate();
 
-        weightDetails.validate();
+            return weightDetails;
+        } catch (RuntimeException e) {
+            throw e;
+        }
 
-        return weightDetails;
     }
 }
