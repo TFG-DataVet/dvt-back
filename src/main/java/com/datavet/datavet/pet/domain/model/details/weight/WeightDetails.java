@@ -1,6 +1,8 @@
 package com.datavet.datavet.pet.domain.model.details.weight;
 
+import com.datavet.datavet.pet.domain.model.action.RecordAction;
 import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
+import com.datavet.datavet.pet.domain.model.result.StatusChangeResult;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import lombok.*;
 
@@ -26,6 +28,16 @@ public class WeightDetails implements MedicalRecordDetails {
         if (unit == null){
             throw new IllegalArgumentException("Weight unit is required");
         }
+    }
+
+    @Override
+    public boolean canCorrect(MedicalRecordDetails previous) {
+        return false;
+    }
+
+    @Override
+    public StatusChangeResult applyAction(RecordAction action) {
+        return MedicalRecordDetails.super.applyAction(action);
     }
 
     public static WeightDetails create(Double value, WeightUnit unit){
