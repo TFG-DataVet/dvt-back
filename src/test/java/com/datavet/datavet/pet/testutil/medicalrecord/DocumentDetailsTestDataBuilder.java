@@ -6,10 +6,8 @@ import java.time.LocalDateTime;
 
 /**
  * Test data builder for DocumentDetails.
- *
  * Default: confidential=false, checksum=null, fileSizeInBytes=null
  * because those are the simplest valid combinations.
- *
  * Use dedicated helpers to exercise the confidential branch
  * and the optional fileSizeInBytes / checksum fields.
  */

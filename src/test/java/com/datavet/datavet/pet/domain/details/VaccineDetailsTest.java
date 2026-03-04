@@ -5,7 +5,6 @@ import com.datavet.datavet.pet.domain.model.details.vaccine.VaccineDetails;
 import com.datavet.datavet.pet.domain.model.details.weight.WeightDetails;
 import com.datavet.datavet.pet.domain.model.details.weight.WeightUnit;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
-import com.datavet.datavet.pet.testutil.medicalrecord.TreatmentDetailsTestDataBuilder;
 import com.datavet.datavet.pet.testutil.medicalrecord.VaccineDetailsTestDataBuilder;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,6 +1,5 @@
 package com.datavet.datavet.pet.testutil;
 
-import com.datavet.datavet.pet.domain.exception.PetValidationException;
 import com.datavet.datavet.pet.domain.model.OwnerInfo;
 import com.datavet.datavet.pet.domain.model.Pet;
 import com.datavet.datavet.pet.domain.model.Sex;
@@ -9,7 +8,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
