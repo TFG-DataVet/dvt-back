@@ -6,9 +6,7 @@ import com.datavet.datavet.shared.domain.valueobject.Phone;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Value
 @Builder

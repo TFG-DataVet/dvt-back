@@ -1,9 +1,5 @@
 package com.datavet.datavet.owner.application.dto;
 
-import com.datavet.datavet.clinic.application.dto.ClinicResponse;
-import com.datavet.datavet.shared.domain.valueobject.Address;
-import com.datavet.datavet.shared.domain.valueobject.Email;
-import com.datavet.datavet.shared.domain.valueobject.Phone;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

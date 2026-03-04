@@ -1,6 +1,5 @@
 package com.datavet.datavet.owner.infrastructure.persistence.repository;
 
-import com.datavet.datavet.owner.domain.model.Owner;
 import com.datavet.datavet.owner.infrastructure.persistence.document.OwnerDocument;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
