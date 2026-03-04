@@ -1,9 +1,6 @@
 package com.datavet.datavet.owner.infrastructure.adapter.input;
 
 import com.datavet.datavet.owner.infrastructure.persistence.repository.MongoOwnerRepositoryAdapter;
-import com.datavet.datavet.shared.domain.valueobject.Address;
-import com.datavet.datavet.shared.domain.valueobject.Email;
-import com.datavet.datavet.shared.domain.valueobject.Phone;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,6 +1,5 @@
 package com.datavet.datavet.clinic.application.port.in.command;
 
-import com.datavet.datavet.clinic.application.port.in.command.UpdateClinicCommand;
 import com.datavet.datavet.shared.domain.valueobject.Address;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import com.datavet.datavet.shared.domain.valueobject.Phone;

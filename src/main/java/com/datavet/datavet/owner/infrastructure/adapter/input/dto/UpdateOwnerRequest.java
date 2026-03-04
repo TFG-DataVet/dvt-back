@@ -1,7 +1,5 @@
 package com.datavet.datavet.owner.infrastructure.adapter.input.dto;
 
-import com.datavet.datavet.shared.domain.valueobject.Email;
-import com.datavet.datavet.shared.domain.valueobject.Phone;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;

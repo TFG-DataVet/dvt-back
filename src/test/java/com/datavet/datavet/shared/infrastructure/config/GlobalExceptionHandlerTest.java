@@ -1,7 +1,6 @@
 package com.datavet.datavet.shared.infrastructure.config;
 
 import com.datavet.datavet.shared.infrastructure.dto.ErrorResponse;
-import com.datavet.datavet.shared.infrastructure.config.GlobalExceptionHandler;
 import com.datavet.datavet.clinic.domain.exception.ClinicAlreadyExistsException;
 import com.datavet.datavet.clinic.domain.exception.ClinicNotFoundException;
 import org.junit.jupiter.api.BeforeEach;

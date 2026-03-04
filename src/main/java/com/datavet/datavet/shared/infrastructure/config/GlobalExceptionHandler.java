@@ -1,25 +1,23 @@
 package com.datavet.datavet.shared.infrastructure.config;
 
+import com.datavet.datavet.shared.domain.exception.BusinessRuleException;
+import com.datavet.datavet.shared.domain.exception.EntityAlreadyExistsException;
+import com.datavet.datavet.shared.domain.exception.EntityNotFoundException;
 import com.datavet.datavet.shared.domain.exception.email.EmailAlreadyExistsException;
 import com.datavet.datavet.shared.domain.exception.email.EmailInvalidFormatException;
 import com.datavet.datavet.shared.domain.exception.email.EmailNotFoundException;
 import com.datavet.datavet.shared.infrastructure.dto.ErrorResponse;
-import com.datavet.datavet.shared.domain.exception.EntityNotFoundException;
-import com.datavet.datavet.shared.domain.exception.EntityAlreadyExistsException;
-import com.datavet.datavet.shared.domain.exception.BusinessRuleException;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
