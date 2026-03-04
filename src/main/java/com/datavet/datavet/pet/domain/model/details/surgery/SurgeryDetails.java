@@ -1,14 +1,16 @@
 package com.datavet.datavet.pet.domain.model.details.surgery;
+
+import com.datavet.datavet.pet.domain.exception.MedicalRecordApplyActionException;
+import com.datavet.datavet.pet.domain.exception.MedicalRecordStateException;
+import com.datavet.datavet.pet.domain.exception.MedicalRecordValidationException;
 import com.datavet.datavet.pet.domain.model.action.RecordAction;
 import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
-import com.datavet.datavet.pet.domain.model.details.hospitalization.HospitalizationDetails;
 import com.datavet.datavet.pet.domain.model.result.StatusChangeResult;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
+import com.datavet.datavet.shared.domain.validation.ValidationResult;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,102 +40,102 @@ public class SurgeryDetails implements MedicalRecordDetails {
 
     @Override
     public void validate(){
+        ValidationResult result = new ValidationResult();
+
         if(this.status == null) {
-            throw new IllegalArgumentException("El estado de la cirugía no debe estar vacio.");
+            result.addError("status", "El estado de la cirugía no debe estar vacio.");
         }
 
         if (surgeryName == null || surgeryName.isBlank()) {
-            throw new IllegalArgumentException("El nombre de la cirugía no puede ser null ni estar vacio.");
+            result.addError("surgeryName", "El nombre de la cirugía no puede ser null ni estar vacio.");
         }
 
         if (surgeryType == null) {
-            throw new IllegalArgumentException("El tipo de la cirugía no puede ser nulo.");
+            result.addError("surgeryType", "El tipo de la cirugía no puede ser nulo.");
         }
 
         if (procedures == null || procedures.isEmpty()) {
-            throw new IllegalArgumentException("La cirugía debe tener al menos un procedimiento.");
+            result.addError("procedures", "La cirugía debe tener al menos un procedimiento.");
         }
 
-        if (this.status == SurgeryStatus.SCHEDULED) {
-            if (surgeryDate == null) {
-                throw new IllegalArgumentException("La cirugía en estado de " + status + " debe de tener una fecha de admición.");
+        if (this.status != null) {
+            if (this.status == SurgeryStatus.SCHEDULED) {
+                if (surgeryDate == null) {
+                    result.addError("surgeryDate", "La cirugía en estado de " + status + " debe de tener una fecha de admición.");
+                } else if (surgeryDate.isBefore(LocalDateTime.now())){
+                    result.addError("surgeryDate", "La fecha de cirugía en estado de " + status + " no puede antes del día de hoy (" + LocalDateTime.now() + ")");
+                }
+
+                if (!postOpMedications.isEmpty()){
+                    result.addError("postOpMedications", "La cirugía en estado de " + status + " no debe de contener todavía ningún medicamente post-operatorio.");
+                }
             }
 
-            if (surgeryDate.isBefore(LocalDateTime.now())){
-                throw new IllegalArgumentException("La fecha de cirugía en estado de " + status + " no puede antes del día de hoy (" + LocalDateTime.now() + ")");
+            if (this.status == SurgeryStatus.IN_PROGRESS) {
+                if (anesthesiaType == null) {
+                    result.addError("anesthesiaType", "El tipo de anestecia no puede estar vaci en el estado " + status);
+                }
             }
 
-            if (!postOpMedications.isEmpty()){
-                throw new IllegalArgumentException("La cirugía en estado de " + status + " no debe de contener todavía ningún medicamente post-operatorio..");
+            if (this.status == SurgeryStatus.ADMITTED ||
+                this.status == SurgeryStatus.IN_PROGRESS) {
+                if (surgeryDate == null) {
+                    result.addError("surgeryDate", "La cirugía en estado de " + status + " debe de tener una fecha de admición.");
+                }
+            }
+
+            if (this.status != SurgeryStatus.COMPLETED &&
+                this.status != SurgeryStatus.DECEASED) {
+                if (outcome != null) {
+                    result.addError("outcome", "La cirugía en estado de " + status + " no puede contener resultado, hasta ser completada.");
+                }
+            }
+
+            if (this.status == SurgeryStatus.COMPLETED) {
+                if (postOpMedications.isEmpty()){
+                    result.addError("postOpMedications", "La cirugía en estado de " + status + " debe de tener medicamentos post-operatorios.");
+                }
+            }
+
+            if (this.status == SurgeryStatus.COMPLETED ||
+                this.status == SurgeryStatus.DECEASED) {
+                if (completedAt == null) {
+                    result.addError("completedAt", "La cirugía en estado de " + status + " debe de tener una fecha de culminación.");
+                }
+
+                if (completedAt != null && surgeryDate != null && completedAt.isBefore(surgeryDate)){
+                    result.addError("completedAt", "La fecha de culminación de la cirugía no puede ser anterior a la fecha de admición.");
+                }
+
+                if (outcome == null){
+                    result.addError("outcome", "La cirugía en estado de " + status + " debe de tener un resultado de cirugía.");
+                }
+            }
+
+            if (this.status == SurgeryStatus.CANCELLED) {
+                if(completedAt == null) {
+                    result.addError("completedAt", "La cirugía en estado de " + status + " debe de tener una fecha de culminación.");
+                }
+
             }
         }
 
-        if (this.status == SurgeryStatus.IN_PROGRESS) {
-            if (anesthesiaType == null) {
-                throw new IllegalArgumentException("El tipo de anestecia no puede estar vaci en el estado " + status);
-            }
-        }
-
-        if (this.status == SurgeryStatus.ADMITTED ||
-            this.status == SurgeryStatus.IN_PROGRESS) {
-            if (surgeryDate == null) {
-                throw new IllegalArgumentException("La cirugía en estado de " + status + " debe de tener una fecha de admición.");
-            }
-        }
-
-        if (this.status != SurgeryStatus.COMPLETED &&
-            this.status != SurgeryStatus.DECEASED) {
-            if (outcome != null) {
-                throw new IllegalArgumentException("La cirugía en estado de " + status + " no puede contener resultado, hasta ser completada.");
-            }
-        }
-
-        if (this.status == SurgeryStatus.COMPLETED) {
-            if (postOpMedications.isEmpty()){
-                throw new IllegalArgumentException("La cirugía en estado de " + status + " debe de tener medicamentos post-operatorios.");
-            }
-        }
-
-        if (this.status == SurgeryStatus.COMPLETED ||
-            this.status == SurgeryStatus.DECEASED) {
-            if (completedAt == null) {
-                throw new IllegalArgumentException("La cirugía en estado de " + status + " debe de tener una fecha de culminación.");
-            }
-
-            if (completedAt.isBefore(surgeryDate)){
-                throw new IllegalArgumentException("La fecha de culminación de la cirugía no puede ser anterior a la fecha de admición.");
-            }
-
-            if (outcome == null){
-                throw new IllegalArgumentException("La cirugía en estado de " + status + " debe de tener un resultado de cirugía.");
-            }
-        }
-
-        if (this.status == SurgeryStatus.CANCELLED) {
-            if(completedAt == null) {
-                throw new IllegalArgumentException("La cirugía en estado de " + status + " debe de tener una fecha de culminación.");
-            }
-
-            if(completedAt.isBefore(surgeryDate)){
-                throw new IllegalArgumentException("La fecha de culminación de la cirugía no puede ser anterior a la fecha de admición.");
-            }
+        if (result.hasErrors()) {
+            throw new MedicalRecordValidationException(result);
         }
     }
 
     @Override
     public boolean canCorrect(MedicalRecordDetails previous) {
-
         if (!(previous instanceof SurgeryDetails prev)) return false;
 
-        // 1️⃣ Estados terminales del registro anterior → inmutable
         if (prev.status == SurgeryStatus.COMPLETED ||
                 prev.status == SurgeryStatus.CANCELLED ||
                 prev.status == SurgeryStatus.DECEASED) {
-            throw new IllegalArgumentException(
-                    "No se puede corregir una cirugía en estado terminal.");
+            throw new MedicalRecordValidationException("Surgery - instanceOf", "No es posible corregir un registro con un tipo de detalle diferente.");
+
         }
 
-        // 2️⃣ Campos que jamás pueden cambiar
         if (!Objects.equals(this.surgeryName, prev.surgeryName)) return false;
         if (this.surgeryType != prev.surgeryType) return false;
         if (!Objects.equals(this.procedures, prev.procedures)) return false;
@@ -143,12 +145,10 @@ public class SurgeryDetails implements MedicalRecordDetails {
         if (!Objects.equals(this.completedAt, prev.completedAt)) return false;
         if (this.outcome != prev.outcome) return false;
 
-        // 3️⃣ surgeryDate solo puede cambiar si el estado anterior es SCHEDULED
         if (prev.status != SurgeryStatus.SCHEDULED) {
             if (!Objects.equals(this.surgeryDate, prev.surgeryDate)) return false;
         }
 
-        // 4️⃣ Medicamentos solo pueden agregarse
         if (!this.postOpMedications.containsAll(prev.postOpMedications)) return false;
 
         return true;
@@ -165,7 +165,7 @@ public class SurgeryDetails implements MedicalRecordDetails {
             SurgeryDetails surgeryDetails = new SurgeryDetails(
                     surgeryName,
                     surgeryType,
-                    List.copyOf(procedures),
+                    procedures != null ? List.copyOf(procedures) : null,
                     anesthesiaType,
                     hospitalizationRequired,
                     surgeryDate,
@@ -193,19 +193,16 @@ public class SurgeryDetails implements MedicalRecordDetails {
 
             if (next == SurgeryStatus.COMPLETED || next == SurgeryStatus.DECEASED) {
                 if (this.outcome == null) {
-                    throw new IllegalArgumentException(
-                            "No se puede completar la cirugía sin resultado."
-                    );
+                    throw new MedicalRecordApplyActionException("Surgery - instanceOf", "No es posible corregir un registro con un tipo de detalle diferente.");
+
                 }
 
                 if (this.postOpMedications.isEmpty()) {
-                    throw new IllegalArgumentException(
-                            "No se puede completar la cirugía sin medicación post-operatoria."
-                    );
+                    throw new MedicalRecordApplyActionException("Surgery - instanceOf", "No es posible corregir un registro con un tipo de detalle diferente.");
                 }
 
-                this.completedAt = LocalDateTime.now();
             }
+            this.completedAt = LocalDateTime.now();
 
             this.status = next;
             this.validate();
@@ -220,7 +217,7 @@ public class SurgeryDetails implements MedicalRecordDetails {
 
     public void changedOutcome(SurgeryOutcome newOutcome){
         if (this.status != SurgeryStatus.IN_PROGRESS){
-            throw new IllegalArgumentException("El resultado solo puede definirse cuando la cirugía esta en progreso.");
+            throw new MedicalRecordStateException("Surgery - status", "El resultado solo puede definirse cuando la cirugía esta en progreso.");
         }
 
         if (newOutcome == null) {

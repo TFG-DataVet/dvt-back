@@ -1,12 +1,15 @@
 package com.datavet.datavet.pet.domain.model;
 
 import com.datavet.datavet.pet.domain.event.medicalrecord.*;
+import com.datavet.datavet.pet.domain.exception.MedicalRecordStateException;
+import com.datavet.datavet.pet.domain.exception.MedicalRecordValidationException;
 import com.datavet.datavet.pet.domain.model.action.RecordAction;
 import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordLifecycleStatus;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import com.datavet.datavet.shared.domain.model.AggregateRoot;
 import com.datavet.datavet.shared.domain.model.Document;
+import com.datavet.datavet.shared.domain.validation.ValidationResult;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,9 +30,8 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
     private MedicalRecordLifecycleStatus status;
     private String veterinarianId;
     private String notes;
-    //    private List<Attachments> attachments;
     private MedicalRecordDetails details;
-    private LocalDateTime recordedAt;
+    private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     @Override
@@ -41,15 +43,19 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
                                        String veterinarianId,
                                        String notes,
                                        MedicalRecordDetails details){
-        if ( details == null) {
-            throw new IllegalArgumentException("El detalle del registro médico no puede ser nulo.");
-        }
+        ValidationResult result = new ValidationResult();
 
-        if ( type != details.getType()){
-            throw new IllegalArgumentException("El tipo de registro seleccionado debe de ser del mismo tipo que el registrado.");
+        if ( details == null) {
+            result.addError("[details]", "El detalle del registro médico no puede ser nulo.");
+        } else if ( type != details.getType()){
+            result.addError("[type]", "El tipo de registro seleccionado debe de ser del mismo tipo que el registrado.");
         }
 
         String uuid = UUID.randomUUID().toString();
+
+        if (!result.isValid()) {
+            throw new MedicalRecordValidationException(result);
+        }
 
         details.validate();
 
@@ -63,8 +69,8 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
                 .veterinarianId(veterinarianId)
                 .notes(notes)
                 .details(details)
-                .recordedAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(null)
                 .build();
 
         medicalRecord.addDomainEvent(MedicalRecordCreatedEvent.of(uuid, petId, clinicId, type));
@@ -76,19 +82,24 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
                                                    MedicalRecordDetails correctedDetails,
                                                    String veterinarianId,
                                                    String reason){
+        ValidationResult result = new ValidationResult();
+
         String uuid = UUID.randomUUID().toString();
 
         if ( exitingRecord.getType() != correctedDetails.getType()){
-            throw new IllegalArgumentException("El tipo del detalle corregido debe coincidir con el tipo del registro original.");
+            result.addError("[type]", "El tipo del detalle corregido debe coincidir con el tipo del registro original.");
         }
 
         if (exitingRecord.getStatus() != MedicalRecordLifecycleStatus.ACTIVE) {
-            throw new IllegalArgumentException("Solo se pueden crear correcciones sobre registros activos.");
+            result.addError("[status]", "Solo se pueden crear correcciones sobre registros activos.");
         }
 
         if (!correctedDetails.canCorrect(exitingRecord.details))
-            throw new IllegalArgumentException("La corrección no contiene cambios relevantes respecto al registro original.");
+            result.addError("[correction]", "La corrección no contiene cambios relevantes respecto al registro original.");
 
+        if (result.hasErrors()) {
+            throw new  MedicalRecordValidationException(result);
+        }
         correctedDetails.validate();
 
         MedicalRecord corrected = MedicalRecord.builder()
@@ -100,7 +111,7 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
                 .status(MedicalRecordLifecycleStatus.ACTIVE)
                 .veterinarianId(veterinarianId)
                 .details(correctedDetails)
-                .recordedAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
 
@@ -117,10 +128,10 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
 
     public void markAsCorrected(MedicalRecord correctedRecord, String reason){
         if (this.status != MedicalRecordLifecycleStatus.ACTIVE)
-            throw new IllegalArgumentException("Solo un registro activo puede ser corregido.");
+            throw new MedicalRecordStateException("Medical Record - MarkAsCorrected, no Active", "Solo un registro activo puede ser corregido.");
 
         if (!correctedRecord.correctedRecordId.equals(this.id))
-            throw new IllegalArgumentException("El registro corregido no referencia a este registro.");
+            throw new MedicalRecordStateException("Medical Record - correctedRecord", "El registro corregido no referencia a este registro.");
 
         this.status = MedicalRecordLifecycleStatus.CORRECTED;
         this.updatedAt = LocalDateTime.now();
