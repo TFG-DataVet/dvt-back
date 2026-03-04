@@ -39,7 +39,8 @@ public class OwnerTestDataBuilder {
                 .documentNumber(DEFAULT_DNI)
                 .phone(aValidPhone())
                 .email(aValidEmail())
-                .address(aValidAddress());
+                .address(aValidAddress())
+                .avatarUrl("esto es una web");
     }
 
     /**
@@ -55,7 +56,8 @@ public class OwnerTestDataBuilder {
                 DEFAULT_DNI,
                 aValidPhone(),
                 aValidEmail(),
-                aValidAddress()
+                aValidAddress(),
+                "esto es una web"
         );
     }
 
@@ -72,7 +74,8 @@ public class OwnerTestDataBuilder {
                 DEFAULT_DNI,
                 aValidPhone(),
                 aValidEmail(),
-                aValidAddress()
+                aValidAddress(),
+                "esto es una web"
         );
     }
 
@@ -88,7 +91,8 @@ public class OwnerTestDataBuilder {
                 DEFAULT_DNI,
                 aValidPhone(),
                 aValidEmail(),
-                aValidAddress()
+                aValidAddress(),
+                "esto es una web"
         );
     }
 
@@ -104,7 +108,8 @@ public class OwnerTestDataBuilder {
                 DEFAULT_DNI,
                 aValidPhone(),
                 new Email(email),
-                aValidAddress()
+                aValidAddress(),
+                "esto es una web"
         );
     }
 
@@ -120,7 +125,8 @@ public class OwnerTestDataBuilder {
                 dni,
                 aValidPhone(),
                 aValidEmail(),
-                aValidAddress()
+                aValidAddress(),
+                "esto es un email"
         );
     }
 
@@ -136,7 +142,8 @@ public class OwnerTestDataBuilder {
                 DEFAULT_DNI,
                 new Phone(phone),
                 aValidEmail(),
-                aValidAddress()
+                aValidAddress(),
+                "esto es una web"
         );
     }
 
@@ -150,7 +157,8 @@ public class OwnerTestDataBuilder {
                 DEFAULT_DNI,
                 aValidPhone(),
                 aValidEmail(),
-                aValidAddress()
+                aValidAddress(),
+                "esto es una web"
         );
     }
 
@@ -165,7 +173,8 @@ public class OwnerTestDataBuilder {
                 DEFAULT_DNI,
                 aValidPhone(),
                 new Email(email),
-                aValidAddress()
+                aValidAddress(),
+                "Esto es una web"
         );
     }
 
@@ -180,7 +189,8 @@ public class OwnerTestDataBuilder {
                 dni,
                 aValidPhone(),
                 aValidEmail(),
-                aValidAddress()
+                aValidAddress(),
+                "Esto es una web"
         );
     }
 
@@ -195,7 +205,8 @@ public class OwnerTestDataBuilder {
                 DEFAULT_DNI,
                 new Phone(phone),
                 aValidEmail(),
-                aValidAddress()
+                aValidAddress(),
+                "esto es una web"
         );
     }
 
@@ -209,7 +220,8 @@ public class OwnerTestDataBuilder {
                 DEFAULT_DNI,
                 aValidPhone(),
                 aValidEmail(),
-                aValidAddress()
+                aValidAddress(),
+                "esto es una web"
         );
     }
 
@@ -223,9 +235,9 @@ public class OwnerTestDataBuilder {
                 .ownerName("Updated Name")
                 .ownerLastName("Updated LastName")
                 .ownerDni("87654321B")
-                .ownerPhone("+34698765432")
-                .ownerEmail("updated@example.com")
-                .ownerPassword("password123")
+                .ownerPhone(new Phone("+34698765432"))
+                .ownerEmail(new Email("updated@example.com"))
+//                .ownerPassword("password123")
                 .ownerAddress(new Address("Calle Nueva 456", "Barcelona", "08001"))
                 .build();
     }
@@ -234,15 +246,15 @@ public class OwnerTestDataBuilder {
      * Creates an UpdateOwnerCommand with a specific email.
      * Useful for testing uniqueness constraints during updates.
      */
-    public static UpdateOwnerCommand anUpdateCommandWithEmail(String ownerId, String email) {
+    public static UpdateOwnerCommand anUpdateCommandWithEmail(String ownerId, Email email) {
         return UpdateOwnerCommand.builder()
                 .ownerID(ownerId)
                 .ownerName("Updated Name")
                 .ownerLastName("Updated LastName")
                 .ownerDni("87654321B")
-                .ownerPhone("+34698765432")
+                .ownerPhone(new Phone("+34698765432"))
                 .ownerEmail(email)
-                .ownerPassword("password123")
+//                .ownerPassword("password123")
                 .ownerAddress(aValidAddress())
                 .build();
     }
@@ -257,9 +269,9 @@ public class OwnerTestDataBuilder {
                 .ownerName("Updated Name")
                 .ownerLastName("Updated LastName")
                 .ownerDni(dni)
-                .ownerPhone("+34698765432")
-                .ownerEmail("updated@example.com")
-                .ownerPassword("password123")
+                .ownerPhone(new Phone("+34698765432"))
+                .ownerEmail(new Email("updated@example.com"))
+//                .ownerPassword("password123")
                 .ownerAddress(aValidAddress())
                 .build();
     }

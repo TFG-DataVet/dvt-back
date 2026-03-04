@@ -89,4 +89,9 @@ public class OwnerRepositoryAdapter implements OwnerRepositoryPort {
         return repository.existsByDniAndIdNot(dni, id);
     }
 
+    @Override
+    public Optional<Owner> findByEmail(Email email) {
+        return repository.findByEmail(email).map(this::toDomain);
+    }
+
 }

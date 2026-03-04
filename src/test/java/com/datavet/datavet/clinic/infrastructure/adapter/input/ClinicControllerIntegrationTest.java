@@ -1,20 +1,19 @@
 package com.datavet.datavet.clinic.infrastructure.adapter.input;
 
 import com.datavet.datavet.clinic.application.port.in.command.CreateClinicCommand;
-import com.datavet.datavet.clinic.application.port.in.command.UpdateClinicCommand;
 import com.datavet.datavet.shared.domain.valueobject.Address;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -26,13 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@TestPropertySource(properties = {
-    "spring.datasource.url=jdbc:h2:mem:testdb",
-    "spring.datasource.driver-class-name=org.h2.Driver",
-    "spring.jpa.hibernate.ddl-auto=create-drop"
-})
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@Transactional
+@ActiveProfiles("test")
 class ClinicControllerIntegrationTest {
 
     @Autowired
@@ -40,6 +33,9 @@ class ClinicControllerIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     // Test data constants
     private static final String VALID_CLINIC_NAME = "Veterinaria Central";
@@ -51,6 +47,11 @@ class ClinicControllerIntegrationTest {
     private static final String VALID_PHONE = "+51987654321";
     private static final String VALID_EMAIL = "info@vetcentral.com";
     private static final String VALID_LOGO_URL = "https://example.com/logo.png";
+
+    @BeforeEach
+    void cleanDatabase() {
+        mongoTemplate.getDb().drop();
+    }
 
     /**
      * Test successful creation of clinic with valid data.
@@ -136,8 +137,7 @@ class ClinicControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.clinicId").exists())
-                .andExpect(jsonPath("$.clinicId").isNumber())
-                .andExpect(jsonPath("$.clinicId").value(greaterThan(0)))
+                .andExpect(jsonPath("$.clinicId").isString())
                 .andExpect(jsonPath("$.clinicName").value(VALID_CLINIC_NAME))
                 .andExpect(jsonPath("$.legalName").value(VALID_LEGAL_NAME))
                 .andExpect(jsonPath("$.legalNumber").value(VALID_LEGAL_NUMBER))
@@ -198,7 +198,7 @@ class ClinicControllerIntegrationTest {
                 .getContentAsString();
 
         // Extract the ID from the response
-        Long clinicId = objectMapper.readTree(response).get("clinicId").asLong();
+        String clinicId = objectMapper.readTree(response).get("clinicId").asText();
 
         // Test GET by ID
         mockMvc.perform(get("/clinic/{id}", clinicId))
@@ -216,7 +216,7 @@ class ClinicControllerIntegrationTest {
      */
     @Test
     void shouldReturn404WhenClinicNotFound() throws Exception {
-        Long nonExistentId = 99999L;
+        String nonExistentId = "EsteIdNoExiste";
 
         mockMvc.perform(get("/clinic/{id}", nonExistentId))
                 .andExpect(status().isNotFound())
@@ -244,7 +244,7 @@ class ClinicControllerIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        Long clinicId = objectMapper.readTree(response).get("clinicId").asLong();
+        String clinicId = objectMapper.readTree(response).get("clinicId").asText();
 
         // Test GET by ID returns all fields including Value Objects
         mockMvc.perform(get("/clinic/{id}", clinicId))
@@ -341,7 +341,7 @@ class ClinicControllerIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        Long clinicId = objectMapper.readTree(createResponse).get("clinicId").asLong();
+        String clinicId = objectMapper.readTree(createResponse).get("clinicId").asText();
 
         // Update the clinic
         String updateRequestJson = """
@@ -378,7 +378,7 @@ class ClinicControllerIntegrationTest {
      */
     @Test
     void updateClinic_WithNonExistentId_ShouldReturn404() throws Exception {
-        Long nonExistentId = 99999L;
+        String nonExistentId = "EsteIdNoExiste";
 
         String updateRequestJson = """
             {
@@ -475,7 +475,7 @@ class ClinicControllerIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        Long clinicId = objectMapper.readTree(createResponse).get("clinicId").asLong();
+        String clinicId = objectMapper.readTree(createResponse).get("clinicId").asText();
 
         // Try to update second clinic with email from first clinic
         String updateRequestJson = """
@@ -520,7 +520,7 @@ class ClinicControllerIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        Long clinicId = objectMapper.readTree(createResponse).get("clinicId").asLong();
+        String clinicId = objectMapper.readTree(createResponse).get("clinicId").asText();
 
         // Update the clinic keeping the same email
         String updateRequestJson = """
@@ -717,7 +717,7 @@ class ClinicControllerIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        Long clinicId = objectMapper.readTree(response).get("clinicId").asLong();
+        String clinicId = objectMapper.readTree(response).get("clinicId").asText();
 
         // Delete the clinic - should return 204 No Content per REST standards
         mockMvc.perform(delete("/clinic/{id}", clinicId))
@@ -730,7 +730,7 @@ class ClinicControllerIntegrationTest {
      */
     @Test
     void shouldReturn404WhenDeletingNonExistentClinic() throws Exception {
-        Long nonExistentId = 99999L;
+        String nonExistentId = "EsteIdNoExiste";
 
         mockMvc.perform(delete("/clinic/{id}", nonExistentId))
                 .andExpect(status().isNotFound())
@@ -757,7 +757,7 @@ class ClinicControllerIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        Long clinicId = objectMapper.readTree(response).get("clinicId").asLong();
+        String clinicId = objectMapper.readTree(response).get("clinicId").asText();
 
         // Verify clinic exists
         mockMvc.perform(get("/clinic/{id}", clinicId))

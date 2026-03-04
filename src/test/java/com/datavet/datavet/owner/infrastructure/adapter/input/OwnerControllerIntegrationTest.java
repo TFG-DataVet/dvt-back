@@ -91,8 +91,8 @@ class OwnerControllerIntegrationTest {
                 .andExpect(jsonPath("$.firstName").value(VALID_NAME))
                 .andExpect(jsonPath("$.lastName").value(VALID_LAST_NAME))
                 .andExpect(jsonPath("$.dni").value(VALID_DNI))
-                .andExpect(jsonPath("$.phone").value(VALID_PHONE))
                 .andExpect(jsonPath("$.email").value(VALID_EMAIL))
+                .andExpect(jsonPath("$.phone").value(VALID_PHONE))
                 .andExpect(jsonPath("$.address.street").value(VALID_ADDRESS))
                 .andExpect(jsonPath("$.address.city").value(VALID_CITY))
                 .andExpect(jsonPath("$.address.postalCode").value(VALID_POSTAL_CODE));

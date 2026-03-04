@@ -324,7 +324,7 @@ class ClinicServiceExceptionTest {
         // When & Then
         assertThatThrownBy(() -> clinicService.updateClinic(command))
                 .isInstanceOf(ClinicNotFoundException.class)
-                .hasMessage("Clinic not found with id: 1");
+                .hasMessage("Clinic not found with id: hola");
     }
 
     @Test
@@ -442,7 +442,7 @@ class ClinicServiceExceptionTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getClinicID()).isEqualTo(1L);
+        assertThat(result.getClinicID()).isEqualTo("ClinicId");
         assertThat(result.getClinicName()).isEqualTo("Test Clinic");
         assertThat(result.getEmail().getValue()).isEqualTo("test@example.com");
         assertThat(result.getSuscriptionStatus()).isEqualTo("ACTIVE");
@@ -596,7 +596,7 @@ class ClinicServiceExceptionTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getClinicID()).isEqualTo(1L);
+        assertThat(result.getClinicID()).isEqualTo("ClinicId");
         assertThat(result.getClinicName()).isEqualTo("Updated Clinic");
         assertThat(result.getEmail().getValue()).isEqualTo("updated@example.com");
         

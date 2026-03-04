@@ -1,15 +1,20 @@
 package com.datavet.datavet.shared.infrastructure.config;
 
+import com.datavet.datavet.shared.domain.exception.email.EmailAlreadyExistsException;
+import com.datavet.datavet.shared.domain.exception.email.EmailInvalidFormatException;
+import com.datavet.datavet.shared.domain.exception.email.EmailNotFoundException;
 import com.datavet.datavet.shared.infrastructure.dto.ErrorResponse;
 import com.datavet.datavet.shared.domain.exception.EntityNotFoundException;
 import com.datavet.datavet.shared.domain.exception.EntityAlreadyExistsException;
 import com.datavet.datavet.shared.domain.exception.BusinessRuleException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
@@ -184,6 +189,60 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleEmailAlreadyExists(
+            EmailAlreadyExistsException ex, WebRequest request) {
+
+        log.warn("Email already exists: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.CONFLICT.value())
+                .error("Conflict")
+                .message(ex.getMessage())
+                .details(new ArrayList<>())
+                .path(getPath(request))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(EmailInvalidFormatException.class)
+    public ResponseEntity<ErrorResponse> handleEmailInvalidFormat(
+            EmailInvalidFormatException ex, WebRequest request) {
+
+        log.warn("Invalid email format: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Bad Request")
+                .message(ex.getMessage())
+                .details(new ArrayList<>())
+                .path(getPath(request))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(EmailNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleEmailNotFound(
+            EmailNotFoundException ex, WebRequest request) {
+
+        log.warn("Email not found: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error("Not Found")
+                .message(ex.getMessage())
+                .details(new ArrayList<>())
+                .path(getPath(request))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
     private ErrorResponse.ValidationErrorDetail mapFieldError(FieldError fieldError) {

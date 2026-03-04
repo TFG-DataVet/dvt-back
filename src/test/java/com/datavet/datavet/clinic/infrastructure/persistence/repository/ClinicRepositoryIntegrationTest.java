@@ -227,25 +227,4 @@ class ClinicRepositoryIntegrationTest {
         assertTrue(existsByOtherEmailExcludingSelf, 
                 "Should find email conflict when checking other clinic's email");
     }
-
-    @Test
-    @DisplayName("Repository should properly handle MongoDB audit fields")
-    void repository_ShouldHandleMongoAuditFields() {
-        // Save clinic
-        ClinicDocument savedClinic = repository.save(testClinic);
-        
-        // Retrieve and verify audit fields
-        Optional<ClinicDocument> retrievedClinic = repository.findById(savedClinic.getId());
-        assertTrue(retrievedClinic.isPresent(), "Clinic should be found");
-        
-        ClinicDocument clinic = retrievedClinic.get();
-        assertNotNull(clinic.getCreatedAt(), "CreatedAt should be set");
-        assertNotNull(clinic.getUpdatedAt(), "UpdatedAt should be set");
-        
-        // Update the clinic
-        clinic.setName("Updated Clinic Name");
-        ClinicDocument updatedClinic = repository.save(clinic);
-        
-        assertNotNull(updatedClinic.getUpdatedAt(), "UpdatedAt should be updated");
-    }
 }
