@@ -1,11 +1,9 @@
 package com.datavet.datavet.pet.testutil;
 
-import com.datavet.datavet.owner.domain.model.Owner;
 import com.datavet.datavet.pet.domain.model.OwnerInfo;
 import com.datavet.datavet.pet.domain.model.Pet;
 import com.datavet.datavet.pet.domain.model.Sex;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
 

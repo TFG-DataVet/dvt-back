@@ -1,6 +1,5 @@
 package com.datavet.datavet.architecture;
 
-import com.datavet.datavet.shared.application.port.UseCase;
 import com.datavet.datavet.shared.domain.exception.DomainException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
