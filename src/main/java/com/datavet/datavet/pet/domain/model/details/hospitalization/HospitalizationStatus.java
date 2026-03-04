@@ -1,5 +1,6 @@
 package com.datavet.datavet.pet.domain.model.details.hospitalization;
 
+import com.datavet.datavet.pet.domain.exception.MedicalRecordApplyActionException;
 import com.datavet.datavet.pet.domain.model.action.RecordAction;
 
 public enum HospitalizationStatus {
@@ -9,7 +10,7 @@ public enum HospitalizationStatus {
             return switch (action) {
                 case ADMIT -> ADMITTED;
                 case CANCEL -> CANCELLED;
-                default -> throw new IllegalStateException("No se puede ejecutar " + action + " desde " + this);
+                default -> throw new MedicalRecordApplyActionException(action.toString(), "No se puede ejecutar action");
             };
         }
     },
@@ -18,7 +19,7 @@ public enum HospitalizationStatus {
         public HospitalizationStatus next(RecordAction action){
             return switch (action) {
                 case START -> IN_PROGRESS;
-                default -> throw new IllegalStateException("No se puede ejecutar " + action + " desde " + this);
+                default -> throw new MedicalRecordApplyActionException(action.toString(), "No se puede ejecutar action");
             };
         }
     },
@@ -28,26 +29,26 @@ public enum HospitalizationStatus {
             return switch (action) {
                 case COMPLETE -> COMPLETED;
                 case DECLARE_DECEASED -> DECEASED;
-                default -> throw new IllegalStateException("No se puede ejecutar " + action + " desde " + this);
+                default -> throw new MedicalRecordApplyActionException(action.toString(), "No se puede ejecutar action");
             };
         }
     },
     COMPLETED {
         @Override
         public HospitalizationStatus next(RecordAction action){
-            throw new IllegalStateException("No se puede ejecutar " + action + " desde " + this);
+            throw new MedicalRecordApplyActionException(action.toString(), "No se puede ejecutar action");
         }
     },
     CANCELLED {
         @Override
         public HospitalizationStatus next(RecordAction action){
-            throw new IllegalStateException("No se puede ejecutar " + action + " desde " + this);
+            throw new MedicalRecordApplyActionException(action.toString(), "No se puede ejecutar action");
         }
     },
     DECEASED {
         @Override
         public HospitalizationStatus next(RecordAction action){
-            throw new IllegalStateException("No se puede ejecutar " + action + " desde " + this);
+            throw new MedicalRecordApplyActionException(action.toString(), "No se puede ejecutar action");
         }
     };
 

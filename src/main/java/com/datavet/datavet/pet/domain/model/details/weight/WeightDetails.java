@@ -1,9 +1,9 @@
 package com.datavet.datavet.pet.domain.model.details.weight;
 
-import com.datavet.datavet.pet.domain.model.action.RecordAction;
+import com.datavet.datavet.pet.domain.exception.MedicalRecordValidationException;
 import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
-import com.datavet.datavet.pet.domain.model.result.StatusChangeResult;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
+import com.datavet.datavet.shared.domain.validation.ValidationResult;
 import lombok.*;
 
 @Getter
@@ -21,23 +21,16 @@ public class WeightDetails implements MedicalRecordDetails {
 
     @Override
     public void validate() {
-        if ( value == null || value <= 0){
-            throw new IllegalArgumentException("Weight value must be great than zero");
-        }
+        ValidationResult result = new ValidationResult();
+        if ( value == null || value <= 0) result.addError("Weight - name", "El valor del peso no puede ser nulo, ni menor a 0");
+        if (unit == null) result.addError("Weight - unit", "Weight unit is required");
 
-        if (unit == null){
-            throw new IllegalArgumentException("Weight unit is required");
-        }
+        if (result.hasErrors()) throw new MedicalRecordValidationException(result);
     }
 
     @Override
     public boolean canCorrect(MedicalRecordDetails previous) {
         return true;
-    }
-
-    @Override
-    public StatusChangeResult applyAction(RecordAction action) {
-        throw new IllegalArgumentException("No se puede aplicar una acción de cambio de estado en un regristro que no tiene estados.");
     }
 
     public static WeightDetails create(Double value, WeightUnit unit){

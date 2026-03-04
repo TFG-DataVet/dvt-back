@@ -1,7 +1,9 @@
 package com.datavet.datavet.pet.domain.model.details.consultation;
 
+import com.datavet.datavet.pet.domain.exception.MedicalRecordValidationException;
 import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
+import com.datavet.datavet.shared.domain.validation.ValidationResult;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,9 +32,7 @@ public class ConsultationDetails implements MedicalRecordDetails {
     @Override
     public boolean canCorrect(MedicalRecordDetails previous) {
         if (!(previous instanceof ConsultationDetails)) {
-            throw new IllegalArgumentException(
-                    "No es posible corregir un registro con un tipo de detalle diferente."
-            );
+            throw new MedicalRecordValidationException("Consultation - instanceOf", "No es posible corregir un registro con un tipo de detalle diferente.");
         }
 
         ConsultationDetails prev = (ConsultationDetails) previous;
@@ -52,28 +52,30 @@ public class ConsultationDetails implements MedicalRecordDetails {
 
     @Override
     public void validate(){
+        ValidationResult result = new ValidationResult();
+
         if (reason == null || reason.isBlank()){
-            throw new IllegalArgumentException("La razón de la consulta no puede estar vacía.");
+            result.addError("Consultation - reason", "La razón de la consulta no puede estar vacía.");
         }
 
         if ( followUpRequired && followUpDate == null ) {
-            throw new IllegalArgumentException("Si el paciente requiere seguimiento, debe de escoger una fecha para la proxima consulta.");
+            result.addError("Consultation - RequiereSeguimiento sin fecha", "Si el paciente requiere seguimiento, debe de escoger una fecha para la proxima consulta.");
         }
 
         if( !followUpRequired && followUpDate != null) {
-            throw new IllegalArgumentException("Si el paciente no requiere seguimiento, no debe de tener una fecha de proxima consulta.");
+            result.addError("Consultation - No requiereSeguimiento y tiene fecha", "Sí el paciente no requiere seguimiento, no debe de tener una fecha de proxima consulta.");
         }
 
         if (followUpDate != null && followUpDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("La fecha selecciona no puede ser anterior al día de hoy.");
+            result.addError("Consultation - FollowUpDate", "La fecha selecciona no puede ser anterior al día de hoy.");
         }
 
-        if (symptoms != null) {
-            for (String symptom : symptoms) {
-                if (symptom == null || symptom.isBlank()) {
-                    throw new IllegalArgumentException("Los síntomas no pueden estar vacíos.");
-                }
-            }
+        if (symptoms == null || symptoms.isEmpty()) {
+            result.addError("Consultation - symptoms", "Los síntomas no pueden estar vacíos.");
+        }
+
+        if (result.hasErrors()) {
+            throw new MedicalRecordValidationException(result);
         }
     }
 
@@ -84,22 +86,18 @@ public class ConsultationDetails implements MedicalRecordDetails {
                                              String treatmentPlan,
                                              boolean followUpRequired,
                                              LocalDate followUpDate){
-        try {
-            ConsultationDetails consultationDetails = new ConsultationDetails(
-                    reason,
-                    symptoms,
-                    clinicalFindings,
-                    diagnosis,
-                    treatmentPlan,
-                    followUpRequired,
-                    followUpDate);
+        ConsultationDetails consultationDetails = new ConsultationDetails(
+                reason,
+                symptoms,
+                clinicalFindings,
+                diagnosis,
+                treatmentPlan,
+                followUpRequired,
+                followUpDate);
 
-            consultationDetails.validate();
+        consultationDetails.validate();
 
-            return consultationDetails;
-        } catch (RuntimeException e) {
-            throw e;
-        }
+        return consultationDetails;
     }
 
 }

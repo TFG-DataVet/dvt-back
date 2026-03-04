@@ -1,9 +1,11 @@
 package com.datavet.datavet.pet.domain.model.details.hospitalization;
 
+import com.datavet.datavet.pet.domain.exception.MedicalRecordValidationException;
 import com.datavet.datavet.pet.domain.model.action.RecordAction;
 import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
 import com.datavet.datavet.pet.domain.model.result.StatusChangeResult;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
+import com.datavet.datavet.shared.domain.validation.ValidationResult;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,15 +34,16 @@ public class HospitalizationDetails implements MedicalRecordDetails {
 
     @Override
     public boolean canCorrect(MedicalRecordDetails previous) {
-        if (!(previous instanceof HospitalizationDetails )) return false;
+        if (!(previous instanceof HospitalizationDetails )) {
+            throw new MedicalRecordValidationException("Hospitalization - instanceOf", "No es posible corregir un registro con un tipo de detalle diferente.");
+        };
 
         HospitalizationDetails prev = (HospitalizationDetails) previous;
 
         if (prev.status == HospitalizationStatus.COMPLETED ||
             prev.status == HospitalizationStatus.CANCELLED ||
             prev.status == HospitalizationStatus.DECEASED) {
-            throw new IllegalArgumentException(
-                    "No se puede corregir una hospitalización en estado terminal.");
+            throw new MedicalRecordValidationException("Hospitalization - instanceOf", "No es posible corregir un registro con un tipo de detalle diferente.");
         }
 
         boolean reasonChanged =  !Objects.equals(this.reason, prev.reason);
@@ -51,8 +54,6 @@ public class HospitalizationDetails implements MedicalRecordDetails {
         boolean admissionDateChanged = !Objects.equals(this.admissionDate, prev.admissionDate);
         boolean dischargeDateChanged = !Objects.equals(this.dischargeDate, prev.dischargeDate);
         boolean conditionChanged = !Objects.equals(this.condition, prev.condition);
-
-
 
         return reasonChanged ||
                 diagnosisAtAdmissionChanged ||
@@ -66,91 +67,96 @@ public class HospitalizationDetails implements MedicalRecordDetails {
 
     @Override
     public void validate() {
+        ValidationResult result = new ValidationResult();
 
         if (status == null) {
-            throw new IllegalArgumentException("El estado de la hospitalización no debe estar vacio.");
+            result.addError("Hospitalization - status", "El estado de la hospitalización no debe estar vacio.");
         }
 
         if (this.status == HospitalizationStatus.SCHEDULED){
             if (admissionDate != null) {
-                throw new IllegalArgumentException("Una hospitalización en estado de " + status + " no puedo tener una fecha de admición");
+                result.addError("Hospitalization - admissionDate", "Una hospitalización en estado de " + status + " no puedo tener una fecha de admición.");
             }
             if (dischargeDate != null) {
-                throw new IllegalArgumentException("Una hospitalización en estado de " + status + " no puedo tener una fecha de finalización");
+                result.addError("Hospitalization - dischargeDate", "Una hospitalización en estado de " + status + " no puedo tener una fecha de finalización.");
             }
 
             if (condition != null) {
-                throw new IllegalArgumentException("Una hospitalización en estado de " + status + " no puede tener una condición clinica");
+                result.addError("Hospitalization - condition", "Una hospitalización en estado de " + status + " no puede tener una condición clinica.");
             }
         }
 
         if (this.status == HospitalizationStatus.ADMITTED) {
             if (admissionDate == null) {
-                throw new IllegalArgumentException("Una hospitalización en estado de " + status + " debe de tener una fecha de admición");
+                result.addError("Hospitalization - admissionDate", "Una hospitalización en estado de " + status + " debe de tener una fecha de admición.");
             }
 
             if (dischargeDate != null) {
-                throw new IllegalArgumentException("Una hospitalización en estado de " + status + " no debe de tener una fecha de culminación");
+                result.addError("Hospitalization - dischargeDate", "Una hospitalización en estado de " + status + " no debe de tener una fecha de culminación.");
             }
 
             if (condition != null) {
-                throw new IllegalArgumentException("Una hospitalización en estado de " + status + " no puede tener una condición clinica");
+                result.addError("Hospitalization - condition", "Una hospitalización en estado de " + status + " no puede tener una condición clinica.");
             }
         }
 
         if (this.status == HospitalizationStatus.IN_PROGRESS) {
             if (admissionDate == null) {
-                throw new IllegalArgumentException("Una hospitalización en estado de " + status + " debe de tener una fecha de admición");
+                result.addError("Hospitalization admissionDate", "Una hospitalización en estado de " + status + " debe de tener una fecha de admición");
             }
 
             if (dischargeDate != null) {
-                throw new IllegalArgumentException("Una hospitalización en estado de " + status + "no puedo tener una fecha de finalización");
+                result.addError("Hospitalization - dischargeDate", "Una hospitalización en estado de " + status + "no puedo tener una fecha de finalización");
             }
         }
 
         if (this.status == HospitalizationStatus.COMPLETED ||
             this.status == HospitalizationStatus.DECEASED) {
             if (admissionDate == null) {
-                throw new IllegalArgumentException("Una hospitalización en estado de " + status + " debe de tener una fecha de admición");
+                result.addError("Hospitalization - admissionDate", "Una hospitalización en estado de " + status + " debe de tener una fecha de admición");
             }
 
             if (dischargeDate == null) {
-                throw new IllegalArgumentException("Una hospitalización en estado de " + status + "no puedo tener una fecha de finalización");
+                result.addError("Hospitalization - dischargeDate", "Una hospitalización en estado de " + status + "no puedo tener una fecha de finalización");
             }
 
             if (condition == null) {
-                throw new IllegalArgumentException("Una hospitalización en estado de " + status + " debe de tener una condición clinica");
+                result.addError("Hospitalization - condition","Una hospitalización en estado de " + status + " debe de tener una condición clinica");
             }
         }
 
         if (this.status == HospitalizationStatus.CANCELLED) {
             if (admissionDate != null) {
-                throw new IllegalArgumentException("Una hospitalización en estado de " + status + " no debe de tener una fecha de admición");
+                result.addError("Hospitalization - admissionDate", "Una hospitalización en estado de " + status + " no debe de tener una fecha de admición");
             }
 
             if (dischargeDate == null) {
-                throw new IllegalArgumentException("Una hospitalización en estado de " + status + " debe de tener una fecha de finalización");
+                result.addError("Hospitalization - dischargeDate","Una hospitalización en estado de " + status + " debe de tener una fecha de finalización");
             }
 
             if (condition != null) {
-                throw new IllegalArgumentException("Una hospitalización en estado de " + status + " no puede tener una condición clinica");
+                result.addError("Hospitalization - condicion", "Una hospitalización en estado de " + status + " no puede tener una condición clinica.");
             }
         }
 
         if (reason == null || reason.isBlank()) {
-            throw new IllegalArgumentException("La razón de la hospitalización no puede ser nula, ni estar vacia.");
+            result.addError("Hospitalization - reason","La razón de la hospitalización no puede ser nula, ni estar vacia.");
         }
 
         if (diagnosisAtAdmission == null || diagnosisAtAdmission.isBlank()) {
-            throw new IllegalArgumentException("El diagnostico de la hospitalización no puede ser nula o vacia.");
+            result.addError("Hospitalization - diagnosisAtAdmission","El diagnostico de la hospitalización no puede ser nula o vacia.");
         }
 
         if (ward == null || ward.isBlank()) {
-            throw new IllegalArgumentException("El area de hospitalización no puede ser nula o estar vacia.");
+            result.addError("Hospitalization - ward","El area de hospitalización no puede ser nula o estar vacia.");
         }
 
         if (notes == null || notes.isBlank()) {
-            throw new IllegalArgumentException("La nota hospitalaria no puede ser nula o estar vacia.");
+            result.addError("Hospitalization - notes", "La nota hospitalaria no puede ser nula o estar vacia.");
+        }
+
+        if (result.hasErrors()) {
+            throw new MedicalRecordValidationException(result);
         }
     }
 
@@ -175,7 +181,7 @@ public class HospitalizationDetails implements MedicalRecordDetails {
             hospitalizationDetails.validate();
 
             return hospitalizationDetails;
-        } catch (RuntimeException e) {
+        } catch (MedicalRecordValidationException e) {
             throw e;
         }
     }

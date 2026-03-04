@@ -1,9 +1,9 @@
 package com.datavet.datavet.pet.domain.model.details.vaccine;
 
-import com.datavet.datavet.pet.domain.model.action.RecordAction;
+import com.datavet.datavet.pet.domain.exception.MedicalRecordValidationException;
 import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
-import com.datavet.datavet.pet.domain.model.result.StatusChangeResult;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
+import com.datavet.datavet.shared.domain.validation.ValidationResult;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -26,28 +26,19 @@ public class VaccineDetails implements MedicalRecordDetails {
 
     @Override
     public void validate() {
-        if (vaccineName == null || vaccineName.isBlank()) {
-            throw new IllegalArgumentException("Vaccine name cannot be null");
-        }
+        ValidationResult result = new ValidationResult();
 
-        if (applicationDate == null || applicationDate.isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("ApplicationDate cannot be null or cannot have a future date");
-        }
+        if (vaccineName == null || vaccineName.isBlank()) result.addError("Vaccine - name", "El nombre de la vacuna no puede ser nulo");
+        if (applicationDate == null || applicationDate.isAfter(LocalDate.now())) result.addError("Vaccine - applicationDate", "La fecha de aplicación no puede ser nula o estar vacia.");
+        if (nextDoseDate != null && (applicationDate != null && nextDoseDate.isBefore(applicationDate))) result.addError("Vaccine - nextDoseDate", "La fecha de la siguiente dosis no puede ser nula ni anterior al día de hoy.");
+        if (batchNumber == null || batchNumber.isBlank()) result.addError("Vaccine - batchNumber", "El numero del batch no puede ser nulo ni estar vacio.");
 
-        if (nextDoseDate != null && nextDoseDate.isBefore(applicationDate)) {
-            throw new IllegalArgumentException("Next dose date cannot be before application date");
-        }
-
-        if (batchNumber == null || batchNumber.isBlank()) {
-            throw new IllegalArgumentException("BatchNumber cannot be null");
-        }
+        if (result.hasErrors()) throw new MedicalRecordValidationException(result);
     }
 
     @Override
     public boolean canCorrect(MedicalRecordDetails previous) {
-        if (!(previous instanceof VaccineDetails)){
-            throw new IllegalArgumentException("No es posible corregir un registro con un tipo de detalle diferente.");
-        }
+        if (!(previous instanceof VaccineDetails)) throw new MedicalRecordValidationException("Vaccine instanceOf", "No es posible corregir un registro con un tipo de detalle diferente.");
 
         VaccineDetails prev = (VaccineDetails) previous;
 
@@ -60,11 +51,6 @@ public class VaccineDetails implements MedicalRecordDetails {
                 applicationDateChanged ||
                 batchNumberChanged ||
                 manufacturer;
-    }
-
-    @Override
-    public StatusChangeResult applyAction(RecordAction action) {
-        throw new IllegalArgumentException("No se puede aplicar una acción de cambio de estado en un regristro que no tiene estados.");
     }
 
     public static VaccineDetails create(String vaccineName,
