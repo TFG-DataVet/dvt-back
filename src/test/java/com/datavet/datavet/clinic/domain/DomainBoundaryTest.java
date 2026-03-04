@@ -119,7 +119,7 @@ class DomainBoundaryTest {
     void domainExceptions_ShouldProvideMeaningfulErrorMessages() {
         // Test ClinicNotFoundException with ID
         String testId = "123L";
-        ClinicNotFoundException exception = new ClinicNotFoundException(testId);
+        ClinicNotFoundException exception = new ClinicNotFoundException("Clinic", testId);
         
         assertNotNull(exception.getMessage(), "Exception should have a message");
         assertTrue(exception.getMessage().contains("Clinic"), 

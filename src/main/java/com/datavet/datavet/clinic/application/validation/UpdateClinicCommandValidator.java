@@ -20,8 +20,8 @@ public class UpdateClinicCommandValidator implements Validator<UpdateClinicComma
         // Validate clinic ID
         if (command.getClinicId() == null) {
             result.addError("clinicId", "Clinic ID is required");
-        } else if (command.getClinicId().isEmpty()) {
-            result.addError("clinicId", "Clinic ID must nott be positive");
+        } else if (command.getClinicId().isBlank()) {
+            result.addError("clinicId", "Clinic ID must nott be empty");
         }
         
         // Validate clinic name

@@ -16,8 +16,8 @@ public class OwnerResponse {
     private String firstName;
     private String lastName;
     private String dni;
-    private Phone phone;
-    private Email email;
+    private String phone;
+    private String email;
     @JsonProperty("address")
     private AddressDto address;
 

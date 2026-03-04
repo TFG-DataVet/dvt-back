@@ -28,7 +28,8 @@ class CreateOwnerCommandValidatorTest {
                 "12345678A",
                 new Phone("+34612345678"),
                 new Email("juan@example.com"),
-                new Address("Calle Mayor 123", "Madrid", "28001")
+                new Address("Calle Mayor 123", "Madrid", "28001"),
+                "esto es una web"
         );
 
         // When
@@ -47,7 +48,8 @@ class CreateOwnerCommandValidatorTest {
                 "12345678A",
                 new Phone("+34612345678"),
                 new Email("juan@example.com"),
-                new Address("Calle Mayor 123", "Madrid", "28001")
+                new Address("Calle Mayor 123", "Madrid", "28001"),
+                "esto es una web"
         );
 
         // When
@@ -68,7 +70,8 @@ class CreateOwnerCommandValidatorTest {
                 "12345678A",
                 new Phone("+34612345678"),
                 new Email("juan@example.com"),
-                new Address("Calle Mayor 123", "Madrid", "28001")
+                new Address("Calle Mayor 123", "Madrid", "28001"),
+                "esto es una web"
         );
 
         // When
@@ -88,7 +91,8 @@ class CreateOwnerCommandValidatorTest {
                 "12345678A",
                 new Phone("+34612345678"),
                 new Email("juan@example.com"),
-                new Address("Calle Mayor 123", "Madrid", "28001")
+                new Address("Calle Mayor 123", "Madrid", "28001"),
+                "esto es una web"
         );
 
         // When
@@ -109,7 +113,8 @@ class CreateOwnerCommandValidatorTest {
                 "12345678A",
                 new Phone("+34612345678"),
                 new Email("juan@example.com"),
-                new Address("Calle Mayor 123", "Madrid", "28001")
+                new Address("Calle Mayor 123", "Madrid", "28001"),
+                "esto es una web"
         );
 
         // When
@@ -129,7 +134,8 @@ class CreateOwnerCommandValidatorTest {
                 "",
                 new Phone("+34612345678"),
                 new Email("juan@example.com"),
-                new Address("Calle Mayor 123", "Madrid", "28001")
+                new Address("Calle Mayor 123", "Madrid", "28001"),
+                "esto es una web"
         );
 
         // When
@@ -150,7 +156,8 @@ class CreateOwnerCommandValidatorTest {
                 longDni,
                 new Phone("+34612345678"),
                 new Email("juan@example.com"),
-                new Address("Calle Mayor 123", "Madrid", "28001")
+                new Address("Calle Mayor 123", "Madrid", "28001"),
+                "esto es una web"
         );
 
         // When
@@ -170,7 +177,8 @@ class CreateOwnerCommandValidatorTest {
                 "12345678A",
                 null,
                 new Email("juan@example.com"),
-                new Address("Calle Mayor 123", "Madrid", "28001")
+                new Address("Calle Mayor 123", "Madrid", "28001"),
+                "esto es una web"
         );
 
         // When
@@ -190,7 +198,8 @@ class CreateOwnerCommandValidatorTest {
                 "12345678A",
                 new Phone("+34612345678"),
                 null,
-                new Address("Calle Mayor 123", "Madrid", "28001")
+                new Address("Calle Mayor 123", "Madrid", "28001"),
+                "esto es una web"
         );
 
         // When

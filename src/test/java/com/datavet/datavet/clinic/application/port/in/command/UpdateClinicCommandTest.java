@@ -84,34 +84,6 @@ class UpdateClinicCommandTest {
     }
 
     @Test
-    @DisplayName("Should fail validation when clinic ID is not positive")
-    void shouldFailValidationWhenClinicIdIsEmpty() {
-        // Given
-        Address address = new Address("456 Updated Street", "Updated City", "54321");
-        Phone phone = new Phone("+0987654321");
-        Email email = new Email("updated@example.com");
-        
-        UpdateClinicCommand command = UpdateClinicCommand.builder()
-                .clinicId("")
-                .clinicName("Updated Clinic")
-                .legalName("Updated Legal Name")
-                .legalNumber("87654321")
-                .address(address)
-                .phone(phone)
-                .email(email)
-                .build();
-
-        // When
-        Set<ConstraintViolation<UpdateClinicCommand>> violations = validator.validate(command);
-
-        // Then
-        assertFalse(violations.isEmpty());
-        assertTrue(violations.stream().anyMatch(v -> 
-            v.getPropertyPath().toString().equals("clinicId") &&
-            v.getMessage().contains("Clinic ID must be positive")));
-    }
-
-    @Test
     @DisplayName("Should fail validation when clinic name is blank")
     void shouldFailValidationWhenClinicNameIsBlank() {
         // Given

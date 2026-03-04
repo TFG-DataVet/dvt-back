@@ -29,7 +29,7 @@ public class UpdateOwnerCommand {
     private String ownerDni;
 
     @NotBlank
-    @Size(max= 9, message = "Owner phone is required")
+    @Size(max= 15, message = "Owner phone is required")
     private Phone ownerPhone;
 
     @NotBlank

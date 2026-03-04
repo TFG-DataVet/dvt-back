@@ -18,7 +18,7 @@ class ClinicExceptionsTest {
         String clinicId = "hola";
 
         // When
-        ClinicNotFoundException exception = new ClinicNotFoundException(clinicId);
+        ClinicNotFoundException exception = new ClinicNotFoundException("Clinic", clinicId);
 
         // Then
         assertThat(exception.getMessage())

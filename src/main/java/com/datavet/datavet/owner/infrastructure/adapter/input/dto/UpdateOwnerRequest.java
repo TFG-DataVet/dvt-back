@@ -1,6 +1,5 @@
 package com.datavet.datavet.owner.infrastructure.adapter.input.dto;
 
-import com.datavet.datavet.shared.domain.valueobject.Address;
 import com.datavet.datavet.shared.domain.valueobject.Email;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
 import jakarta.validation.constraints.NotBlank;
@@ -26,11 +25,11 @@ public class UpdateOwnerRequest {
     private String dni;
 
     @Pattern(regexp = "^[+]?[0-9\\s\\-()]{7,15}$", message = "Phone number format is invalid")
-    private Phone phone;
+    private String phone;
 
     @NotBlank(message = "Email is required")
     @Size(max = 100, message = "Email must not exceed 100 characters")
-    private Email email;
+    private String email;
 
     @NotBlank(message = "Address is required")
     @Size(max = 200, message = "Address must not exceed 200 characters")

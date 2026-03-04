@@ -45,7 +45,6 @@ public class OwnerController {
     }
 
     @GetMapping("/{id}")
-
     public ResponseEntity<OwnerResponse> getOwner(@PathVariable String id) {
         Owner owner = ownerUseCase.getOwnerById(id);
         return ResponseEntity.ok(OwnerMapper.toResponse(owner));
@@ -70,8 +69,8 @@ public class OwnerController {
                 .ownerName(request.getName())
                 .ownerLastName(request.getLastName())
                 .ownerDni(request.getDni())
-                .ownerPhone(request.getPhone())
-                .ownerEmail(request.getEmail())
+                .ownerPhone(new Phone(request.getPhone()))
+                .ownerEmail(new Email( request.getEmail()))
                 .ownerAddress(new Address(request.getAddress(), request.getCity(), request.getPostalCode()))
                 .build();
 
