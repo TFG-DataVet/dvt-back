@@ -1,8 +1,9 @@
 package com.datavet.datavet.pet.domain.model.details.surgery;
 
+import com.datavet.datavet.pet.domain.exception.MedicalRecordValidationException;
+import com.datavet.datavet.shared.domain.validation.ValidationResult;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 
 @Getter
@@ -13,12 +14,18 @@ public class SurgeryProcedure {
     private String description;
 
     public void validate(){
+        ValidationResult result = new ValidationResult();
+
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("El nombre del procedimiento clinico no puede estar vacío.");
+            result.addError("Surgery - procedure", "El nombre del procedimiento clinico no puede estar vacío.");
         }
 
         if (description != null && description.isBlank()) {
-            throw new IllegalArgumentException("La descripción de la procedimiento no puede ser nula.");
+            result.addError("Surgery - procedura", "La descripción de la procedimiento no puede ser nula.");
+        }
+
+        if (result.hasErrors()) {
+            throw new MedicalRecordValidationException(result);
         }
     }
 

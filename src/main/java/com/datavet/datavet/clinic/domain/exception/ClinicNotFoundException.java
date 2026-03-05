@@ -11,6 +11,10 @@ public class ClinicNotFoundException extends EntityNotFoundException {
     public ClinicNotFoundException(String message) {
         super(message);
     }
+
+    public ClinicNotFoundException(String entityType, String id) {
+        super(entityType, id);
+    }
     
     public ClinicNotFoundException(String message, Throwable cause) {
         super(message, cause);
