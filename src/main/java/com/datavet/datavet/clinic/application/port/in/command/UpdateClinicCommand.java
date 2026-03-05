@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 @Builder
 public class UpdateClinicCommand {
     @NotNull(message = "Clinic ID is required")
+    @NotBlank(message = "Clinic ID is required")
     String clinicId;
     
     @NotBlank(message = "Clinic name is required")

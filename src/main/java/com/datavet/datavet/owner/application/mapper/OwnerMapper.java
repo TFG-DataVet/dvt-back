@@ -17,8 +17,8 @@ public class OwnerMapper {
                 owner.getName(),
                 owner.getLastName(),
                 owner.getDocumentNumber(),
-                owner.getPhone(),
-                owner.getEmail(),
+                owner.getPhone().getValue(),
+                owner.getEmail().getValue(),
                 addressDto
         );
     }

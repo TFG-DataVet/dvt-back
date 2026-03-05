@@ -80,7 +80,7 @@ public class ClinicService implements ClinicUseCase, ApplicationService {
         }
         
         Clinic existing = clinicRepositoryPort.findById(command.getClinicId())
-                .orElseThrow(() -> new ClinicNotFoundException(command.getClinicId()));
+                .orElseThrow(() -> new ClinicNotFoundException("Clinic", command.getClinicId()));
 
         // Check for duplicate email (excluding current clinic) - value object is already created in command
         if (clinicRepositoryPort.existsByEmailAndIdNot(command.getEmail(), command.getClinicId())) {
@@ -120,7 +120,7 @@ public class ClinicService implements ClinicUseCase, ApplicationService {
 
     @Override
     public Clinic getClinicById(String id) {
-        return clinicRepositoryPort.findById(id).orElseThrow(() -> new ClinicNotFoundException(id));
+        return clinicRepositoryPort.findById(id).orElseThrow(() -> new ClinicNotFoundException("Clinic", id));
     }
 
     @Override

@@ -82,7 +82,7 @@ class ClinicDomainEventsTest {
         assertInstanceOf(ClinicUpdatedEvent.class, event, "Should be ClinicUpdatedEvent");
         
         ClinicUpdatedEvent updatedEvent = (ClinicUpdatedEvent) event;
-        assertEquals(1L, updatedEvent.getClinicId(), "Event should have correct clinic ID");
+        assertEquals("ClinicId", updatedEvent.getClinicId(), "Event should have correct clinic ID");
         assertEquals("Updated Clinic", updatedEvent.getClinicName(), "Event should have correct updated clinic name");
         assertNotNull(updatedEvent.getOccurredOn(), "Event should have occurred timestamp");
     }
@@ -113,7 +113,7 @@ class ClinicDomainEventsTest {
         assertInstanceOf(ClinicDeletedEvent.class, event, "Should be ClinicDeletedEvent");
         
         ClinicDeletedEvent deletedEvent = (ClinicDeletedEvent) event;
-        assertEquals(1L, deletedEvent.getClinicId(), "Event should have correct clinic ID");
+        assertEquals("ClinicId", deletedEvent.getClinicId(), "Event should have correct clinic ID");
         assertEquals("Test Clinic", deletedEvent.getClinicName(), "Event should have correct clinic name");
         assertNotNull(deletedEvent.getOccurredOn(), "Event should have occurred timestamp");
     }
@@ -130,8 +130,8 @@ class ClinicDomainEventsTest {
                 address, phone, email, "http://example.com/logo.png", "ACTIVE");
 
         // When & Then
-        assertEquals(1L, clinic.getId(), "getId() should return the clinic ID");
-        assertEquals(1L, clinic.getClinicID(), "getClinicID() should return the same value as getId()");
+        assertEquals("ClinicId", clinic.getId(), "getId() should return the clinic ID");
+        assertEquals("ClinicId", clinic.getClinicID(), "getClinicID() should return the same value as getId()");
         
         // Test that clinic is an instance of Document
         assertTrue(clinic instanceof Document,

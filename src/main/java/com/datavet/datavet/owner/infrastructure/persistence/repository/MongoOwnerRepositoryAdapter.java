@@ -5,6 +5,8 @@ import com.datavet.datavet.shared.domain.valueobject.Email;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.util.Optional;
+
 /**
  * MongoDB repository interface for Owner persistence operations.
  * Extends MongoRepository to provide CRUD operations and custom query methods.
@@ -53,4 +55,6 @@ public interface MongoOwnerRepositoryAdapter extends MongoRepository<OwnerDocume
      * @return true if another owner with the DNI exists, false otherwise
      */
     boolean existsByDniAndIdNot(String dni, String id);
+
+    Optional<OwnerDocument> findByEmail(Email email);
 }
