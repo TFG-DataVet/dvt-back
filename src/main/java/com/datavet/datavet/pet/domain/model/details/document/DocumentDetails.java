@@ -1,15 +1,14 @@
 package com.datavet.datavet.pet.domain.model.details.document;
 
-import com.datavet.datavet.pet.domain.model.action.RecordAction;
+import com.datavet.datavet.pet.domain.exception.MedicalRecordValidationException;
 import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
-import com.datavet.datavet.pet.domain.model.result.StatusChangeResult;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
+import com.datavet.datavet.shared.domain.validation.ValidationResult;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.time.LocalDate;
 
 @Getter
 @Builder
@@ -20,7 +19,7 @@ public class DocumentDetails implements MedicalRecordDetails {
     private String documentType;
     private String fileUrl;
     private String mimeType;
-    private LocalDate uploadedAt;
+    private LocalDateTime uploadedAt;
     private String uploadedBy;
     private String description;
     private Long fileSizeInBytes;
@@ -34,44 +33,48 @@ public class DocumentDetails implements MedicalRecordDetails {
 
     @Override
     public void validate(){
+        ValidationResult result = new ValidationResult();
+
         if (documentName == null || documentName.isBlank()) {
-            throw new IllegalArgumentException("El nombre del documento no debe de ser nulo o estar vacio");
+            result.addError("Document - name","El nombre del documento no debe de ser nulo o estar vacio.");
         }
 
         if (documentType == null || documentType.isBlank()) {
-            throw new IllegalArgumentException("El tipo del documento no debe de ser nulo o estar vacio");
+            result.addError("Document - type","El tipo del documento no debe de ser nulo o estar vacio.");
         }
 
         if (fileUrl == null || fileUrl.isBlank()) {
-            throw new IllegalArgumentException("La ruta del archivo es nula o esta vacio");
+            result.addError("Document - FileUrl","La ruta del archivo es nula o esta vacio");
         }
 
         if (mimeType == null || mimeType.isBlank()) {
-            throw new IllegalArgumentException("El tipo de MIME es nulo o esta vacio");
+            result.addError("Document - mimeType", "El tipo de MIME es nulo o esta vacio.");
         }
 
-        if (uploadedAt == null || uploadedAt.isAfter(LocalDate.now())){
-            throw new IllegalArgumentException("El fecha de la carga del archivo no debe ser nula o tener una fecha futura a hoy");
+        if (uploadedAt == null || uploadedAt.isAfter(LocalDateTime.now())){
+            result.addError("Document - uploadedAt","El fecha de la carga del archivo no debe ser nula o tener una fecha futura a hoy.");
         }
 
         if (uploadedBy == null || uploadedBy.isBlank()) {
-            throw new IllegalArgumentException("El responsable de cargar el archivo no debe ser nulo o estar vacio");
+            result.addError("Document - uploadedBy","El responsable de cargar el archivo no debe ser nulo o estar vacio.");
         }
 
         if (fileSizeInBytes != null  && fileSizeInBytes <= 0) {
-            throw new IllegalArgumentException("El peso del archivo no puede ser menor a 0 bytes");
+            result.addError("Document - fileSizeInBytes", "El peso del archivo no puede ser menor a 0 bytes.");
         }
 
         if (confidential) {
             if (description == null || description.isBlank()) {
-                throw new IllegalArgumentException("Si el archivo es confidencial, debe de incluir una descripción.");
+                result.addError("Document - confidential, description","Si el archivo es confidencial, debe de incluir una descripción.");
             }
         }
 
-        if (checksum != null) {
-            if (checksum.isBlank()) {
-                throw new IllegalArgumentException("La integridad del archivo no puede estar vacia.");
-            }
+        if (checksum != null && checksum.isBlank()) {
+            result.addError("Document - checksum", "La integridad del archivo no puede estar vacia.");
+        }
+
+        if (result.hasErrors()) {
+            throw new MedicalRecordValidationException(result);
         }
     }
 
@@ -80,17 +83,12 @@ public class DocumentDetails implements MedicalRecordDetails {
         return false;
     }
 
-    @Override
-    public StatusChangeResult applyAction(RecordAction action) {
-        throw new IllegalArgumentException("No se puede aplicar una acción de cambio de estado en un regristro que no tiene estados.");
-    }
-
     public static DocumentDetails create(
             String documentName,
             String documentType,
             String fileUrl,
             String mimeType,
-            LocalDate uploadedAt,
+            LocalDateTime uploadedAt,
             String uploadedBy,
             String description,
             Long fileSizeInBytes,
@@ -113,7 +111,7 @@ public class DocumentDetails implements MedicalRecordDetails {
 
             details.validate();
             return details;
-        } catch (RuntimeException e){
+        } catch (MedicalRecordValidationException e){
             throw e;
         }
     }
