@@ -1,7 +1,6 @@
 package com.datavet.datavet.shared.infrastructure.config;
 
 import com.datavet.datavet.shared.infrastructure.dto.ErrorResponse;
-import com.datavet.datavet.shared.infrastructure.config.GlobalExceptionHandler;
 import com.datavet.datavet.clinic.domain.exception.ClinicAlreadyExistsException;
 import com.datavet.datavet.clinic.domain.exception.ClinicNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -126,7 +125,7 @@ class GlobalExceptionHandlerTest {
     @Test
     void handleEntityNotFoundException_WithIdConstructor_ShouldReturnNotFoundWithFormattedMessage() {
         // Given
-        ClinicNotFoundException exception = new ClinicNotFoundException("hola");
+        ClinicNotFoundException exception = new ClinicNotFoundException("Clinic", "1");
 
         // When
         ResponseEntity<ErrorResponse> response = globalExceptionHandler.handleEntityNotFoundException(exception, webRequest);

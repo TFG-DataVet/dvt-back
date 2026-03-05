@@ -62,7 +62,8 @@ class OwnerServiceTest {
                 "12345678A",
                 new Phone("+34612345678"),
                 new Email("juan@example.com"),
-                new Address("Calle Mayor 123", "Madrid", "28001")
+                new Address("Calle Mayor 123", "Madrid", "28001"),
+                "esto es una web"
         );
 
         when(createOwnerCommandValidator.validate(command)).thenReturn(new ValidationResult());
@@ -89,7 +90,8 @@ class OwnerServiceTest {
                 "12345678A",
                 new Phone("+34612345678"),
                 new Email("juan@example.com"),
-                new Address("Calle Mayor 123", "Madrid", "28001")
+                new Address("Calle Mayor 123", "Madrid", "28001"),
+                "esto es una web"
         );
 
         when(createOwnerCommandValidator.validate(command)).thenReturn(new ValidationResult());

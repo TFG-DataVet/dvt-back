@@ -13,6 +13,7 @@ import com.datavet.datavet.owner.domain.model.Owner;
 import com.datavet.datavet.shared.application.service.ApplicationService;
 import com.datavet.datavet.shared.domain.event.DomainEvent;
 import com.datavet.datavet.shared.domain.event.DomainEventPublisher;
+import com.datavet.datavet.shared.domain.exception.email.EmailAlreadyExistsException;
 import com.datavet.datavet.shared.domain.validation.ValidationResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -82,6 +83,16 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
 
         Owner existing = ownerRepositoryPort.findById(command.getOwnerID())
                 .orElseThrow(() -> new OwnerNotFoundException(command.getOwnerID()));
+
+        boolean emailIsChanging = !existing.getEmail().getValue()
+                .equalsIgnoreCase(command.getOwnerEmail().getValue());
+
+        if (emailIsChanging) {
+            ownerRepositoryPort.findByEmail(command.getOwnerEmail())
+                    .ifPresent(o -> {
+                        throw new EmailAlreadyExistsException("Owner", command.getOwnerEmail().getValue());
+                    });
+        }
 
         existing.update(
                 command.getOwnerName(),

@@ -3,14 +3,12 @@ package com.datavet.datavet.clinic.application.service;
 import com.datavet.datavet.clinic.application.port.in.command.CreateClinicCommand;
 import com.datavet.datavet.clinic.application.port.in.command.UpdateClinicCommand;
 import com.datavet.datavet.clinic.application.port.out.ClinicRepositoryPort;
-import com.datavet.datavet.clinic.application.service.ClinicService;
 import com.datavet.datavet.clinic.domain.exception.ClinicAlreadyExistsException;
 import com.datavet.datavet.clinic.domain.exception.ClinicNotFoundException;
 import com.datavet.datavet.clinic.domain.exception.ClinicValidationException;
 import com.datavet.datavet.clinic.domain.model.Clinic;
 import com.datavet.datavet.shared.application.service.ApplicationService;
 import com.datavet.datavet.shared.domain.event.DomainEventPublisher;
-import com.datavet.datavet.shared.domain.validation.ValidationError;
 import com.datavet.datavet.shared.domain.validation.ValidationResult;
 import com.datavet.datavet.shared.domain.valueobject.Address;
 import com.datavet.datavet.shared.domain.valueobject.Email;
@@ -324,7 +322,7 @@ class ClinicServiceExceptionTest {
         // When & Then
         assertThatThrownBy(() -> clinicService.updateClinic(command))
                 .isInstanceOf(ClinicNotFoundException.class)
-                .hasMessage("Clinic not found with id: 1");
+                .hasMessage("Clinic not found with id: hola");
     }
 
     @Test
@@ -442,7 +440,7 @@ class ClinicServiceExceptionTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getClinicID()).isEqualTo(1L);
+        assertThat(result.getClinicID()).isEqualTo("ClinicId");
         assertThat(result.getClinicName()).isEqualTo("Test Clinic");
         assertThat(result.getEmail().getValue()).isEqualTo("test@example.com");
         assertThat(result.getSuscriptionStatus()).isEqualTo("ACTIVE");
@@ -596,7 +594,7 @@ class ClinicServiceExceptionTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getClinicID()).isEqualTo(1L);
+        assertThat(result.getClinicID()).isEqualTo("ClinicId");
         assertThat(result.getClinicName()).isEqualTo("Updated Clinic");
         assertThat(result.getEmail().getValue()).isEqualTo("updated@example.com");
         

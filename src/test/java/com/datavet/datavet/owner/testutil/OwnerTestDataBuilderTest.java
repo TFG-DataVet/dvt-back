@@ -177,7 +177,7 @@ class OwnerTestDataBuilderTest {
     void anUpdateCommandWithEmail_shouldCreateCommandWithSpecificEmail() {
         // Given
         String ownerId = new ObjectId().toString();
-        String email = "newemail@example.com";
+        Email email = new Email("newemail@example.com");
 
         // When
         UpdateOwnerCommand command = OwnerTestDataBuilder.anUpdateCommandWithEmail(ownerId, email);

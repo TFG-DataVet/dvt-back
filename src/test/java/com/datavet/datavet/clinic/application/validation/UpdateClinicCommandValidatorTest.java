@@ -65,7 +65,7 @@ class UpdateClinicCommandValidatorTest {
     }
 
     @Test
-    @DisplayName("Should fail when clinic ID is negative")
+    @DisplayName("Should fail when clinic ID is Empty")
     void shouldFailWhenClinicIdIsEmpty() {
         // Given
         UpdateClinicCommand command = UpdateClinicCommand.builder()
@@ -88,35 +88,7 @@ class UpdateClinicCommandValidatorTest {
         assertTrue(result.hasErrors(), "Should have errors");
         assertTrue(result.getErrors().stream()
                 .anyMatch(error -> error.getField().equals("clinicId") &&
-                        error.getMessage().equals("Clinic ID must be positive")),
-                "Should have error for clinic ID");
-    }
-
-    @Test
-    @DisplayName("Should fail when clinic ID is zero")
-    void shouldFailWhenClinicIdIsZero() {
-        // Given
-        UpdateClinicCommand command = UpdateClinicCommand.builder()
-                .clinicId("ClinicId")
-                .clinicName("Updated Clinic")
-                .legalName("Updated Legal Name")
-                .legalNumber("87654321")
-                .address(ClinicTestDataBuilder.aValidAddress())
-                .phone(ClinicTestDataBuilder.aValidPhone())
-                .email(ClinicTestDataBuilder.aValidEmail())
-                .logoUrl("https://example.com/logo.png")
-                .suscriptionStatus("ACTIVE")
-                .build();
-
-        // When
-        ValidationResult result = validator.validate(command);
-
-        // Then
-        assertFalse(result.isValid(), "Validation should fail for zero clinic ID");
-        assertTrue(result.hasErrors(), "Should have errors");
-        assertTrue(result.getErrors().stream()
-                .anyMatch(error -> error.getField().equals("clinicId") &&
-                        error.getMessage().equals("Clinic ID must be positive")),
+                        error.getMessage().equals("Clinic ID must nott be empty")),
                 "Should have error for clinic ID");
     }
 

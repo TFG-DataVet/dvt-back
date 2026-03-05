@@ -1,9 +1,5 @@
 package com.datavet.datavet.owner.application.dto;
 
-import com.datavet.datavet.clinic.application.dto.ClinicResponse;
-import com.datavet.datavet.shared.domain.valueobject.Address;
-import com.datavet.datavet.shared.domain.valueobject.Email;
-import com.datavet.datavet.shared.domain.valueobject.Phone;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,8 +12,8 @@ public class OwnerResponse {
     private String firstName;
     private String lastName;
     private String dni;
-    private Phone phone;
-    private Email email;
+    private String phone;
+    private String email;
     @JsonProperty("address")
     private AddressDto address;
 

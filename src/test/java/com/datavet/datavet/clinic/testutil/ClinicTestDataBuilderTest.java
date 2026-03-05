@@ -52,7 +52,7 @@ class ClinicTestDataBuilderTest {
 
         // Then
         assertNotNull(command);
-        assertEquals(1L, command.getClinicId());
+        assertEquals("hola", command.getClinicId());
         assertNotNull(command.getClinicName());
         assertNotNull(command.getLegalName());
         assertNotNull(command.getLegalNumber());
