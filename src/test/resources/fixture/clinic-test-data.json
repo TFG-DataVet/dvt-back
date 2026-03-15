@@ -1,0 +1,20 @@
+[
+  {
+    "clinicID": "clinic-test-001",
+    "clinicName": "Clínica Veterinaria Test",
+    "legalName": "Clínica Veterinaria Test S.L.",
+    "legalNumber": "B12345678",
+    "address": {
+      "street": "Calle Test 123",
+      "city": "Madrid",
+      "postalCode": "28001",
+    },
+    "phone": {
+      "number": "+34600000000"
+    },
+    "email": {
+      "value": "test@clinica.com"
+    },
+    "suscriptionStatus": "ACTIVE"
+  }
+]

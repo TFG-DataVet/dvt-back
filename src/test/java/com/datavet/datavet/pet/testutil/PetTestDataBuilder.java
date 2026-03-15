@@ -6,6 +6,7 @@ import com.datavet.datavet.pet.domain.model.Sex;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 public class PetTestDataBuilder {
 
@@ -25,17 +26,26 @@ public class PetTestDataBuilder {
 
     /* Create a valid OwnerInfo with default test data */
     public static OwnerInfo aValidOwnerInfo(){
-        return OwnerInfo.from(DEFAULT_OWNER_NAME, DEFAULT_OWNER_LAST_NAME, aValidPhone());
+        String uuid = UUID.randomUUID().toString();
+        return OwnerInfo.from(uuid, DEFAULT_OWNER_NAME, DEFAULT_OWNER_LAST_NAME, aValidPhone());
     }
 
     /* Create a valid OwnerInfo without name */
     public static OwnerInfo anOwnerInfoWithName(String name) {
-        return OwnerInfo.from(name, DEFAULT_OWNER_LAST_NAME, aValidPhone());
+        String uuid = UUID.randomUUID().toString();
+        return OwnerInfo.from(uuid, name, DEFAULT_OWNER_LAST_NAME, aValidPhone());
+    }
+
+    /* Create a valid OwnerInfo without name */
+    public static OwnerInfo anOwnerInfoWithLastName(String lastName) {
+        String uuid = UUID.randomUUID().toString();
+        return OwnerInfo.from(uuid, DEFAULT_OWNER_NAME, lastName, aValidPhone());
     }
 
     /* Create a valid OwnerInfo without phone*/
     public static OwnerInfo anOwnerInfoWithPhone(Phone phone) {
-        return OwnerInfo.from(DEFAULT_OWNER_NAME, DEFAULT_OWNER_LAST_NAME, phone);
+        String uuid = UUID.randomUUID().toString();
+        return OwnerInfo.from(uuid, DEFAULT_OWNER_NAME, DEFAULT_OWNER_LAST_NAME, phone);
     }
 
     /* PET - PET - PET - PET - PET - PET - PET - PET - PET*/
@@ -54,7 +64,7 @@ public class PetTestDataBuilder {
     }
 
     /* Create a valid Pet with ClinicId */
-    public static Pet aPetWithCLinicId(String clinicId) {
+    public static Pet aPetWithClinicId(String clinicId) {
         return Pet.create(
                 clinicId,
                 DEFAULT_PET_NAME,

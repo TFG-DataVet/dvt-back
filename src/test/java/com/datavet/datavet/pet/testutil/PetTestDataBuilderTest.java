@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -76,7 +77,8 @@ public class PetTestDataBuilderTest {
     @Test
     @DisplayName("Should create a Pet with OwnerInfo")
     void createPet_shouldCreateAPetWithOwnerInfo() {
-        OwnerInfo ownerInfo = OwnerInfo.from("Alejandra", "Talalla", new Phone("+34147852369"));
+        String uuid = UUID.randomUUID().toString();
+        OwnerInfo ownerInfo = OwnerInfo.from(uuid, "Alejandra", "Talalla", new Phone("+34147852369"));
         Pet pet = PetTestDataBuilder.aPetWithOwner(ownerInfo);
 
         assertNotNull(pet);
