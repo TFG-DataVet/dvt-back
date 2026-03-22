@@ -52,8 +52,6 @@ class DomainArchitectureIntegrationTest {
         // Verify infrastructure layer structure
         assertTrue(directoryExists(CLINIC_DOMAIN_PATH + "/infrastructure/adapter/input"),
             "Clinic domain should have infrastructure/adapter/input package");
-        assertTrue(directoryExists(CLINIC_DOMAIN_PATH + "/infrastructure/persistence/entity"),
-            "Clinic domain should have infrastructure/persistence/entity package");
         assertTrue(directoryExists(CLINIC_DOMAIN_PATH + "/infrastructure/persistence/repository"),
             "Clinic domain should have infrastructure/persistence/repository package");
     }

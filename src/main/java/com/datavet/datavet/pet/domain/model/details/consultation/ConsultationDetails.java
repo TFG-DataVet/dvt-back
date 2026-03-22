@@ -7,6 +7,8 @@ import com.datavet.datavet.shared.domain.validation.ValidationResult;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,6 +16,8 @@ import java.util.Objects;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@TypeAlias("consultation")
+@Document
 public class ConsultationDetails implements MedicalRecordDetails {
 
     private String reason;

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -84,9 +85,7 @@ class PetTest {
     @DisplayName("Should throw PetValidationException when clinicId is null")
     void create_shouldFailWhenClinicIdIsNull() {
         PetValidationException ex = assertThrows(PetValidationException.class,
-                () -> Pet.create(null, "Zeus", "Perro", "Golden", Sex.MALE,
-                        LocalDate.of(2020, 1, 1), "chip", "avatar",
-                        PetTestDataBuilder.aValidOwnerInfo()));
+                () -> PetTestDataBuilder.aPetWithClinicId(null));
 
         assertTrue(ex.getMessage().contains("[ClinicId]"));
     }
@@ -95,9 +94,8 @@ class PetTest {
     @DisplayName("Should throw PetValidationException when clinicId is empty")
     void create_shouldFailWhenClinicIdIsEmpty() {
         PetValidationException ex = assertThrows(PetValidationException.class,
-                () -> Pet.create("   ", "Zeus", "Perro", "Golden", Sex.MALE,
-                        LocalDate.of(2020, 1, 1), "chip", "avatar",
-                        PetTestDataBuilder.aValidOwnerInfo()));
+                () -> PetTestDataBuilder.aPetWithClinicId("    "));
+
 
         assertTrue(ex.getMessage().contains("[ClinicId]"));
     }
@@ -106,9 +104,7 @@ class PetTest {
     @DisplayName("Should throw PetValidationException when name is null")
     void create_shouldFailWhenNameIsNull() {
         PetValidationException ex = assertThrows(PetValidationException.class,
-                () -> Pet.create("clinic1", null, "Perro", "Golden", Sex.MALE,
-                        LocalDate.of(2020, 1, 1), "chip", "avatar",
-                        PetTestDataBuilder.aValidOwnerInfo()));
+                () -> PetTestDataBuilder.aPetWithName(null));
 
         assertTrue(ex.getMessage().contains("[Name]"));
     }
@@ -117,9 +113,7 @@ class PetTest {
     @DisplayName("Should throw PetValidationException when name is empty")
     void create_shouldFailWhenNameIsEmpty() {
         PetValidationException ex = assertThrows(PetValidationException.class,
-                () -> Pet.create("clinic1", "    ", "Perro", "Golden", Sex.MALE,
-                        LocalDate.of(2020, 1, 1), "chip", "avatar",
-                        PetTestDataBuilder.aValidOwnerInfo()));
+                () -> PetTestDataBuilder.aPetWithName("    "));
 
         assertTrue(ex.getMessage().contains("[Name]"));
     }
@@ -128,9 +122,7 @@ class PetTest {
     @DisplayName("Should throw PetValidationException when species is null")
     void create_shouldFailWhenSpeciesIsNull() {
         PetValidationException ex = assertThrows(PetValidationException.class,
-                () -> Pet.create("clinic1", "Zeus", null, "Golden", Sex.MALE,
-                        LocalDate.of(2020, 1, 1), "chip", "avatar",
-                        PetTestDataBuilder.aValidOwnerInfo()));
+                () -> PetTestDataBuilder.aPetWithSpecie(null));
 
         assertTrue(ex.getMessage().contains("[Specie]"));
     }
@@ -139,9 +131,7 @@ class PetTest {
     @DisplayName("Should throw PetValidationException when species is empty")
     void create_shouldFailWhenSpeciesIsEmpty() {
         PetValidationException ex = assertThrows(PetValidationException.class,
-                () -> Pet.create("clinic1", "Zeus", "    ", "Golden", Sex.MALE,
-                        LocalDate.of(2020, 1, 1), "chip", "avatar",
-                        PetTestDataBuilder.aValidOwnerInfo()));
+                () -> PetTestDataBuilder.aPetWithSpecie("    "));
 
         assertTrue(ex.getMessage().contains("[Specie]"));
     }
@@ -150,9 +140,7 @@ class PetTest {
     @DisplayName("Should throw PetValidationException when breed is null")
     void create_shouldFailWhenBreedIsNull() {
         PetValidationException ex = assertThrows(PetValidationException.class,
-                () -> Pet.create("clinic1", "Zeus", "Perro", null, Sex.MALE,
-                        LocalDate.of(2020, 1, 1), "chip", "avatar",
-                        PetTestDataBuilder.aValidOwnerInfo()));
+                () -> PetTestDataBuilder.aPetWithBreed(null));
 
         assertTrue(ex.getMessage().contains("[Breed]"));
     }
@@ -161,9 +149,7 @@ class PetTest {
     @DisplayName("Should throw PetValidationException when breed is empty")
     void create_shouldFailWhenBreedIsEmpty() {
         PetValidationException ex = assertThrows(PetValidationException.class,
-                () -> Pet.create("clinic1", "Zeus", "Perro", "    ", Sex.MALE,
-                        LocalDate.of(2020, 1, 1), "chip", "avatar",
-                        PetTestDataBuilder.aValidOwnerInfo()));
+                () -> PetTestDataBuilder.aPetWithBreed("   "));
 
         assertTrue(ex.getMessage().contains("[Breed]"));
     }
@@ -172,9 +158,7 @@ class PetTest {
     @DisplayName("Should throw PetValidationException when dateOfBirth is in the future")
     void create_shouldFailWhenDateOfBirthIsInFuture() {
         PetValidationException ex = assertThrows(PetValidationException.class,
-                () -> Pet.create("clinic1", "Zeus", "Perro", "Golden", Sex.MALE,
-                        LocalDate.now().plusDays(1), "chip", "avatar",
-                        PetTestDataBuilder.aValidOwnerInfo()));
+                () -> PetTestDataBuilder.aPetWithBirthdate(LocalDate.now().plusDays(1)));
 
         assertTrue(ex.getMessage().contains("[Birthday]"));
     }
@@ -465,7 +449,7 @@ class PetTest {
     void updateOwnerInfo_shouldUpdateOwnerAndRaiseEvent() {
         Pet pet = PetTestDataBuilder.aValidPet();
         pet.clearDomainEvents();
-        OwnerInfo newOwner = OwnerInfo.from("Alejandra", "Talalla", new Phone("+34999888777"));
+        OwnerInfo newOwner = OwnerInfo.create(UUID.randomUUID().toString(), "Alejandra", "Talalla", new Phone("+34999888777"));
 
         pet.updateOwnerInfo(pet.getId(), newOwner);
 

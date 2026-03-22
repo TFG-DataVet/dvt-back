@@ -5,10 +5,13 @@ import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import com.datavet.datavet.shared.domain.validation.ValidationResult;
 import lombok.*;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
-@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@TypeAlias("weight")
+@Document
 public class WeightDetails implements MedicalRecordDetails {
 
     private Double value;

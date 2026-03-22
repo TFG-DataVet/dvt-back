@@ -112,20 +112,4 @@ public class MedicalRecordServiceTestDataBuilder {
                 "Vacuna anual", details
         );
     }
-
-    public static MedicalRecord aValidVaccineMedicalRecordWithId(String id) {
-        MedicalRecord record = aValidVaccineMedicalRecord();
-        return MedicalRecord.builder()
-                .id(id)
-                .petId(record.getPetId())
-                .clinicId(record.getClinicId())
-                .type(record.getType())
-                .status(MedicalRecordLifecycleStatus.ACTIVE)
-                .veterinarianId(record.getVeterinarianId())
-                .notes(record.getNotes())
-                .details(record.getDetails())
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
-    }
 }

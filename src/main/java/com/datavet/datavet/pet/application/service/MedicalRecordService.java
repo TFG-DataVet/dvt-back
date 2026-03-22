@@ -11,7 +11,7 @@ import com.datavet.datavet.pet.domain.exception.PetNotFoundException;
 import com.datavet.datavet.pet.domain.model.MedicalRecord;
 import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
-import com.datavet.datavet.pet.infrastructure.adapter.output.MedicalRecordRepositoryPort;
+import com.datavet.datavet.pet.application.port.out.MedicalRecordPort;
 import com.datavet.datavet.shared.application.service.ApplicationService;
 import com.datavet.datavet.shared.domain.event.DomainEvent;
 import com.datavet.datavet.shared.domain.event.DomainEventPublisher;
@@ -26,7 +26,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class MedicalRecordService implements MedicalRecordUseCase, ApplicationService {
 
-    private final MedicalRecordRepositoryPort medicalRecordRepositoryPort;
+    private final MedicalRecordPort medicalRecordPort;
     private final PetRepositoryPort petRepositoryPort;
     private final MedicalRecordDetailsFactory detailsFactory;   // ← nueva dependencia
     private final DomainEventPublisher domainEventPublisher;
@@ -53,13 +53,13 @@ public class MedicalRecordService implements MedicalRecordUseCase, ApplicationSe
         );
 
         publishDomainEvents(record);
-        return medicalRecordRepositoryPort.save(record);
+        return medicalRecordPort.save(record);
     }
 
     @Override
     @Transactional
     public MedicalRecord correctMedicalRecord(CorrectMedicalRecordCommand command) {
-        MedicalRecord original = medicalRecordRepositoryPort
+        MedicalRecord original = medicalRecordPort
                 .findById(command.getOriginalRecordId())
                 .orElseThrow(() -> new MedicalRecordNotFoundException(command.getOriginalRecordId()));
 
@@ -75,19 +75,14 @@ public class MedicalRecordService implements MedicalRecordUseCase, ApplicationSe
         publishDomainEvents(corrected);
         publishDomainEvents(original);
 
-        medicalRecordRepositoryPort.save(original);
-        return medicalRecordRepositoryPort.save(corrected);
-    }
-
-    @Override
-    public MedicalRecord applyMedicalRecordAction(ApplyMedicalRecordActionCommand command) {
-        return null;
+        medicalRecordPort.save(original);
+        return medicalRecordPort.save(corrected);
     }
 
     @Transactional
     @Override
     public MedicalRecord applyAction(ApplyMedicalRecordActionCommand command) {
-        MedicalRecord record = medicalRecordRepositoryPort
+        MedicalRecord record = medicalRecordPort
                 .findById(command.getMedicalRecordId())
                 .orElseThrow(() -> new MedicalRecordNotFoundException(command.getMedicalRecordId()));
 
@@ -97,7 +92,7 @@ public class MedicalRecordService implements MedicalRecordUseCase, ApplicationSe
 
         publishDomainEvents(record);
 
-        return medicalRecordRepositoryPort.save(record);
+        return medicalRecordPort.save(record);
     }
 
     // -------------------------------------------------------------------------
@@ -106,7 +101,7 @@ public class MedicalRecordService implements MedicalRecordUseCase, ApplicationSe
 
     @Override
     public MedicalRecord getMedicalRecordById(String medicalRecordId) {
-        return medicalRecordRepositoryPort.findById(medicalRecordId)
+        return medicalRecordPort.findById(medicalRecordId)
                 .orElseThrow(() -> new MedicalRecordNotFoundException(medicalRecordId));
     }
 
@@ -115,12 +110,7 @@ public class MedicalRecordService implements MedicalRecordUseCase, ApplicationSe
         if (!petRepositoryPort.existsById(petId)) {
             throw new PetNotFoundException(petId);
         }
-        return medicalRecordRepositoryPort.findByPetId(petId);
-    }
-
-    @Override
-    public List<MedicalRecord> getMeicalRecordsByType(String petId, MedicalRecordType type) {
-        return List.of();
+        return medicalRecordPort.findByPetId(petId);
     }
 
     @Override
@@ -128,7 +118,7 @@ public class MedicalRecordService implements MedicalRecordUseCase, ApplicationSe
         if (!petRepositoryPort.existsById(petId)) {
             throw new PetNotFoundException(petId);
         }
-        return medicalRecordRepositoryPort.findByPetIdAndType(petId, type);
+        return medicalRecordPort.findByPetIdAndType(petId, type);
     }
 
     // -------------------------------------------------------------------------
