@@ -9,11 +9,7 @@ import java.time.LocalTime;
 
 @Getter
 @Setter
-public class CreateClinicRequest {
-
-    @NotBlank(message = "El nombre de la clínica es obligatorio")
-    @Size(max = 100)
-    private String clinicName;
+public class CompleteClinicSetupRequest {
 
     @NotBlank(message = "La razón social es obligatoria")
     @Size(max = 150)
