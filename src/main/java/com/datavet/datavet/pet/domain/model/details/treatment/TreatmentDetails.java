@@ -8,16 +8,18 @@ import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import com.datavet.datavet.shared.domain.validation.ValidationResult;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
 @Getter
-@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@TypeAlias("treatment")
+@Document
 public class TreatmentDetails implements MedicalRecordDetails{
 
     private String treatmentName;
@@ -88,16 +90,16 @@ public class TreatmentDetails implements MedicalRecordDetails{
             boolean followUpRequired,
             LocalDate followUpDate) {
         try {
-            TreatmentDetails treatmentDetails = TreatmentDetails.builder()
-                    .treatmentName(treatmentName)
-                    .startDate(startDate)
-                    .instructions(instructions)
-                    .estimatedEndDate(endDate)
-                    .medications(medications)
-                    .status(TreatmentStatus.PLANNED)
-                    .followUpRequired(followUpRequired)
-                    .followUpDate(followUpDate)
-                    .build();
+            TreatmentDetails treatmentDetails = new TreatmentDetails(
+                    treatmentName,
+                    startDate,
+                    instructions,
+                    endDate,
+                    medications,
+                    TreatmentStatus.PLANNED,
+                    followUpRequired,
+                    followUpDate,
+                    null);
 
             treatmentDetails.validate();
             return treatmentDetails;

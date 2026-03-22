@@ -5,6 +5,7 @@ import com.datavet.datavet.pet.domain.exception.MedicalRecordStateException;
 import com.datavet.datavet.pet.domain.exception.MedicalRecordValidationException;
 import com.datavet.datavet.pet.domain.model.action.RecordAction;
 import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
+import com.datavet.datavet.pet.domain.model.result.StatusChangeResult;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordLifecycleStatus;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import com.datavet.datavet.shared.domain.model.AggregateRoot;
@@ -18,7 +19,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
-@Builder
 @AllArgsConstructor
 public class MedicalRecord extends AggregateRoot<String> implements Document<String> {
 
@@ -59,19 +59,18 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
 
         details.validate();
 
-        MedicalRecord medicalRecord = MedicalRecord.builder()
-                .id(uuid)
-                .petId(petId)
-                .clinicId(clinicId)
-                .correctedRecordId(null)
-                .type(type)
-                .status(MedicalRecordLifecycleStatus.ACTIVE)
-                .veterinarianId(veterinarianId)
-                .notes(notes)
-                .details(details)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(null)
-                .build();
+        MedicalRecord medicalRecord = new MedicalRecord(
+                uuid,
+                petId,
+                clinicId,
+                null,
+                type,
+                MedicalRecordLifecycleStatus.ACTIVE,
+                veterinarianId,
+                notes,
+                details,
+                LocalDateTime.now(),
+                null);
 
         medicalRecord.addDomainEvent(MedicalRecordCreatedEvent.of(uuid, petId, clinicId, type));
 
@@ -102,18 +101,18 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
         }
         correctedDetails.validate();
 
-        MedicalRecord corrected = MedicalRecord.builder()
-                .id(uuid)
-                .petId(exitingRecord.petId)
-                .clinicId(exitingRecord.clinicId)
-                .correctedRecordId(exitingRecord.getId())
-                .type(exitingRecord.type)
-                .status(MedicalRecordLifecycleStatus.ACTIVE)
-                .veterinarianId(veterinarianId)
-                .details(correctedDetails)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+        MedicalRecord corrected = new MedicalRecord(
+                uuid,
+                exitingRecord.petId,
+                exitingRecord.clinicId,
+                exitingRecord.getId(),
+                exitingRecord.type,
+                MedicalRecordLifecycleStatus.ACTIVE,
+                veterinarianId,
+                exitingRecord.notes,
+                correctedDetails,
+                LocalDateTime.now(),
+                LocalDateTime.now());
 
         corrected.addDomainEvent(
                 MedicalRecordCorrectionCreatedEvent.of(
@@ -146,7 +145,7 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
 
     public void applyAction(RecordAction action, String veterinarianId){
         try{
-            var result = this.details.applyAction(action);
+            StatusChangeResult statusChange= this.details.applyAction(action);
 
             this.updatedAt = LocalDateTime.now();
 
@@ -155,12 +154,39 @@ public class MedicalRecord extends AggregateRoot<String> implements Document<Str
                             this.id,
                             this.petId,
                             this.clinicId,
-                            result.getPreviousStatus(),
-                            result.getNewStatus()
+                            statusChange.getPreviousStatus(),
+                            statusChange.getNewStatus()
                     )
             );
         } catch (RuntimeException e) {
             throw e;
         }
+    }
+
+    public static MedicalRecord reconstitute(
+            String id,
+            String petId,
+            String clinicId,
+            String correctedRecordId,
+            MedicalRecordType type,
+            MedicalRecordLifecycleStatus status,
+            String veterinarianId,
+            String notes,
+            MedicalRecordDetails details,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt) {
+        return new MedicalRecord(
+                id,
+                petId,
+                clinicId,
+                correctedRecordId,
+                type,
+                status,
+                veterinarianId,
+                notes,
+                details,
+                createdAt,
+                updatedAt
+        );
     }
 }

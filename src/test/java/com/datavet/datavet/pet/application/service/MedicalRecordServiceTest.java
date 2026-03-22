@@ -11,7 +11,7 @@ import com.datavet.datavet.pet.domain.model.MedicalRecord;
 import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
 import com.datavet.datavet.pet.domain.model.details.vaccine.VaccineDetails;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
-import com.datavet.datavet.pet.infrastructure.adapter.output.MedicalRecordRepositoryPort;
+import com.datavet.datavet.pet.infrastructure.adapter.output.MedicalRecordRepositoryAdapter;
 import com.datavet.datavet.pet.testutil.MedicalRecordServiceTestDataBuilder;
 import com.datavet.datavet.shared.domain.event.DomainEventPublisher;
 import org.junit.jupiter.api.DisplayName;
@@ -37,7 +37,7 @@ import static org.mockito.Mockito.*;
 @DisplayName("MedicalRecordService Tests")
 class MedicalRecordServiceTest {
 
-    @Mock private MedicalRecordRepositoryPort medicalRecordRepositoryPort;
+    @Mock private MedicalRecordRepositoryAdapter medicalRecordRepositoryAdapter;
     @Mock private PetRepositoryPort            petRepositoryPort;
     @Mock private MedicalRecordDetailsFactory  detailsFactory;
     @Mock private DomainEventPublisher         domainEventPublisher;
@@ -63,7 +63,7 @@ class MedicalRecordServiceTest {
 
             when(petRepositoryPort.existsById(command.getPetId())).thenReturn(true);
             when(detailsFactory.create(command.getDetailsRequest())).thenReturn(vaccineDetails);
-            when(medicalRecordRepositoryPort.save(any(MedicalRecord.class))).thenReturn(savedRecord);
+            when(medicalRecordRepositoryAdapter.save(any(MedicalRecord.class))).thenReturn(savedRecord);
 
             // When
             MedicalRecord result = medicalRecordService.createMedicalRecord(command);
@@ -76,7 +76,7 @@ class MedicalRecordServiceTest {
 
             verify(petRepositoryPort).existsById(command.getPetId());
             verify(detailsFactory).create(command.getDetailsRequest());
-            verify(medicalRecordRepositoryPort).save(any(MedicalRecord.class));
+            verify(medicalRecordRepositoryAdapter).save(any(MedicalRecord.class));
             verify(domainEventPublisher, atLeastOnce()).publish(any());
         }
 
@@ -92,7 +92,7 @@ class MedicalRecordServiceTest {
                     .isInstanceOf(PetNotFoundException.class);
 
             verify(detailsFactory, never()).create(any());
-            verify(medicalRecordRepositoryPort, never()).save(any());
+            verify(medicalRecordRepositoryAdapter, never()).save(any());
         }
 
         @Test
@@ -105,15 +105,15 @@ class MedicalRecordServiceTest {
 
             when(petRepositoryPort.existsById(command.getPetId())).thenReturn(true);
             when(detailsFactory.create(command.getDetailsRequest())).thenReturn(vaccineDetails);
-            when(medicalRecordRepositoryPort.save(any(MedicalRecord.class))).thenReturn(savedRecord);
+            when(medicalRecordRepositoryAdapter.save(any(MedicalRecord.class))).thenReturn(savedRecord);
 
             // When
             medicalRecordService.createMedicalRecord(command);
 
             // Then — el orden importa: factory ANTES de save
-            var inOrder = inOrder(detailsFactory, medicalRecordRepositoryPort);
+            var inOrder = inOrder(detailsFactory, medicalRecordRepositoryAdapter);
             inOrder.verify(detailsFactory).create(command.getDetailsRequest());
-            inOrder.verify(medicalRecordRepositoryPort).save(any(MedicalRecord.class));
+            inOrder.verify(medicalRecordRepositoryAdapter).save(any(MedicalRecord.class));
         }
     }
 
@@ -133,11 +133,11 @@ class MedicalRecordServiceTest {
             MedicalRecordDetails correctedDetails = buildCorrectVaccineDetails();
             CorrectMedicalRecordCommand command = aValidCorrectMedicalRecordCommand(original.getId());
 
-            when(medicalRecordRepositoryPort.findById(original.getId()))
+            when(medicalRecordRepositoryAdapter.findById(original.getId()))
                     .thenReturn(Optional.of(original));
             when(detailsFactory.create(command.getDetailsRequest()))
                     .thenReturn(correctedDetails);
-            when(medicalRecordRepositoryPort.save(any(MedicalRecord.class)))
+            when(medicalRecordRepositoryAdapter.save(any(MedicalRecord.class)))
                     .thenAnswer(inv -> inv.getArgument(0));
 
             // When
@@ -147,7 +147,7 @@ class MedicalRecordServiceTest {
             assertThat(result).isNotNull();
 
             // Ambos registros deben persistirse
-            verify(medicalRecordRepositoryPort, times(2)).save(any(MedicalRecord.class));
+            verify(medicalRecordRepositoryAdapter, times(2)).save(any(MedicalRecord.class));
             verify(domainEventPublisher, atLeastOnce()).publish(any());
         }
 
@@ -156,7 +156,7 @@ class MedicalRecordServiceTest {
         void shouldThrowWhenOriginalRecordNotFound() {
             // Given
             CorrectMedicalRecordCommand command = aValidCorrectMedicalRecordCommand("nonexistent");
-            when(medicalRecordRepositoryPort.findById("nonexistent"))
+            when(medicalRecordRepositoryAdapter.findById("nonexistent"))
                     .thenReturn(Optional.empty());
 
             // When / Then
@@ -164,7 +164,7 @@ class MedicalRecordServiceTest {
                     .isInstanceOf(MedicalRecordNotFoundException.class);
 
             verify(detailsFactory, never()).create(any());
-            verify(medicalRecordRepositoryPort, never()).save(any());
+            verify(medicalRecordRepositoryAdapter, never()).save(any());
         }
     }
 
@@ -181,14 +181,14 @@ class MedicalRecordServiceTest {
         void shouldThrowWhenRecordNotFound() {
             // Given
             ApplyMedicalRecordActionCommand command = MedicalRecordServiceTestDataBuilder.aValidApplyActionCommand("nonexistent");
-            when(medicalRecordRepositoryPort.findById("nonexistent"))
+            when(medicalRecordRepositoryAdapter.findById("nonexistent"))
                     .thenReturn(Optional.empty());
 
             // When / Then
             assertThatThrownBy(() -> medicalRecordService.applyAction(command))
                     .isInstanceOf(MedicalRecordNotFoundException.class);
 
-            verify(medicalRecordRepositoryPort, never()).save(any());
+            verify(medicalRecordRepositoryAdapter, never()).save(any());
         }
     }
 
@@ -205,7 +205,7 @@ class MedicalRecordServiceTest {
         void shouldReturnMedicalRecordById() {
             // Given
             MedicalRecord expected = MedicalRecordServiceTestDataBuilder.aValidVaccineMedicalRecord();
-            when(medicalRecordRepositoryPort.findById(expected.getId()))
+            when(medicalRecordRepositoryAdapter.findById(expected.getId()))
                     .thenReturn(Optional.of(expected));
 
             // When
@@ -214,14 +214,14 @@ class MedicalRecordServiceTest {
             // Then
             assertThat(result).isNotNull();
             assertThat(result.getId()).isEqualTo(expected.getId());
-            verify(medicalRecordRepositoryPort).findById(expected.getId());
+            verify(medicalRecordRepositoryAdapter).findById(expected.getId());
         }
 
         @Test
         @DisplayName("getMedicalRecordById debe lanzar MedicalRecordNotFoundException si no existe")
         void shouldThrowWhenRecordNotFoundById() {
             // Given
-            when(medicalRecordRepositoryPort.findById("medical_record_001"))
+            when(medicalRecordRepositoryAdapter.findById("medical_record_001"))
                     .thenReturn(Optional.empty());
 
             // When / Then
@@ -239,7 +239,7 @@ class MedicalRecordServiceTest {
             assertThatThrownBy(() -> medicalRecordService.getMedicalRecordsByPet("pet_001"))
                     .isInstanceOf(PetNotFoundException.class);
 
-            verify(medicalRecordRepositoryPort, never()).findByPetId(any());
+            verify(medicalRecordRepositoryAdapter, never()).findByPetId(any());
         }
 
         @Test
@@ -253,14 +253,14 @@ class MedicalRecordServiceTest {
 
             String petId = records.getFirst().getPetId();
             when(petRepositoryPort.existsById(petId)).thenReturn(true);
-            when(medicalRecordRepositoryPort.findByPetId(petId)).thenReturn(records);
+            when(medicalRecordRepositoryAdapter.findByPetId(petId)).thenReturn(records);
 
             // When
             List<MedicalRecord> result = medicalRecordService.getMedicalRecordsByPet(petId);
 
             // Then
             assertThat(result).hasSize(2);
-            verify(medicalRecordRepositoryPort).findByPetId(petId);
+            verify(medicalRecordRepositoryAdapter).findByPetId(petId);
         }
 
         @Test
@@ -271,7 +271,7 @@ class MedicalRecordServiceTest {
 
             String petId = records.getFirst().getPetId();
             when(petRepositoryPort.existsById(petId)).thenReturn(true);
-            when(medicalRecordRepositoryPort.findByPetIdAndType(petId, MedicalRecordType.VACCINE))
+            when(medicalRecordRepositoryAdapter.findByPetIdAndType(petId, MedicalRecordType.VACCINE))
                     .thenReturn(records);
 
             // When
