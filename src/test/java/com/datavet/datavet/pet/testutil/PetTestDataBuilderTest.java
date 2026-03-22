@@ -78,7 +78,7 @@ public class PetTestDataBuilderTest {
     @DisplayName("Should create a Pet with OwnerInfo")
     void createPet_shouldCreateAPetWithOwnerInfo() {
         String uuid = UUID.randomUUID().toString();
-        OwnerInfo ownerInfo = OwnerInfo.from(uuid, "Alejandra", "Talalla", new Phone("+34147852369"));
+        OwnerInfo ownerInfo = OwnerInfo.create(uuid, "Alejandra", "Talalla", new Phone("+34147852369"));
         Pet pet = PetTestDataBuilder.aPetWithOwner(ownerInfo);
 
         assertNotNull(pet);

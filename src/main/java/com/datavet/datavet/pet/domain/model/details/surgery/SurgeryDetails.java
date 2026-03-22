@@ -11,6 +11,9 @@ import com.datavet.datavet.shared.domain.validation.ValidationResult;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +23,8 @@ import static java.util.Collections.emptyList;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@TypeAlias("surgery")
+@Document
 public class SurgeryDetails implements MedicalRecordDetails {
 
     private final String surgeryName;

@@ -4,10 +4,12 @@ import com.datavet.datavet.pet.domain.model.Sex;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.Value;
 
 import java.time.LocalDate;
 
+@Getter
 @Value
 @Builder
 public class CreatePetCommand {

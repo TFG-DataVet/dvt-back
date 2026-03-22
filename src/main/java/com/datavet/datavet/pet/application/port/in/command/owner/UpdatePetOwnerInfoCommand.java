@@ -3,8 +3,10 @@ package com.datavet.datavet.pet.application.port.in.command.owner;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.Value;
 
+@Getter
 @Value
 @Builder
 public class UpdatePetOwnerInfoCommand {

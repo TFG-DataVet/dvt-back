@@ -27,25 +27,25 @@ public class PetTestDataBuilder {
     /* Create a valid OwnerInfo with default test data */
     public static OwnerInfo aValidOwnerInfo(){
         String uuid = UUID.randomUUID().toString();
-        return OwnerInfo.from(uuid, DEFAULT_OWNER_NAME, DEFAULT_OWNER_LAST_NAME, aValidPhone());
+        return OwnerInfo.create(uuid, DEFAULT_OWNER_NAME, DEFAULT_OWNER_LAST_NAME, aValidPhone());
     }
 
     /* Create a valid OwnerInfo without name */
     public static OwnerInfo anOwnerInfoWithName(String name) {
         String uuid = UUID.randomUUID().toString();
-        return OwnerInfo.from(uuid, name, DEFAULT_OWNER_LAST_NAME, aValidPhone());
+        return OwnerInfo.create(uuid, name, DEFAULT_OWNER_LAST_NAME, aValidPhone());
     }
 
     /* Create a valid OwnerInfo without name */
     public static OwnerInfo anOwnerInfoWithLastName(String lastName) {
         String uuid = UUID.randomUUID().toString();
-        return OwnerInfo.from(uuid, DEFAULT_OWNER_NAME, lastName, aValidPhone());
+        return OwnerInfo.create(uuid, DEFAULT_OWNER_NAME, lastName, aValidPhone());
     }
 
     /* Create a valid OwnerInfo without phone*/
     public static OwnerInfo anOwnerInfoWithPhone(Phone phone) {
         String uuid = UUID.randomUUID().toString();
-        return OwnerInfo.from(uuid, DEFAULT_OWNER_NAME, DEFAULT_OWNER_LAST_NAME, phone);
+        return OwnerInfo.create(uuid, DEFAULT_OWNER_NAME, DEFAULT_OWNER_LAST_NAME, phone);
     }
 
     /* PET - PET - PET - PET - PET - PET - PET - PET - PET*/

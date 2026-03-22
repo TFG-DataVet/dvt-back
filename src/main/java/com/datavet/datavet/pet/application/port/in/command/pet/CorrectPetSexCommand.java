@@ -3,8 +3,10 @@ package com.datavet.datavet.pet.application.port.in.command.pet;
 import com.datavet.datavet.pet.domain.model.Sex;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.Value;
 
+@Getter
 @Value
 @Builder
 public class CorrectPetSexCommand {

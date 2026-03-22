@@ -5,12 +5,16 @@ import com.datavet.datavet.pet.domain.model.details.MedicalRecordDetails;
 import com.datavet.datavet.pet.domain.valueobject.MedicalRecordType;
 import com.datavet.datavet.shared.domain.validation.ValidationResult;
 import lombok.*;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 import java.util.Objects;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@TypeAlias("vaccine")
+@Document
 public class VaccineDetails implements MedicalRecordDetails {
 
     private String vaccineName;
