@@ -16,16 +16,12 @@ public interface MedicalRecordUseCase extends UseCase {
 
     MedicalRecord correctMedicalRecord(CorrectMedicalRecordCommand command);
 
-    MedicalRecord applyMedicalRecordAction(ApplyMedicalRecordActionCommand command);
-
     @Transactional
     MedicalRecord applyAction(ApplyMedicalRecordActionCommand command);
 
     MedicalRecord getMedicalRecordById(String medicalRecordId);
 
     List<MedicalRecord> getMedicalRecordsByPet(String petId);
-
-    List<MedicalRecord> getMeicalRecordsByType(String petId, MedicalRecordType type);
 
     List<MedicalRecord> getMedicalRecordsByType(String petId, MedicalRecordType type);
 }

@@ -96,6 +96,37 @@ public class Pet extends AggregateRoot<String> implements Document<String> {
         return pet;
     }
 
+    public static Pet reconstitute(
+            String id,
+            String clinicId,
+            String name,
+            String species,
+            String breed,
+            Sex sex,
+            LocalDate dateOfBirth,
+            String chipNumber,
+            String avatarUrl,
+            OwnerInfo owner,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt,
+            boolean active) {
+
+        return new Pet(
+                id,
+                clinicId,
+                name,
+                species,
+                breed,
+                sex,
+                dateOfBirth,
+                chipNumber,
+                avatarUrl,
+                owner,
+                createdAt,
+                updatedAt,
+                active);
+    }
+
     public void update(String id, String name, String avatarUrl) {
         if(this.name.equals(name)) return;
 

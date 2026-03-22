@@ -3,14 +3,12 @@ package com.datavet.datavet.pet.domain.model;
 import com.datavet.datavet.pet.domain.exception.PetValidationException;
 import com.datavet.datavet.shared.domain.validation.ValidationResult;
 import com.datavet.datavet.shared.domain.valueobject.Phone;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;
-
-import java.util.UUID;
+import org.springframework.util.StringUtils;
 
 @Value
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
 public class OwnerInfo {
 
     String ownerId;
@@ -20,6 +18,10 @@ public class OwnerInfo {
 
     public void validate(){
         ValidationResult result = new ValidationResult();
+
+        if (!StringUtils.hasText(ownerId)) {
+            result.addError("[ownerInfo - ID]" , "El ID del dueño no puede estar vacio o nulo.");
+        }
 
         if (name == null || name.isBlank()) {
             result.addError("[ownerInfo - name]" , "El nombre del dueño no puede estar vacio o nulo.");
@@ -38,8 +40,7 @@ public class OwnerInfo {
         }
     }
 
-    public static OwnerInfo from(String name, String lastName, Phone phone) {
-        String uuid = UUID.randomUUID().toString();
+    public static OwnerInfo create(String uuid, String name, String lastName, Phone phone) {
 
         OwnerInfo ownerInfo = new OwnerInfo(uuid, name, lastName, phone);
 

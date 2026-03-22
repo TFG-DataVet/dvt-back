@@ -36,7 +36,7 @@ public class PetService implements PetUseCase, ApplicationService {
         }
 
         // 2. Construir OwnerInfo
-        OwnerInfo ownerInfo = OwnerInfo.from(
+        OwnerInfo ownerInfo = OwnerInfo.create(
                 command.getOwnerId(),
                 command.getOwnerName(),
                 command.getOwnerLastName(),
@@ -161,7 +161,7 @@ public class PetService implements PetUseCase, ApplicationService {
         Pet pet = petRepositoryPort.findById(command.getPetId())
                 .orElseThrow(() -> new PetNotFoundException(command.getPetId()));
 
-        OwnerInfo newOwnerInfo = OwnerInfo.from(
+        OwnerInfo newOwnerInfo = OwnerInfo.create(
                 command.getOwnerId(),
                 command.getOwnerName(),
                 command.getOwnerLastName(),
