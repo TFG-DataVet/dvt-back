@@ -1,0 +1,113 @@
+package com.datavet.pet.infrastructure.adapter.output;
+
+import com.datavet.pet.application.port.out.MedicalRecordPort;
+import com.datavet.pet.domain.model.MedicalRecord;
+import com.datavet.pet.domain.valueobject.MedicalRecordLifecycleStatus;
+import com.datavet.pet.domain.valueobject.MedicalRecordType;
+import com.datavet.pet.infrastructure.persistence.document.MedicalRecordDocument;
+import com.datavet.pet.infrastructure.persistence.repository.MongoMedicalRecordRepositoryAdapter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
+
+@Component
+@RequiredArgsConstructor
+public class MedicalRecordRepositoryAdapter implements MedicalRecordPort {
+
+    private final MongoMedicalRecordRepositoryAdapter repository;
+
+    private MedicalRecordDocument toDocument(MedicalRecord medicalRecord) {
+        return MedicalRecordDocument.builder()
+                .id(medicalRecord.getId())
+                .petId(medicalRecord.getPetId())
+                .clinicId(medicalRecord.getClinicId())
+                .correctedRecordId(medicalRecord.getCorrectedRecordId())
+                .type(medicalRecord.getType())
+                .status(medicalRecord.getStatus())
+                .veterinarianId(medicalRecord.getVeterinarianId())
+                .notes(medicalRecord.getNotes())
+                .details(medicalRecord.getDetails())
+                .build();
+    }
+
+    private MedicalRecord toDomain(MedicalRecordDocument doc) {
+        return MedicalRecord.reconstitute(
+                doc.getId(),
+                doc.getPetId(),
+                doc.getClinicId(),
+                doc.getCorrectedRecordId(),
+                doc.getType(),
+                doc.getStatus(),
+                doc.getVeterinarianId(),
+                doc.getNotes(),
+                doc.getDetails(),
+                doc.getCreatedAt(),
+                doc.getUpdatedAt());
+    }
+
+    @Override
+    public MedicalRecord save(MedicalRecord entity) {
+        return toDomain(repository.save(toDocument(entity)));
+    }
+
+    @Override
+    public Optional<MedicalRecord> findById(String id) {
+        return repository.findById(id).map(this::toDomain);
+    }
+
+    @Override
+    public List<MedicalRecord> findAll() {
+        return repository.findAll().stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public void deleteById(String id) {
+        repository.deleteById(id);
+    }
+
+    @Override
+    public boolean existsById(String id) {
+        return repository.existsById(id);
+    }
+
+    // specific querys
+
+    @Override
+    public List<MedicalRecord> findByPetId(String petId) {
+        return repository.findByPetId(petId).stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public List<MedicalRecord> findByPetIdAndType(String petId, MedicalRecordType type) {
+        return repository.findByPetIdAndType(petId, type).stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public List<MedicalRecord> findByPetIdAndStatus(String petId, MedicalRecordLifecycleStatus status) {
+        return repository.findByPetIdAndStatus(petId, status).stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public List<MedicalRecord> findByClinicId(String clinicId) {
+        return repository.findByClinicId(clinicId).stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public List<MedicalRecord> findByClinicIdAndType(String clinicId, MedicalRecordType type) {
+        return repository.findByClinicIdAndType(clinicId, type).stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public List<MedicalRecord> findByCorrectedRecordId(String originalRecordId) {
+        return repository.findByCorrectedRecordId(originalRecordId).stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public boolean existsByPetIdAndStatus(String petId, MedicalRecordLifecycleStatus status) {
+        return repository.existsByPetIdAndStatus(petId, status);
+    }
+
+
+}
