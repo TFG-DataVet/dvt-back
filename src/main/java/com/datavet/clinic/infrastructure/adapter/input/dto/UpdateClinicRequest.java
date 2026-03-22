@@ -1,46 +1,63 @@
 package com.datavet.clinic.infrastructure.adapter.input.dto;
 
+import com.datavet.clinic.domain.model.LegalType;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
-import jakarta.validation.constraints.*;
+
+import java.time.LocalTime;
 
 @Getter
 @Setter
 public class UpdateClinicRequest {
-    @NotBlank(message = "Clinic name is required")
-    @Size(max = 100, message = "Clinic name must not exceed 100 characters")
+
+    @NotBlank(message = "El nombre de la clínica es obligatorio")
+    @Size(max = 100)
     private String clinicName;
-    
-    @NotBlank(message = "Legal name is required")
-    @Size(max = 150, message = "Legal name must not exceed 150 characters")
+
+    @NotBlank(message = "La razón social es obligatoria")
+    @Size(max = 150)
     private String legalName;
-    
-    @NotBlank(message = "Legal number is required")
-    @Size(max = 50, message = "Legal number must not exceed 50 characters")
+
+    @NotBlank(message = "El número legal es obligatorio")
+    @Size(max = 50)
     private String legalNumber;
-    
-    @NotBlank(message = "Address is required")
-    @Size(max = 200, message = "Address must not exceed 200 characters")
+
+    @NotNull(message = "El tipo de persona jurídica es obligatorio")
+    private LegalType legalType;
+
+    @NotBlank(message = "La dirección es obligatoria")
+    @Size(max = 200)
     private String address;
-    
-    @NotBlank(message = "City is required")
-    @Size(max = 50, message = "City must not exceed 50 characters")
+
+    @NotBlank(message = "La ciudad es obligatoria")
+    @Size(max = 50)
     private String city;
-    
-    @Size(max = 10, message = "Postal code must not exceed 10 characters")
+
+    @Size(max = 10)
     private String codePostal;
-    
-    @Pattern(regexp = "^[+]?[0-9\\s\\-()]{7,15}$", message = "Phone number format is invalid")
+
+    @NotBlank(message = "El teléfono es obligatorio")
+    @Pattern(regexp = "^[+]?[0-9\\s\\-()]{7,15}$")
     private String phone;
-    
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email format is invalid")
-    @Size(max = 100, message = "Email must not exceed 100 characters")
+
+    @NotBlank(message = "El email es obligatorio")
+    @Email
+    @Size(max = 100)
     private String email;
-    
-    @Size(max = 255, message = "Logo URL must not exceed 255 characters")
+
+    @Size(max = 255)
     private String logoUrl;
-    
-    @Size(max = 50, message = "Subscription status must not exceed 50 characters")
-    private String suscriptionStatus;
+
+    @NotBlank(message = "Los días de apertura son obligatorios")
+    private String scheduleOpenDays;
+
+    @NotNull(message = "La hora de apertura es obligatoria")
+    private LocalTime scheduleOpenTime;
+
+    @NotNull(message = "La hora de cierre es obligatoria")
+    private LocalTime scheduleCloseTime;
+
+    private String scheduleNotes;
+
 }

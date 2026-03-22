@@ -1,57 +1,45 @@
 package com.datavet.clinic.infrastructure.persistence.repository;
 
+import com.datavet.clinic.domain.model.ClinicStatus;
+import com.datavet.clinic.domain.model.LegalType;
 import com.datavet.clinic.infrastructure.persistence.document.ClinicDocument;
 import com.datavet.shared.domain.valueobject.Address;
 import com.datavet.shared.domain.valueobject.Email;
 import com.datavet.shared.domain.valueobject.Phone;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.BeforeEach;
+
 import org.junit.jupiter.api.AfterEach;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Integration tests for MongoClinicRepositoryAdapter MongoDB repository implementation.
- * Verifies that the repository properly works with MongoDB.
- * Requirements: 5.3
- */
 @DataMongoTest
 @ActiveProfiles("test")
+@DisplayName("MongoClinicRepository Integration Tests")
 class ClinicRepositoryIntegrationTest {
 
     @Autowired
     private MongoClinicRepositoryAdapter repository;
 
-    private ClinicDocument testClinic;
-    private Address testAddress;
-    private Email testEmail;
-    private Phone testPhone;
+    private Address address;
+    private Email   email;
+    private Phone   phone;
 
     @BeforeEach
     void setUp() {
         repository.deleteAll();
-        
-        testAddress = new Address("123 Test St", "Test City", "12345");
-        testEmail = new Email("test@clinic.com");
-        testPhone = new Phone("+1234567890");
-        
-        testClinic = ClinicDocument.builder()
-                .name("Test Clinic")
-                .legalName("Test Clinic Legal")
-                .legalNumber("TEST123")
-                .address(testAddress)
-                .email(testEmail)
-                .phone(testPhone)
-                .logoUrl("http://test.com/logo.png")
-                .suscriptionStatus("ACTIVE")
-                .build();
+
+        address = new Address("Calle Test 1", "Madrid", "28001");
+        email   = new Email("clinica@test.com");
+        phone   = new Phone("+34912345678");
     }
 
     @AfterEach
@@ -59,172 +47,253 @@ class ClinicRepositoryIntegrationTest {
         repository.deleteAll();
     }
 
+    // =========================================================================
+    // save / findById
+    // =========================================================================
+
     @Test
-    @DisplayName("Repository should save and retrieve clinic document with value objects")
-    void repository_ShouldSaveAndRetrieveClinicWithValueObjects() {
-        // Save the clinic
-        ClinicDocument savedClinic = repository.save(testClinic);
-        
-        assertNotNull(savedClinic, "Saved clinic should not be null");
-        assertNotNull(savedClinic.getId(), "Saved clinic should have an ID");
-        
-        // Retrieve the clinic
-        Optional<ClinicDocument> retrievedClinic = repository.findById(savedClinic.getId());
-        
-        assertTrue(retrievedClinic.isPresent(), "Retrieved clinic should be present");
-        
-        ClinicDocument clinic = retrievedClinic.get();
-        assertEquals("Test Clinic", clinic.getName());
-        assertEquals("Test Clinic Legal", clinic.getLegalName());
-        assertEquals("TEST123", clinic.getLegalNumber());
-        
-        // Verify value objects are properly persisted and retrieved
-        assertNotNull(clinic.getAddress(), "Address should not be null");
-        assertEquals("123 Test St", clinic.getAddress().getStreet());
-        assertEquals("Test City", clinic.getAddress().getCity());
-        assertEquals("12345", clinic.getAddress().getPostalCode());
-        
-        assertNotNull(clinic.getEmail(), "Email should not be null");
-        assertEquals("test@clinic.com", clinic.getEmail().getValue());
-        
-        assertNotNull(clinic.getPhone(), "Phone should not be null");
-        assertEquals("+1234567890", clinic.getPhone().getValue());
+    @DisplayName("save: should persist and retrieve clinic with all fields")
+    void save_ShouldPersistAndRetrieveAllFields() {
+        ClinicDocument saved = repository.save(buildDocument("clinica@test.com", "12345678A"));
+
+        assertThat(saved.getId()).isNotNull().isNotBlank();
+
+        Optional<ClinicDocument> found = repository.findById(saved.getId());
+        assertThat(found).isPresent();
+
+        ClinicDocument doc = found.get();
+        assertThat(doc.getName()).isEqualTo("Clínica Test");
+        assertThat(doc.getLegalName()).isEqualTo("Clínica Test S.L.");
+        assertThat(doc.getLegalNumber()).isEqualTo("12345678A");
+        assertThat(doc.getLegalType()).isEqualTo(LegalType.AUTONOMO);
+        assertThat(doc.getStatus()).isEqualTo(ClinicStatus.ACTIVE);
+        assertThat(doc.getLogoUrl()).isEqualTo("https://example.com/logo.png");
     }
 
     @Test
-    @DisplayName("Repository should handle findAll operation")
-    void repository_ShouldHandleFindAllOperation() {
-        // Save multiple clinics
-        repository.save(testClinic);
-        
-        ClinicDocument clinic2 = ClinicDocument.builder()
-                .name("Second Clinic")
-                .legalName("Second Legal")
-                .legalNumber("SECOND123")
-                .address(new Address("456 Second St", "Second City", "67890"))
-                .email(new Email("second@clinic.com"))
-                .phone(new Phone("+0987654321"))
-                .suscriptionStatus("INACTIVE")
+    @DisplayName("save: should persist and retrieve Address value object correctly")
+    void save_ShouldPersistAddressValueObject() {
+        ClinicDocument saved = repository.save(buildDocument("clinica@test.com", "12345678A"));
+
+        ClinicDocument found = repository.findById(saved.getId()).orElseThrow();
+
+        assertThat(found.getAddress()).isNotNull();
+        assertThat(found.getAddress().getStreet()).isEqualTo("Calle Test 1");
+        assertThat(found.getAddress().getCity()).isEqualTo("Madrid");
+        assertThat(found.getAddress().getPostalCode()).isEqualTo("28001");
+    }
+
+    @Test
+    @DisplayName("save: should persist and retrieve Email value object correctly")
+    void save_ShouldPersistEmailValueObject() {
+        ClinicDocument saved = repository.save(buildDocument("clinica@test.com", "12345678A"));
+
+        ClinicDocument found = repository.findById(saved.getId()).orElseThrow();
+
+        assertThat(found.getEmail()).isNotNull();
+        assertThat(found.getEmail().getValue()).isEqualTo("clinica@test.com");
+    }
+
+    @Test
+    @DisplayName("save: should persist and retrieve Phone value object correctly")
+    void save_ShouldPersistPhoneValueObject() {
+        ClinicDocument saved = repository.save(buildDocument("clinica@test.com", "12345678A"));
+
+        ClinicDocument found = repository.findById(saved.getId()).orElseThrow();
+
+        assertThat(found.getPhone()).isNotNull();
+        assertThat(found.getPhone().getValue()).isEqualTo("+34912345678");
+    }
+
+    @Test
+    @DisplayName("save: should persist and retrieve schedule fields correctly")
+    void save_ShouldPersistScheduleFields() {
+        ClinicDocument saved = repository.save(buildDocument("clinica@test.com", "12345678A"));
+
+        ClinicDocument found = repository.findById(saved.getId()).orElseThrow();
+
+        assertThat(found.getScheduleOpenDays()).isEqualTo("Lunes - Viernes");
+        assertThat(found.getScheduleOpenTime()).isEqualTo(LocalTime.of(9, 0));
+        assertThat(found.getScheduleCloseTime()).isEqualTo(LocalTime.of(18, 0));
+        assertThat(found.getScheduleNotes()).isEqualTo("Cierra fines de semana");
+    }
+
+    // =========================================================================
+    // findAll
+    // =========================================================================
+
+    @Test
+    @DisplayName("findAll: should return all persisted clinics")
+    void findAll_ShouldReturnAllClinics() {
+        repository.save(buildDocument("clinica1@test.com", "12345678A"));
+        repository.save(buildDocument("clinica2@test.com", "87654321B"));
+
+        List<ClinicDocument> all = repository.findAll();
+
+        assertThat(all).hasSize(2);
+        assertThat(all).extracting(c -> c.getEmail().getValue())
+                .containsExactlyInAnyOrder("clinica1@test.com", "clinica2@test.com");
+    }
+
+    @Test
+    @DisplayName("findAll: should return empty list when no clinics exist")
+    void findAll_WhenNoClinics_ShouldReturnEmptyList() {
+        List<ClinicDocument> all = repository.findAll();
+
+        assertThat(all).isEmpty();
+    }
+
+    // =========================================================================
+    // existsById / deleteById
+    // =========================================================================
+
+    @Test
+    @DisplayName("existsById: should return true for existing clinic")
+    void existsById_WhenClinicExists_ShouldReturnTrue() {
+        ClinicDocument saved = repository.save(buildDocument("clinica@test.com", "12345678A"));
+
+        assertThat(repository.existsById(saved.getId())).isTrue();
+    }
+
+    @Test
+    @DisplayName("existsById: should return false for non-existing clinic")
+    void existsById_WhenClinicNotExists_ShouldReturnFalse() {
+        assertThat(repository.existsById("id-que-no-existe")).isFalse();
+    }
+
+    @Test
+    @DisplayName("deleteById: should remove clinic from repository")
+    void deleteById_ShouldRemoveClinic() {
+        ClinicDocument saved = repository.save(buildDocument("clinica@test.com", "12345678A"));
+        String id = saved.getId();
+
+        assertThat(repository.existsById(id)).isTrue();
+
+        repository.deleteById(id);
+
+        assertThat(repository.existsById(id)).isFalse();
+        assertThat(repository.findById(id)).isEmpty();
+    }
+
+    // =========================================================================
+    // existsByEmail
+    // =========================================================================
+
+    @Test
+    @DisplayName("existsByEmail: should return true when email is registered")
+    void existsByEmail_WhenEmailExists_ShouldReturnTrue() {
+        repository.save(buildDocument("clinica@test.com", "12345678A"));
+
+        assertThat(repository.existsByEmail(new Email("clinica@test.com"))).isTrue();
+    }
+
+    @Test
+    @DisplayName("existsByEmail: should return false when email is not registered")
+    void existsByEmail_WhenEmailNotExists_ShouldReturnFalse() {
+        assertThat(repository.existsByEmail(new Email("noexiste@test.com"))).isFalse();
+    }
+
+    // =========================================================================
+    // existsByLegalNumber
+    // =========================================================================
+
+    @Test
+    @DisplayName("existsByLegalNumber: should return true when legalNumber is registered")
+    void existsByLegalNumber_WhenExists_ShouldReturnTrue() {
+        repository.save(buildDocument("clinica@test.com", "12345678A"));
+
+        assertThat(repository.existsByLegalNumber("12345678A")).isTrue();
+    }
+
+    @Test
+    @DisplayName("existsByLegalNumber: should return false when legalNumber is not registered")
+    void existsByLegalNumber_WhenNotExists_ShouldReturnFalse() {
+        assertThat(repository.existsByLegalNumber("NO-EXISTE")).isFalse();
+    }
+
+    // =========================================================================
+    // existsByEmailAndIdNot
+    // =========================================================================
+
+    @Test
+    @DisplayName("existsByEmailAndIdNot: should return false when email belongs to the same clinic")
+    void existsByEmailAndIdNot_WhenEmailBelongsToSameClinic_ShouldReturnFalse() {
+        ClinicDocument saved = repository.save(buildDocument("clinica@test.com", "12345678A"));
+
+        assertThat(repository.existsByEmailAndIdNot(new Email("clinica@test.com"), saved.getId()))
+                .isFalse();
+    }
+
+    @Test
+    @DisplayName("existsByEmailAndIdNot: should return true when email belongs to a different clinic")
+    void existsByEmailAndIdNot_WhenEmailBelongsToDifferentClinic_ShouldReturnTrue() {
+        ClinicDocument clinic1 = repository.save(buildDocument("clinica1@test.com", "12345678A"));
+        repository.save(buildDocument("clinica2@test.com", "87654321B"));
+
+        assertThat(repository.existsByEmailAndIdNot(new Email("clinica2@test.com"), clinic1.getId()))
+                .isTrue();
+    }
+
+    @Test
+    @DisplayName("existsByEmailAndIdNot: should return false when email does not exist at all")
+    void existsByEmailAndIdNot_WhenEmailNotExists_ShouldReturnFalse() {
+        ClinicDocument saved = repository.save(buildDocument("clinica@test.com", "12345678A"));
+
+        assertThat(repository.existsByEmailAndIdNot(new Email("noexiste@test.com"), saved.getId()))
+                .isFalse();
+    }
+
+    // =========================================================================
+    // existsByLegalNumberAndIdNot
+    // =========================================================================
+
+    @Test
+    @DisplayName("existsByLegalNumberAndIdNot: should return false when legalNumber belongs to the same clinic")
+    void existsByLegalNumberAndIdNot_WhenBelongsToSameClinic_ShouldReturnFalse() {
+        ClinicDocument saved = repository.save(buildDocument("clinica@test.com", "12345678A"));
+
+        assertThat(repository.existsByLegalNumberAndIdNot("12345678A", saved.getId()))
+                .isFalse();
+    }
+
+    @Test
+    @DisplayName("existsByLegalNumberAndIdNot: should return true when legalNumber belongs to a different clinic")
+    void existsByLegalNumberAndIdNot_WhenBelongsToDifferentClinic_ShouldReturnTrue() {
+        ClinicDocument clinic1 = repository.save(buildDocument("clinica1@test.com", "12345678A"));
+        repository.save(buildDocument("clinica2@test.com", "87654321B"));
+
+        assertThat(repository.existsByLegalNumberAndIdNot("87654321B", clinic1.getId()))
+                .isTrue();
+    }
+
+    @Test
+    @DisplayName("existsByLegalNumberAndIdNot: should return false when legalNumber does not exist at all")
+    void existsByLegalNumberAndIdNot_WhenNotExists_ShouldReturnFalse() {
+        ClinicDocument saved = repository.save(buildDocument("clinica@test.com", "12345678A"));
+
+        assertThat(repository.existsByLegalNumberAndIdNot("NO-EXISTE", saved.getId()))
+                .isFalse();
+    }
+
+    // =========================================================================
+    // Helper
+    // =========================================================================
+
+    private ClinicDocument buildDocument(String emailValue, String legalNumber) {
+        return ClinicDocument.builder()
+                .name("Clínica Test")
+                .legalName("Clínica Test S.L.")
+                .legalNumber(legalNumber)
+                .legalType(LegalType.AUTONOMO)
+                .address(address)
+                .phone(phone)
+                .email(new Email(emailValue))
+                .logoUrl("https://example.com/logo.png")
+                .scheduleOpenDays("Lunes - Viernes")
+                .scheduleOpenTime(LocalTime.of(9, 0))
+                .scheduleCloseTime(LocalTime.of(18, 0))
+                .scheduleNotes("Cierra fines de semana")
+                .status(ClinicStatus.ACTIVE)
                 .build();
-        
-        repository.save(clinic2);
-        
-        // Retrieve all clinics
-        List<ClinicDocument> allClinics = repository.findAll();
-        
-        assertNotNull(allClinics, "All clinics list should not be null");
-        assertEquals(2, allClinics.size(), "Should have exactly 2 clinics");
-        
-        // Verify both clinics are in the list
-        boolean hasFirstClinic = allClinics.stream()
-                .anyMatch(c -> "Test Clinic".equals(c.getName()));
-        boolean hasSecondClinic = allClinics.stream()
-                .anyMatch(c -> "Second Clinic".equals(c.getName()));
-        
-        assertTrue(hasFirstClinic, "Should contain first clinic");
-        assertTrue(hasSecondClinic, "Should contain second clinic");
-    }
-
-    @Test
-    @DisplayName("Repository should handle existsById operation")
-    void repository_ShouldHandleExistsByIdOperation() {
-        // Save clinic
-        ClinicDocument savedClinic = repository.save(testClinic);
-        
-        // Test exists
-        boolean exists = repository.existsById(savedClinic.getId());
-        assertTrue(exists, "Clinic should exist");
-        
-        // Test non-existent ID
-        boolean notExists = repository.existsById("non-existent-id");
-        assertFalse(notExists, "Non-existent clinic should not exist");
-    }
-
-    @Test
-    @DisplayName("Repository should handle deleteById operation")
-    void repository_ShouldHandleDeleteByIdOperation() {
-        // Save clinic
-        ClinicDocument savedClinic = repository.save(testClinic);
-        String clinicId = savedClinic.getId();
-        
-        // Verify it exists
-        assertTrue(repository.existsById(clinicId), "Clinic should exist before deletion");
-        
-        // Delete clinic
-        repository.deleteById(clinicId);
-        
-        // Verify it's deleted
-        assertFalse(repository.existsById(clinicId), "Clinic should not exist after deletion");
-        
-        Optional<ClinicDocument> deletedClinic = repository.findById(clinicId);
-        assertFalse(deletedClinic.isPresent(), "Deleted clinic should not be found");
-    }
-
-    @Test
-    @DisplayName("Repository should handle domain-specific queries with Email value object")
-    void repository_ShouldHandleDomainSpecificQueriesWithEmail() {
-        // Save clinic
-        repository.save(testClinic);
-        
-        // Test existsByEmail with Email value object
-        boolean existsByEmail = repository.existsByEmail(testEmail);
-        assertTrue(existsByEmail, "Should find clinic by email value object");
-        
-        // Test with different email
-        Email differentEmail = new Email("different@clinic.com");
-        boolean notExistsByEmail = repository.existsByEmail(differentEmail);
-        assertFalse(notExistsByEmail, "Should not find clinic with different email");
-    }
-
-    @Test
-    @DisplayName("Repository should handle domain-specific queries with legal number")
-    void repository_ShouldHandleDomainSpecificQueriesWithLegalNumber() {
-        // Save clinic
-        repository.save(testClinic);
-        
-        // Test existsByLegalNumber
-        boolean existsByLegalNumber = repository.existsByLegalNumber("TEST123");
-        assertTrue(existsByLegalNumber, "Should find clinic by legal number");
-        
-        // Test with different legal number
-        boolean notExistsByLegalNumber = repository.existsByLegalNumber("DIFFERENT123");
-        assertFalse(notExistsByLegalNumber, "Should not find clinic with different legal number");
-    }
-
-    @Test
-    @DisplayName("Repository should handle exclusion queries for updates")
-    void repository_ShouldHandleExclusionQueriesForUpdates() {
-        // Save clinic
-        ClinicDocument savedClinic = repository.save(testClinic);
-        String clinicId = savedClinic.getId();
-        
-        // Test existsByEmailAndIdNot - should return false for same clinic
-        boolean existsByEmailExcludingSelf = repository.existsByEmailAndIdNot(testEmail, clinicId);
-        assertFalse(existsByEmailExcludingSelf, 
-                "Should not find email conflict when excluding the same clinic");
-        
-        // Test existsByLegalNumberAndIdNot - should return false for same clinic
-        boolean existsByLegalNumberExcludingSelf = repository.existsByLegalNumberAndIdNot("TEST123", clinicId);
-        assertFalse(existsByLegalNumberExcludingSelf, 
-                "Should not find legal number conflict when excluding the same clinic");
-        
-        // Save another clinic with different email and legal number
-        ClinicDocument anotherClinic = ClinicDocument.builder()
-                .name("Another Clinic")
-                .legalName("Another Legal")
-                .legalNumber("ANOTHER123")
-                .address(new Address("789 Another St", "Another City", "99999"))
-                .email(new Email("another@clinic.com"))
-                .phone(new Phone("+1111111111"))
-                .suscriptionStatus("ACTIVE")
-                .build();
-        
-        repository.save(anotherClinic);
-        
-        // Now test exclusion with the other clinic's email - should return true
-        boolean existsByOtherEmailExcludingSelf = repository.existsByEmailAndIdNot(
-                new Email("another@clinic.com"), clinicId);
-        assertTrue(existsByOtherEmailExcludingSelf, 
-                "Should find email conflict when checking other clinic's email");
     }
 }
