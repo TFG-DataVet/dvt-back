@@ -1,38 +1,36 @@
 package com.datavet.clinic.application.dto;
 
+import com.datavet.clinic.domain.model.ClinicStatus;
+import com.datavet.clinic.domain.model.LegalType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.time.LocalTime;
 
 @Getter
 @AllArgsConstructor
 public class ClinicResponse {
 
-    private String clinicId;
-    private String clinicName;
-    private String legalName;
-    private String legalNumber;
-    
-    // Address value object fields
-    @JsonProperty("address")
-    private AddressDto address;
-    
-    // Phone value object field
-    private String phone;
-    
-    // Email value object field
-    private String email;
-    
-    private String logoUrl;
-    private String suscriptionStatus;
-    
+    private String       clinicId;
+    private String       clinicName;
+    private String       legalName;
+    private String       legalNumber;
+    private LegalType    legalType;
+    private AddressDto   address;
+    private String       phone;
+    private String       email;
+    private String       logoUrl;
+    private ScheduleDto  schedule;
+    private ClinicStatus status;
+
     @Getter
     @AllArgsConstructor
     public static class AddressDto {
         private String street;
         private String city;
         private String postalCode;
-        
+
         @JsonProperty("fullAddress")
         public String getFullAddress() {
             StringBuilder sb = new StringBuilder(street);
@@ -42,5 +40,14 @@ public class ClinicResponse {
             }
             return sb.toString();
         }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class ScheduleDto {
+        private String    openDays;
+        private LocalTime openTime;
+        private LocalTime closeTime;
+        private String    notes;
     }
 }

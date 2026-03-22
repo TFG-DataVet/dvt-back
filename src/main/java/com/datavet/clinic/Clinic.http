@@ -1,0 +1,40 @@
+# Obtener todas las clinicas
+###
+
+GET http://127.0.0.1:8080/clinic
+Content-Type: application/json
+
+
+# Obtener un clinica por ID
+###
+
+GET 127.0.0.1:8080/clinic/25f3bf31-957a-4ae3-97ca-168302c84aa9
+Content-Type: application/json
+
+
+# Crear una clinica
+
+###
+POST http://localhost:8080/clinic
+Content-Type: application/json
+
+{
+  "clinicName": "ClinicTest",
+  "legalName": "CliniTestLegal",
+  "legalNumber": "123456789",
+  "legalType": "AUTONOMO",
+  "address": "Av. Imaginación",
+  "city": "MAdrid",
+  "codePostal": "123456",
+  "phone": "132456578",
+  "email": "jesu@gmail.com",
+  "logoUrl": "www.logo.com",
+  "scheduleOpenDays": "Lunes,martes",
+  "scheduleOpenTime": "09:00",
+  "scheduleCloseTime": "18:00",
+  "scheduleNotes": "Esto es amor"
+
+}
+###
+
+# Crear una clinica

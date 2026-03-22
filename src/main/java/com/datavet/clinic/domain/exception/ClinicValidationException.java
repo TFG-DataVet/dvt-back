@@ -1,7 +1,7 @@
 package com.datavet.clinic.domain.exception;
 
-import com.datavet.shared.domain.validation.ValidationResult;
 import com.datavet.shared.domain.exception.DomainException;
+import com.datavet.shared.domain.validation.ValidationResult;
 
 /**
  * Exception thrown when clinic validation fails.

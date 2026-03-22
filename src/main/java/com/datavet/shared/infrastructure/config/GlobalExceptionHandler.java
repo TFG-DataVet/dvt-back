@@ -1,6 +1,7 @@
 package com.datavet.shared.infrastructure.config;
 
 import com.datavet.shared.domain.exception.BusinessRuleException;
+import com.datavet.shared.domain.exception.DomainException;
 import com.datavet.shared.domain.exception.EntityAlreadyExistsException;
 import com.datavet.shared.domain.exception.EntityNotFoundException;
 import com.datavet.shared.domain.exception.email.EmailAlreadyExistsException;
@@ -241,6 +242,28 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    /**
+     * Handle all domain validation exceptions across all bounded contexts.
+     * Catches any DomainException not handled by a more specific handler.
+     */
+    @ExceptionHandler(DomainException.class)
+    public ResponseEntity<ErrorResponse> handleDomainException(
+            DomainException ex, WebRequest request) {
+
+        log.warn("Domain exception: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Bad Request")
+                .message(ex.getMessage())
+                .details(new ArrayList<>())
+                .path(getPath(request))
+                .build();
+
+        return ResponseEntity.badRequest().body(errorResponse);
     }
 
     private ErrorResponse.ValidationErrorDetail mapFieldError(FieldError fieldError) {

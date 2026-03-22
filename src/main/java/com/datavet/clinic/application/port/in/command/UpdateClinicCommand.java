@@ -1,47 +1,55 @@
 package com.datavet.clinic.application.port.in.command;
 
+import com.datavet.clinic.domain.model.LegalType;
+import com.datavet.clinic.domain.valueobject.ClinicSchedule;
 import com.datavet.shared.domain.valueobject.Address;
 import com.datavet.shared.domain.valueobject.Email;
 import com.datavet.shared.domain.valueobject.Phone;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Value;
-import jakarta.validation.constraints.*;
-import jakarta.validation.Valid;
 
 @Value
 @Builder
 public class UpdateClinicCommand {
-    @NotNull(message = "Clinic ID is required")
-    @NotBlank(message = "Clinic ID is required")
-    String clinicId;
-    
-    @NotBlank(message = "Clinic name is required")
-    @Size(max = 100, message = "Clinic name must not exceed 100 characters")
-    String clinicName;
-    
-    @NotBlank(message = "Legal name is required")
-    @Size(max = 150, message = "Legal name must not exceed 150 characters")
-    String legalName;
-    
-    @NotBlank(message = "Legal number is required")
-    @Size(max = 50, message = "Legal number must not exceed 50 characters")
-    String legalNumber;
-    
-    @NotNull(message = "Address is required")
+
+    @NotNull(message = "El identificador único de la clinica es requerido.")
+    private String clinicId;
+
+    @NotBlank(message = "El nombre de la clinica es requerido.")
+    @Size(max = 100, message = "El nombre de la clinica no debe de tener mas de 100 caracteres.")
+    private String clinicName;
+
+    @NotBlank(message = "El nombre fiscal de la clinica es requerido.")
+    @Size(max = 150, message = "El nombre fiscal de la clinia no debe de tener mas de 150 caracteres.")
+    private String legalName;
+
+    @NotBlank(message = "El numero fiscal es requerido")
+    @Size(max = 50, message = "El numero fiscal no debe de tener mas de 50 caracteres")
+    private String legalNumber;
+
+    @NotNull(message = "El tipo de persona legal es requerido")
+    private LegalType legalType;
+
+    @NotNull(message = "La direccion es requerida")
     @Valid
-    Address address;
-    
-    @NotNull(message = "Phone is required")
+    private Address address;
+
+    @NotNull(message = "El telefono es requerido")
     @Valid
-    Phone phone;
-    
-    @NotNull(message = "Email is required")
+    private Phone phone;
+
+    @NotNull(message = "El email es requerido")
     @Valid
-    Email email;
-    
-    @Size(max = 255, message = "Logo URL must not exceed 255 characters")
-    String logoUrl;
-    
-    @Size(max = 50, message = "Subscription status must not exceed 50 characters")
-    String suscriptionStatus;
+    private Email email;
+
+    @Size(max = 255, message = "La url de la imagen es requerida")
+    private String logoUrl;
+
+    @NotNull(message = "El horario de la clinica es requerido")
+    private ClinicSchedule schedule;
+
 }

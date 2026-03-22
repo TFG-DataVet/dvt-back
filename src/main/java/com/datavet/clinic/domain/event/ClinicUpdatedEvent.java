@@ -27,4 +27,10 @@ public class ClinicUpdatedEvent implements DomainEvent {
     public LocalDateTime occurredOn() {
         return this.occurredOn;
     }
+
+    @Override
+    public String toString() {
+        return String.format("ClinicCreatedEvent{clinicId=%s, clinicName='%s', occurredOn=%s}",
+                clinicId, clinicName, occurredOn);
+    }
 }
