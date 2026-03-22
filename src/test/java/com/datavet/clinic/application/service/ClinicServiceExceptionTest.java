@@ -1,0 +1,697 @@
+package com.datavet.clinic.application.service;
+
+import com.datavet.clinic.application.port.in.command.CreateClinicCommand;
+import com.datavet.clinic.application.port.in.command.UpdateClinicCommand;
+import com.datavet.clinic.application.port.out.ClinicRepositoryPort;
+import com.datavet.clinic.application.validation.CreateClinicCommandValidator;
+import com.datavet.clinic.application.validation.UpdateClinicCommandValidator;
+import com.datavet.clinic.domain.exception.ClinicAlreadyExistsException;
+import com.datavet.clinic.domain.exception.ClinicNotFoundException;
+import com.datavet.clinic.domain.exception.ClinicValidationException;
+import com.datavet.clinic.domain.model.Clinic;
+import com.datavet.shared.application.service.ApplicationService;
+import com.datavet.shared.domain.event.DomainEventPublisher;
+import com.datavet.shared.domain.validation.ValidationResult;
+import com.datavet.shared.domain.valueobject.Address;
+import com.datavet.shared.domain.valueobject.Email;
+import com.datavet.shared.domain.valueobject.Phone;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+
+@ExtendWith(MockitoExtension.class)
+class ClinicServiceExceptionTest {
+
+    private ClinicService clinicService;
+
+    @Mock
+    private ClinicRepositoryPort clinicRepositoryPort;
+    
+    @Mock
+    private CreateClinicCommandValidator createValidator;
+    
+    @Mock
+    private UpdateClinicCommandValidator updateValidator;
+    
+    @Mock
+    private DomainEventPublisher domainEventPublisher;
+
+    @BeforeEach
+    void setUp() {
+        clinicService = new ClinicService(clinicRepositoryPort, createValidator, updateValidator, domainEventPublisher);
+    }
+
+    @Test
+    void clinicService_ShouldImplementApplicationServiceInterface() {
+        // Test ApplicationService integration
+        assertThat(clinicService).isInstanceOf(ApplicationService.class);
+    }
+
+    @Test
+    void createClinic_WhenValidationFails_ShouldThrowClinicValidationException() {
+        // Given
+        Address address = new Address("Test Address", "Test City", "12345");
+        Phone phone = new Phone("123456789");
+        Email email = new Email("test@example.com");
+        
+        CreateClinicCommand command = new CreateClinicCommand(
+                "", // Invalid empty clinic name
+                "Test Legal Name",
+                "123456789",
+                address,
+                phone,
+                email,
+                "http://example.com/logo.png"
+        );
+
+        // Mock validation to fail using shared validation framework
+        ValidationResult validationResult = new ValidationResult();
+        validationResult.addError("clinicName", "Clinic name is required");
+        when(createValidator.validate(command)).thenReturn(validationResult);
+
+        // When & Then
+        assertThatThrownBy(() -> clinicService.createClinic(command))
+                .isInstanceOf(ClinicValidationException.class);
+        
+        // Verify validation was called
+        verify(createValidator).validate(command);
+    }
+
+    @Test
+    void updateClinic_WhenValidationFails_ShouldThrowClinicValidationException() {
+        // Given
+        Address address = new Address("Updated Address", "Updated City", "12345");
+        Phone phone = new Phone("987654321");
+        Email email = new Email("updated@example.com");
+        
+        UpdateClinicCommand command = UpdateClinicCommand.builder()
+                .clinicId(null) // Invalid null clinic ID
+                .clinicName("Updated Clinic")
+                .legalName("Updated Legal Name")
+                .legalNumber("123456789")
+                .address(address)
+                .phone(phone)
+                .email(email)
+                .logoUrl("http://example.com/updated-logo.png")
+                .suscriptionStatus("ACTIVE")
+                .build();
+
+        // Mock validation to fail using shared validation framework
+        ValidationResult validationResult = new ValidationResult();
+        validationResult.addError("clinicId", "Clinic ID is required");
+        when(updateValidator.validate(command)).thenReturn(validationResult);
+
+        // When & Then
+        assertThatThrownBy(() -> clinicService.updateClinic(command))
+                .isInstanceOf(ClinicValidationException.class);
+        
+        // Verify validation was called
+        verify(updateValidator).validate(command);
+    }
+
+    @Test
+    void createClinic_WhenValidationPasses_ShouldProceedWithBusinessLogic() {
+        // Given
+        Address address = new Address("Test Address", "Test City", "12345");
+        Phone phone = new Phone("123456789");
+        Email email = new Email("test@example.com");
+        
+        CreateClinicCommand command = new CreateClinicCommand(
+                "Test Clinic",
+                "Test Legal Name",
+                "123456789",
+                address,
+                phone,
+                email,
+                "http://example.com/logo.png"
+        );
+
+        // Mock validation to pass using shared validation framework
+        ValidationResult validationResult = new ValidationResult(); // Empty result = valid
+        when(createValidator.validate(command)).thenReturn(validationResult);
+        when(clinicRepositoryPort.existsByEmail(email)).thenReturn(false);
+        when(clinicRepositoryPort.existsByLegalNumber("123456789")).thenReturn(false);
+        
+        Clinic savedClinic = Clinic.builder()
+                .clinicID("hola")
+                .clinicName("Test Clinic")
+                .legalName("Test Legal Name")
+                .legalNumber("123456789")
+                .address(address)
+                .phone(phone)
+                .email(email)
+                .logoUrl("http://example.com/logo.png")
+                .suscriptionStatus("ACTIVE")
+                .build();
+        when(clinicRepositoryPort.save(any(Clinic.class))).thenReturn(savedClinic);
+
+        // When
+        Clinic result = clinicService.createClinic(command);
+
+        // Then
+        assertThat(result).isNotNull();
+        verify(createValidator).validate(command);
+        verify(clinicRepositoryPort).existsByEmail(email);
+        verify(clinicRepositoryPort).existsByLegalNumber("123456789");
+        verify(clinicRepositoryPort).save(any(Clinic.class));
+    }
+
+    @Test
+    void repositoryPort_ShouldExtendSharedRepositoryInterface() {
+        // Test repository interface integration
+        // ClinicRepositoryPort should extend Repository<Clinic, Long>
+        assertThat(clinicRepositoryPort).isInstanceOf(com.datavet.shared.application.port.Repository.class);
+    }
+
+    @Test
+    void getAllClinics_ShouldUseSharedRepositoryInterface() {
+        // Given
+        List<Clinic> expectedClinics = Arrays.asList(
+                Clinic.builder()
+                        .clinicID("hola")
+                        .clinicName("Clinic 1")
+                        .legalName("Legal Name 1")
+                        .legalNumber("123456789")
+                        .address(new Address("Address 1", "City 1", "12345"))
+                        .phone(new Phone("123456789"))
+                        .email(new Email("clinic1@example.com"))
+                        .logoUrl("http://example.com/logo1.png")
+                        .suscriptionStatus("ACTIVE")
+                        .build(),
+                Clinic.builder()
+                        .clinicID("hola")
+                        .clinicName("Clinic 2")
+                        .legalName("Legal Name 2")
+                        .legalNumber("987654321")
+                        .address(new Address("Address 2", "City 2", "54321"))
+                        .phone(new Phone("987654321"))
+                        .email(new Email("clinic2@example.com"))
+                        .logoUrl("http://example.com/logo2.png")
+                        .suscriptionStatus("ACTIVE")
+                        .build()
+        );
+        
+        when(clinicRepositoryPort.findAll()).thenReturn(expectedClinics);
+
+        // When
+        List<Clinic> result = clinicService.getAllClinics();
+
+        // Then
+        assertThat(result).hasSize(2);
+        assertThat(result).containsExactlyElementsOf(expectedClinics);
+        verify(clinicRepositoryPort).findAll(); // Method from shared Repository interface
+    }
+
+    @Test
+    void deleteClinic_ShouldUseSharedRepositoryInterface() {
+        // Given
+        String clinicId = "hola";
+        Address address = new Address("Test Address", "Test City", "12345");
+        Phone phone = new Phone("123456789");
+        Email email = new Email("test@example.com");
+        
+        Clinic existingClinic = Clinic.builder()
+                .clinicID(clinicId)
+                .clinicName("Test Clinic")
+                .legalName("Test Legal Name")
+                .legalNumber("123456789")
+                .address(address)
+                .phone(phone)
+                .email(email)
+                .logoUrl("http://example.com/logo.png")
+                .suscriptionStatus("ACTIVE")
+                .build();
+        
+        when(clinicRepositoryPort.findById(clinicId)).thenReturn(Optional.of(existingClinic));
+
+        // When
+        clinicService.deleteClinic(clinicId);
+
+        // Then
+        verify(clinicRepositoryPort).findById(clinicId); // Method from shared Repository interface
+        verify(clinicRepositoryPort).deleteById(clinicId); // Method from shared Repository interface
+    }
+
+    @Test
+    void createClinic_WhenEmailAlreadyExists_ShouldThrowClinicAlreadyExistsException() {
+        // Given
+        Address address = new Address("Test Address", "Test City", "12345");
+        Phone phone = new Phone("123456789");
+        Email email = new Email("test@example.com");
+        
+        CreateClinicCommand command = new CreateClinicCommand(
+                "Test Clinic",
+                "Test Legal Name",
+                "123456789",
+                address,
+                phone,
+                email,
+                "http://example.com/logo.png"
+        );
+
+        // Mock validation to pass
+        when(createValidator.validate(command)).thenReturn(new ValidationResult());
+        when(clinicRepositoryPort.existsByEmail(email)).thenReturn(true);
+
+        // When & Then
+        assertThatThrownBy(() -> clinicService.createClinic(command))
+                .isInstanceOf(ClinicAlreadyExistsException.class)
+                .hasMessage("Clinic already exists with email: test@example.com");
+    }
+
+    @Test
+    void createClinic_WhenLegalNumberAlreadyExists_ShouldThrowClinicAlreadyExistsException() {
+        // Given
+        Address address = new Address("Test Address", "Test City", "12345");
+        Phone phone = new Phone("123456789");
+        Email email = new Email("test@example.com");
+        
+        CreateClinicCommand command = new CreateClinicCommand(
+                "Test Clinic",
+                "Test Legal Name",
+                "123456789",
+                address,
+                phone,
+                email,
+                "http://example.com/logo.png"
+        );
+
+        // Mock validation to pass
+        when(createValidator.validate(command)).thenReturn(new ValidationResult());
+        when(clinicRepositoryPort.existsByEmail(email)).thenReturn(false);
+        when(clinicRepositoryPort.existsByLegalNumber("123456789")).thenReturn(true);
+
+        // When & Then
+        assertThatThrownBy(() -> clinicService.createClinic(command))
+                .isInstanceOf(ClinicAlreadyExistsException.class)
+                .hasMessage("Clinic already exists with legalNumber: 123456789");
+    }
+
+    @Test
+    void updateClinic_WhenClinicNotFound_ShouldThrowClinicNotFoundException() {
+        // Given
+        Address address = new Address("Updated Address", "Updated City", "12345");
+        Phone phone = new Phone("987654321");
+        Email email = new Email("updated@example.com");
+        
+        UpdateClinicCommand command = UpdateClinicCommand.builder()
+                .clinicId("hola")
+                .clinicName("Updated Clinic")
+                .legalName("Updated Legal Name")
+                .legalNumber("123456789")
+                .address(address)
+                .phone(phone)
+                .email(email)
+                .logoUrl("http://example.com/updated-logo.png")
+                .suscriptionStatus("ACTIVE")
+                .build();
+
+        // Mock validation to pass
+        when(updateValidator.validate(command)).thenReturn(new ValidationResult());
+        when(clinicRepositoryPort.findById("hola")).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> clinicService.updateClinic(command))
+                .isInstanceOf(ClinicNotFoundException.class)
+                .hasMessage("Clinic not found with id: hola");
+    }
+
+    @Test
+    void updateClinic_WhenEmailAlreadyExistsForDifferentClinic_ShouldThrowClinicAlreadyExistsException() {
+        // Given
+        Address updatedAddress = new Address("Updated Address", "Updated City", "54321");
+        Phone updatedPhone = new Phone("987654321");
+        Email updatedEmail = new Email("existing@example.com");
+        
+        UpdateClinicCommand command = UpdateClinicCommand.builder()
+                .clinicId("hola")
+                .clinicName("Updated Clinic")
+                .legalName("Updated Legal Name")
+                .legalNumber("123456789")
+                .address(updatedAddress)
+                .phone(updatedPhone)
+                .email(updatedEmail)
+                .logoUrl("http://example.com/updated-logo.png")
+                .suscriptionStatus("ACTIVE")
+                .build();
+
+        Address originalAddress = new Address("Original Address", "Original City", "12345");
+        Phone originalPhone = new Phone("123456789");
+        Email originalEmail = new Email("original@example.com");
+        
+        Clinic existingClinic = Clinic.builder()
+                .clinicID("hola")
+                .clinicName("Original Clinic")
+                .legalName("Original Legal Name")
+                .legalNumber("123456789")
+                .address(originalAddress)
+                .phone(originalPhone)
+                .email(originalEmail)
+                .logoUrl("http://example.com/logo.png")
+                .suscriptionStatus("ACTIVE")
+                .build();
+
+        // Mock validation to pass
+        when(updateValidator.validate(command)).thenReturn(new ValidationResult());
+        when(clinicRepositoryPort.findById("hola")).thenReturn(Optional.of(existingClinic));
+        when(clinicRepositoryPort.existsByEmailAndIdNot(updatedEmail, "hola")).thenReturn(true);
+
+        // When & Then
+        assertThatThrownBy(() -> clinicService.updateClinic(command))
+                .isInstanceOf(ClinicAlreadyExistsException.class)
+                .hasMessage("Clinic already exists with email: existing@example.com");
+    }
+
+    @Test
+    void getClinicById_WhenClinicNotFound_ShouldThrowClinicNotFoundException() {
+        // Given
+        String clinicId = "hola2";
+        when(clinicRepositoryPort.findById(clinicId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> clinicService.getClinicById(clinicId))
+                .isInstanceOf(ClinicNotFoundException.class)
+                .hasMessage("Clinic not found with id: hola2");
+    }
+
+    @Test
+    void deleteClinic_WhenClinicNotFound_ShouldThrowClinicNotFoundException() {
+        // Given
+        String clinicId = "hola3";
+        when(clinicRepositoryPort.findById(clinicId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> clinicService.deleteClinic(clinicId))
+                .isInstanceOf(ClinicNotFoundException.class)
+                .hasMessage("Clinic not found with id: hola3");
+        
+        // Verify findById was called but deleteById was not
+        verify(clinicRepositoryPort).findById(clinicId);
+        verify(clinicRepositoryPort, never()).deleteById(clinicId);
+    }
+
+    @Test
+    void createClinic_WhenNoConflicts_ShouldCreateSuccessfully() {
+        // Given
+        Address address = new Address("Test Address", "Test City", "12345");
+        Phone phone = new Phone("123456789");
+        Email email = new Email("test@example.com");
+        
+        CreateClinicCommand command = new CreateClinicCommand(
+                "Test Clinic",
+                "Test Legal Name",
+                "123456789",
+                address,
+                phone,
+                email,
+                "http://example.com/logo.png"
+        );
+
+        Clinic savedClinic = Clinic.builder()
+                .clinicID("ClinicId")
+                .clinicName("Test Clinic")
+                .legalName("Test Legal Name")
+                .legalNumber("123456789")
+                .address(address)
+                .phone(phone)
+                .email(email)
+                .logoUrl("http://example.com/logo.png")
+                .suscriptionStatus("ACTIVE")
+                .build();
+
+        // Mock validation to pass using shared validation framework
+        ValidationResult validationResult = new ValidationResult(); // Empty result = valid
+        when(createValidator.validate(command)).thenReturn(validationResult);
+        when(clinicRepositoryPort.existsByEmail(email)).thenReturn(false);
+        when(clinicRepositoryPort.existsByLegalNumber("123456789")).thenReturn(false);
+        when(clinicRepositoryPort.save(any(Clinic.class))).thenReturn(savedClinic);
+
+        // When
+        Clinic result = clinicService.createClinic(command);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getClinicID()).isEqualTo("ClinicId");
+        assertThat(result.getClinicName()).isEqualTo("Test Clinic");
+        assertThat(result.getEmail().getValue()).isEqualTo("test@example.com");
+        assertThat(result.getSuscriptionStatus()).isEqualTo("ACTIVE");
+        
+        // Verify shared validation framework was used
+        verify(createValidator).validate(command);
+        // Verify shared repository interface methods were used
+        verify(clinicRepositoryPort).save(any(Clinic.class));
+    }
+
+    // Additional comprehensive exception handling tests for edge cases
+
+    @Test
+    void createClinic_WhenValidationHasMultipleErrors_ShouldThrowClinicValidationExceptionWithAllErrors() {
+        // Given
+        Address address = new Address("Test Address", "Test City", "12345");
+        Phone phone = new Phone("123456789");
+        Email email = new Email("test@example.com");
+        
+        CreateClinicCommand command = new CreateClinicCommand(
+                "", // Invalid empty clinic name
+                "", // Invalid empty legal name
+                "", // Invalid empty legal number
+                address,
+                phone,
+                email,
+                "http://example.com/logo.png"
+        );
+
+        // Mock validation to fail with multiple errors
+        ValidationResult validationResult = new ValidationResult();
+        validationResult.addError("clinicName", "Clinic name is required");
+        validationResult.addError("legalName", "Legal name is required");
+        validationResult.addError("legalNumber", "Legal number is required");
+        when(createValidator.validate(command)).thenReturn(validationResult);
+
+        // When & Then
+        assertThatThrownBy(() -> clinicService.createClinic(command))
+                .isInstanceOf(ClinicValidationException.class)
+                .satisfies(exception -> {
+                    ClinicValidationException validationException = (ClinicValidationException) exception;
+                    assertThat(validationException.getValidationResult().hasErrors()).isTrue();
+                    assertThat(validationException.getValidationResult().getErrors()).hasSize(3);
+                });
+        
+        // Verify validation was called but no repository operations were performed
+        verify(createValidator).validate(command);
+        verify(clinicRepositoryPort, never()).existsByEmail(any());
+        verify(clinicRepositoryPort, never()).existsByLegalNumber(any());
+        verify(clinicRepositoryPort, never()).save(any());
+    }
+
+    @Test
+    void updateClinic_WhenValidationHasMultipleErrors_ShouldThrowClinicValidationExceptionWithAllErrors() {
+        // Given
+        Address address = new Address("Updated Address", "Updated City", "12345");
+        Phone phone = new Phone("987654321");
+        Email email = new Email("updated@example.com");
+        
+        UpdateClinicCommand command = UpdateClinicCommand.builder()
+                .clinicId(null) // Invalid null clinic ID
+                .clinicName("") // Invalid empty clinic name
+                .legalName("") // Invalid empty legal name
+                .legalNumber("") // Invalid empty legal number
+                .address(address)
+                .phone(phone)
+                .email(email)
+                .logoUrl("http://example.com/updated-logo.png")
+                .suscriptionStatus("ACTIVE")
+                .build();
+
+        // Mock validation to fail with multiple errors
+        ValidationResult validationResult = new ValidationResult();
+        validationResult.addError("clinicId", "Clinic ID is required");
+        validationResult.addError("clinicName", "Clinic name is required");
+        validationResult.addError("legalName", "Legal name is required");
+        validationResult.addError("legalNumber", "Legal number is required");
+        when(updateValidator.validate(command)).thenReturn(validationResult);
+
+        // When & Then
+        assertThatThrownBy(() -> clinicService.updateClinic(command))
+                .isInstanceOf(ClinicValidationException.class)
+                .satisfies(exception -> {
+                    ClinicValidationException validationException = (ClinicValidationException) exception;
+                    assertThat(validationException.getValidationResult().hasErrors()).isTrue();
+                    assertThat(validationException.getValidationResult().getErrors()).hasSize(4);
+                });
+        
+        // Verify validation was called but no repository operations were performed
+        verify(updateValidator).validate(command);
+        verify(clinicRepositoryPort, never()).findById(any());
+        verify(clinicRepositoryPort, never()).existsByEmailAndIdNot(any(), any());
+        verify(clinicRepositoryPort, never()).save(any());
+    }
+
+    @Test
+    void updateClinic_WhenSuccessful_ShouldUpdateAndSaveClinic() {
+        // Given
+        Address updatedAddress = new Address("Updated Address", "Updated City", "54321");
+        Phone updatedPhone = new Phone("987654321");
+        Email updatedEmail = new Email("updated@example.com");
+        
+        UpdateClinicCommand command = UpdateClinicCommand.builder()
+                .clinicId("ClinicId")
+                .clinicName("Updated Clinic")
+                .legalName("Updated Legal Name")
+                .legalNumber("987654321")
+                .address(updatedAddress)
+                .phone(updatedPhone)
+                .email(updatedEmail)
+                .logoUrl("http://example.com/updated-logo.png")
+                .suscriptionStatus("ACTIVE")
+                .build();
+
+        Address originalAddress = new Address("Original Address", "Original City", "12345");
+        Phone originalPhone = new Phone("123456789");
+        Email originalEmail = new Email("original@example.com");
+        
+        Clinic existingClinic = Clinic.builder()
+                .clinicID("ClinicId")
+                .clinicName("Original Clinic")
+                .legalName("Original Legal Name")
+                .legalNumber("123456789")
+                .address(originalAddress)
+                .phone(originalPhone)
+                .email(originalEmail)
+                .logoUrl("http://example.com/logo.png")
+                .suscriptionStatus("ACTIVE")
+                .build();
+
+        Clinic updatedClinic = Clinic.builder()
+                .clinicID("ClinicId")
+                .clinicName("Updated Clinic")
+                .legalName("Updated Legal Name")
+                .legalNumber("987654321")
+                .address(updatedAddress)
+                .phone(updatedPhone)
+                .email(updatedEmail)
+                .logoUrl("http://example.com/updated-logo.png")
+                .suscriptionStatus("ACTIVE")
+                .build();
+
+        // Mock validation to pass
+        when(updateValidator.validate(command)).thenReturn(new ValidationResult());
+        when(clinicRepositoryPort.findById("ClinicId")).thenReturn(Optional.of(existingClinic));
+        when(clinicRepositoryPort.existsByEmailAndIdNot(updatedEmail, "ClinicId")).thenReturn(false);
+        when(clinicRepositoryPort.save(any(Clinic.class))).thenReturn(updatedClinic);
+
+        // When
+        Clinic result = clinicService.updateClinic(command);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getClinicID()).isEqualTo("ClinicId");
+        assertThat(result.getClinicName()).isEqualTo("Updated Clinic");
+        assertThat(result.getEmail().getValue()).isEqualTo("updated@example.com");
+        
+        // Verify all operations were performed
+        verify(updateValidator).validate(command);
+        verify(clinicRepositoryPort).findById("ClinicId");
+        verify(clinicRepositoryPort).existsByEmailAndIdNot(updatedEmail, "ClinicId");
+        verify(clinicRepositoryPort).save(any(Clinic.class));
+    }
+
+    @Test
+    void createClinic_WhenRepositoryThrowsUnexpectedException_ShouldPropagateException() {
+        // Given
+        Address address = new Address("Test Address", "Test City", "12345");
+        Phone phone = new Phone("123456789");
+        Email email = new Email("test@example.com");
+        
+        CreateClinicCommand command = new CreateClinicCommand(
+                "Test Clinic",
+                "Test Legal Name",
+                "123456789",
+                address,
+                phone,
+                email,
+                "http://example.com/logo.png"
+        );
+
+        // Mock validation to pass
+        when(createValidator.validate(command)).thenReturn(new ValidationResult());
+        when(clinicRepositoryPort.existsByEmail(email)).thenReturn(false);
+        when(clinicRepositoryPort.existsByLegalNumber("123456789")).thenReturn(false);
+        
+        // Mock repository to throw unexpected exception
+        RuntimeException repositoryException = new RuntimeException("Database connection failed");
+        when(clinicRepositoryPort.save(any(Clinic.class))).thenThrow(repositoryException);
+
+        // When & Then
+        assertThatThrownBy(() -> clinicService.createClinic(command))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Database connection failed");
+        
+        // Verify all validations were performed before the exception
+        verify(createValidator).validate(command);
+        verify(clinicRepositoryPort).existsByEmail(email);
+        verify(clinicRepositoryPort).existsByLegalNumber("123456789");
+        verify(clinicRepositoryPort).save(any(Clinic.class));
+    }
+
+    @Test
+    void getAllClinics_WhenRepositoryThrowsException_ShouldPropagateException() {
+        // Given
+        RuntimeException repositoryException = new RuntimeException("Database query failed");
+        when(clinicRepositoryPort.findAll()).thenThrow(repositoryException);
+
+        // When & Then
+        assertThatThrownBy(() -> clinicService.getAllClinics())
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Database query failed");
+        
+        verify(clinicRepositoryPort).findAll();
+    }
+
+    @Test
+    void createClinic_WhenEmailExistsCheckThrowsException_ShouldPropagateException() {
+        // Given
+        Address address = new Address("Test Address", "Test City", "12345");
+        Phone phone = new Phone("123456789");
+        Email email = new Email("test@example.com");
+        
+        CreateClinicCommand command = new CreateClinicCommand(
+                "Test Clinic",
+                "Test Legal Name",
+                "123456789",
+                address,
+                phone,
+                email,
+                "http://example.com/logo.png"
+        );
+
+        // Mock validation to pass
+        when(createValidator.validate(command)).thenReturn(new ValidationResult());
+        
+        // Mock email existence check to throw exception
+        RuntimeException repositoryException = new RuntimeException("Email check query failed");
+        when(clinicRepositoryPort.existsByEmail(email)).thenThrow(repositoryException);
+
+        // When & Then
+        assertThatThrownBy(() -> clinicService.createClinic(command))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Email check query failed");
+        
+        // Verify validation was performed but save was not called
+        verify(createValidator).validate(command);
+        verify(clinicRepositoryPort).existsByEmail(email);
+        verify(clinicRepositoryPort, never()).existsByLegalNumber(any());
+        verify(clinicRepositoryPort, never()).save(any());
+    }
+}

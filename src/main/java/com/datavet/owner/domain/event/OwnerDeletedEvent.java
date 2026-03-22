@@ -1,0 +1,25 @@
+package com.datavet.owner.domain.event;
+
+import com.datavet.shared.domain.event.DomainEvent;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Getter
+@RequiredArgsConstructor
+public class OwnerDeletedEvent implements DomainEvent {
+
+    private final String ownerID;
+    private final String name;
+    private final LocalDateTime occurredOn;
+
+    public static OwnerDeletedEvent of(String ownerID, String name) {
+        return new OwnerDeletedEvent(ownerID, name, LocalDateTime.now());
+    }
+
+    @Override
+    public LocalDateTime occurredOn() {
+        return occurredOn;
+    }
+}
