@@ -1,343 +1,140 @@
 package com.datavet.clinic.domain.model;
 
 import com.datavet.clinic.domain.event.ClinicCreatedEvent;
-import com.datavet.clinic.domain.event.ClinicDeletedEvent;
+import com.datavet.clinic.domain.event.ClinicDeactivatedEvent;
+import com.datavet.clinic.domain.event.ClinicPendingCreatedEvent;
 import com.datavet.clinic.domain.event.ClinicUpdatedEvent;
-import com.datavet.shared.domain.event.DomainEvent;
-import com.datavet.shared.domain.model.Document;
-import com.datavet.shared.domain.valueobject.Address;
-import com.datavet.shared.domain.valueobject.Email;
-import com.datavet.shared.domain.valueobject.Phone;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Clinic Domain Events Tests")
 class ClinicDomainEventsTest {
 
+    // =========================================================================
+    // ClinicCreatedEvent
+    // =========================================================================
+
     @Test
-    @DisplayName("Should raise ClinicCreatedEvent when clinic is created")
-    void shouldRaiseClinicCreatedEventWhenClinicIsCreated() {
-        // Given
-        String clinicId = "DataVet";
-        String clinicName = "Test Clinic";
-        String legalName = "Test Legal Name";
-        String legalNumber = "123456789";
-        Address address = new Address("123 Test Street", "Test City", "12345");
-        Phone phone = new Phone("+1234567890");
-        Email email = new Email("test@example.com");
-        String logoUrl = "http://example.com/logo.png";
-        String subscriptionStatus = "ACTIVE";
+    @DisplayName("ClinicCreatedEvent.of() should set all fields correctly")
+    void clinicCreatedEvent_ShouldSetAllFields() {
+        ClinicCreatedEvent event = ClinicCreatedEvent.of("clinic-1", "Clínica Test", "Clínica Test S.L.");
 
-        // When
-        Clinic clinic = Clinic.create(clinicId, clinicName, legalName, legalNumber,
-                address, phone, email, logoUrl, subscriptionStatus);
-
-        // Then
-        List<DomainEvent> domainEvents = clinic.getDomainEvents();
-        assertFalse(domainEvents.isEmpty(), "Should have domain events");
-        assertEquals(1, domainEvents.size(), "Should have exactly one domain event");
-        
-        DomainEvent event = domainEvents.get(0);
-        assertInstanceOf(ClinicCreatedEvent.class, event, "Should be ClinicCreatedEvent");
-        
-        ClinicCreatedEvent createdEvent = (ClinicCreatedEvent) event;
-        assertEquals(clinicId, createdEvent.getClinicId(), "Event should have correct clinic ID");
-        assertEquals(clinicName, createdEvent.getClinicName(), "Event should have correct clinic name");
-        assertEquals(legalName, createdEvent.getLegalName(), "Event should have correct legal name");
-        assertNotNull(createdEvent.getOccurredOn(), "Event should have occurred timestamp");
+        assertThat(event.getClinicId()).isEqualTo("clinic-1");
+        assertThat(event.getClinicName()).isEqualTo("Clínica Test");
+        assertThat(event.getLegalName()).isEqualTo("Clínica Test S.L.");
+        assertThat(event.getOccurredOn()).isNotNull();
+        assertThat(event.occurredOn()).isNotNull();
     }
 
     @Test
-    @DisplayName("Should raise ClinicUpdatedEvent when clinic is updated")
-    void shouldRaiseClinicUpdatedEventWhenClinicIsUpdated() {
-        // Given
-        Address originalAddress = new Address("123 Test Street", "Test City", "12345");
-        Phone originalPhone = new Phone("+1234567890");
-        Email originalEmail = new Email("test@example.com");
-        
-        Clinic clinic = Clinic.create("ClinicId", "Original Clinic", "Original Legal Name", "123456789",
-                originalAddress, originalPhone, originalEmail, "http://example.com/logo.png", "ACTIVE");
-        
-        // Clear the creation event
-        clinic.clearDomainEvents();
-        
-        // When
-        Address updatedAddress = new Address("456 Updated Street", "Updated City", "54321");
-        Phone updatedPhone = new Phone("+0987654321");
-        Email updatedEmail = new Email("updated@example.com");
-        
-        clinic.update("Updated Clinic", "Updated Legal Name", "987654321",
-                updatedAddress, updatedPhone, updatedEmail, "http://example.com/updated-logo.png", "PREMIUM");
+    @DisplayName("ClinicCreatedEvent.occurredOn() should match getOccurredOn()")
+    void clinicCreatedEvent_OccurredOnShouldBeConsistent() {
+        ClinicCreatedEvent event = ClinicCreatedEvent.of("clinic-1", "Clínica Test", "Clínica Test S.L.");
 
-        // Then
-        List<DomainEvent> domainEvents = clinic.getDomainEvents();
-        assertFalse(domainEvents.isEmpty(), "Should have domain events");
-        assertEquals(1, domainEvents.size(), "Should have exactly one domain event");
-        
-        DomainEvent event = domainEvents.get(0);
-        assertInstanceOf(ClinicUpdatedEvent.class, event, "Should be ClinicUpdatedEvent");
-        
-        ClinicUpdatedEvent updatedEvent = (ClinicUpdatedEvent) event;
-        assertEquals("ClinicId", updatedEvent.getClinicId(), "Event should have correct clinic ID");
-        assertEquals("Updated Clinic", updatedEvent.getClinicName(), "Event should have correct updated clinic name");
-        assertNotNull(updatedEvent.getOccurredOn(), "Event should have occurred timestamp");
+        assertThat(event.occurredOn()).isEqualTo(event.getOccurredOn());
     }
 
     @Test
-    @DisplayName("Should raise ClinicDeletedEvent when clinic is deleted")
-    void shouldRaiseClinicDeletedEventWhenClinicIsDeleted() {
-        // Given
-        Address address = new Address("123 Test Street", "Test City", "12345");
-        Phone phone = new Phone("+1234567890");
-        Email email = new Email("test@example.com");
-        
-        Clinic clinic = Clinic.create("ClinicId", "Test Clinic", "Test Legal Name", "123456789",
-                address, phone, email, "http://example.com/logo.png", "ACTIVE");
-        
-        // Clear the creation event
-        clinic.clearDomainEvents();
-        
-        // When
-        clinic.delete();
+    @DisplayName("ClinicCreatedEvent should implement DomainEvent")
+    void clinicCreatedEvent_ShouldImplementDomainEvent() {
+        ClinicCreatedEvent event = ClinicCreatedEvent.of("clinic-1", "Clínica Test", "Clínica Test S.L.");
 
-        // Then
-        List<DomainEvent> domainEvents = clinic.getDomainEvents();
-        assertFalse(domainEvents.isEmpty(), "Should have domain events");
-        assertEquals(1, domainEvents.size(), "Should have exactly one domain event");
-        
-        DomainEvent event = domainEvents.get(0);
-        assertInstanceOf(ClinicDeletedEvent.class, event, "Should be ClinicDeletedEvent");
-        
-        ClinicDeletedEvent deletedEvent = (ClinicDeletedEvent) event;
-        assertEquals("ClinicId", deletedEvent.getClinicId(), "Event should have correct clinic ID");
-        assertEquals("Test Clinic", deletedEvent.getClinicName(), "Event should have correct clinic name");
-        assertNotNull(deletedEvent.getOccurredOn(), "Event should have occurred timestamp");
+        assertThat(event).isInstanceOf(com.datavet.shared.domain.event.DomainEvent.class);
+    }
+
+    // =========================================================================
+    // ClinicPendingCreatedEvent
+    // =========================================================================
+
+    @Test
+    @DisplayName("ClinicPendingCreatedEvent.of() should set all fields correctly")
+    void clinicPendingCreatedEvent_ShouldSetAllFields() {
+        ClinicPendingCreatedEvent event = ClinicPendingCreatedEvent.of("clinic-1", "Clínica Test");
+
+        assertThat(event.getClinicId()).isEqualTo("clinic-1");
+        assertThat(event.getClinicName()).isEqualTo("Clínica Test");
+        assertThat(event.getOccurredOn()).isNotNull();
+        assertThat(event.occurredOn()).isNotNull();
     }
 
     @Test
-    @DisplayName("Should implement Document interface correctly")
-    void shouldImplementEntityInterfaceCorrectly() {
-        // Given
-        Address address = new Address("123 Test Street", "Test City", "12345");
-        Phone phone = new Phone("+1234567890");
-        Email email = new Email("test@example.com");
-        
-        Clinic clinic = Clinic.create("ClinicId", "Test Clinic", "Test Legal Name", "123456789",
-                address, phone, email, "http://example.com/logo.png", "ACTIVE");
+    @DisplayName("ClinicPendingCreatedEvent.occurredOn() should match getOccurredOn()")
+    void clinicPendingCreatedEvent_OccurredOnShouldBeConsistent() {
+        ClinicPendingCreatedEvent event = ClinicPendingCreatedEvent.of("clinic-1", "Clínica Test");
 
-        // When & Then
-        assertEquals("ClinicId", clinic.getId(), "getId() should return the clinic ID");
-        assertEquals("ClinicId", clinic.getClinicID(), "getClinicID() should return the same value as getId()");
-        
-        // Test that clinic is an instance of Document
-        assertTrue(clinic instanceof Document,
-                "Clinic should implement Document interface");
-        
-        // Test entity identity consistency
-        Clinic sameClinic = Clinic.create("ClinicId", "Different Name", "Different Legal Name", "987654321",
-                address, phone, email, "http://example.com/different-logo.png", "PREMIUM");
-        assertEquals(clinic.getId(), sameClinic.getId(), "Clinics with same ID should have same identity");
-        
-        // Test different entity identity
-        Clinic differentClinic = Clinic.create("ClinicId2", "Test Clinic", "Test Legal Name", "123456789",
-                address, phone, email, "http://example.com/logo.png", "ACTIVE");
-        assertNotEquals(clinic.getId(), differentClinic.getId(), "Clinics with different IDs should have different identity");
+        assertThat(event.occurredOn()).isEqualTo(event.getOccurredOn());
     }
 
     @Test
-    @DisplayName("Should use value objects correctly")
-    void shouldUseValueObjectsCorrectly() {
-        // Given
-        Address address = new Address("123 Test Street", "Test City", "12345");
-        Phone phone = new Phone("+1234567890");
-        Email email = new Email("test@example.com");
-        
-        // When
-        Clinic clinic = Clinic.create("ClinicId", "Test Clinic", "Test Legal Name", "123456789",
-                address, phone, email, "http://example.com/logo.png", "ACTIVE");
+    @DisplayName("ClinicPendingCreatedEvent should implement DomainEvent")
+    void clinicPendingCreatedEvent_ShouldImplementDomainEvent() {
+        ClinicPendingCreatedEvent event = ClinicPendingCreatedEvent.of("clinic-1", "Clínica Test");
 
-        // Then
-        assertNotNull(clinic.getAddress(), "Address should not be null");
-        assertEquals("123 Test Street", clinic.getAddress().getStreet(), "Address street should be correct");
-        assertEquals("Test City", clinic.getAddress().getCity(), "Address city should be correct");
-        assertEquals("12345", clinic.getAddress().getPostalCode(), "Address postal code should be correct");
-        
-        assertNotNull(clinic.getPhone(), "Phone should not be null");
-        assertEquals("+1234567890", clinic.getPhone().getValue(), "Phone value should be correct");
-        
-        assertNotNull(clinic.getEmail(), "Email should not be null");
-        assertEquals("test@example.com", clinic.getEmail().getValue(), "Email value should be correct");
+        assertThat(event).isInstanceOf(com.datavet.shared.domain.event.DomainEvent.class);
+    }
+
+    // =========================================================================
+    // ClinicUpdatedEvent
+    // =========================================================================
+
+    @Test
+    @DisplayName("ClinicUpdatedEvent.of() should set all fields correctly")
+    void clinicUpdatedEvent_ShouldSetAllFields() {
+        ClinicUpdatedEvent event = ClinicUpdatedEvent.of("clinic-1", "Clínica Actualizada");
+
+        assertThat(event.getClinicId()).isEqualTo("clinic-1");
+        assertThat(event.getClinicName()).isEqualTo("Clínica Actualizada");
+        assertThat(event.getOccurredOn()).isNotNull();
+        assertThat(event.occurredOn()).isNotNull();
     }
 
     @Test
-    @DisplayName("Should handle value object updates correctly")
-    void shouldHandleValueObjectUpdatesCorrectly() {
-        // Given
-        Address originalAddress = new Address("123 Test Street", "Test City", "12345");
-        Phone originalPhone = new Phone("+1234567890");
-        Email originalEmail = new Email("test@example.com");
-        
-        Clinic clinic = Clinic.create("ClinicId", "Test Clinic", "Test Legal Name", "123456789",
-                originalAddress, originalPhone, originalEmail, "http://example.com/logo.png", "ACTIVE");
-        
-        // When
-        Address updatedAddress = new Address("456 Updated Street", "Updated City", "54321");
-        Phone updatedPhone = new Phone("+0987654321");
-        Email updatedEmail = new Email("updated@example.com");
-        
-        clinic.update("Updated Clinic", "Updated Legal Name", "987654321",
-                updatedAddress, updatedPhone, updatedEmail, "http://example.com/updated-logo.png", "PREMIUM");
+    @DisplayName("ClinicUpdatedEvent.occurredOn() should match getOccurredOn()")
+    void clinicUpdatedEvent_OccurredOnShouldBeConsistent() {
+        ClinicUpdatedEvent event = ClinicUpdatedEvent.of("clinic-1", "Clínica Actualizada");
 
-        // Then
-        assertEquals("456 Updated Street", clinic.getAddress().getStreet(), "Address should be updated");
-        assertEquals("Updated City", clinic.getAddress().getCity(), "City should be updated");
-        assertEquals("54321", clinic.getAddress().getPostalCode(), "Postal code should be updated");
-        
-        assertEquals("+0987654321", clinic.getPhone().getValue(), "Phone should be updated");
-        assertEquals("updated@example.com", clinic.getEmail().getValue(), "Email should be updated");
-        
-        assertEquals("Updated Clinic", clinic.getClinicName(), "Clinic name should be updated");
-        assertEquals("Updated Legal Name", clinic.getLegalName(), "Legal name should be updated");
-        assertEquals("987654321", clinic.getLegalNumber(), "Legal number should be updated");
-        assertEquals("PREMIUM", clinic.getSuscriptionStatus(), "Subscription status should be updated");
+        assertThat(event.occurredOn()).isEqualTo(event.getOccurredOn());
     }
 
     @Test
-    @DisplayName("Should extend AggregateRoot correctly")
-    void shouldExtendAggregateRootCorrectly() {
-        // Given
-        Address address = new Address("123 Test Street", "Test City", "12345");
-        Phone phone = new Phone("+1234567890");
-        Email email = new Email("test@example.com");
-        
-        // When
-        Clinic clinic = Clinic.create("ClinicId", "Test Clinic", "Test Legal Name", "123456789",
-                address, phone, email, "http://example.com/logo.png", "ACTIVE");
+    @DisplayName("ClinicUpdatedEvent should implement DomainEvent")
+    void clinicUpdatedEvent_ShouldImplementDomainEvent() {
+        ClinicUpdatedEvent event = ClinicUpdatedEvent.of("clinic-1", "Clínica Actualizada");
 
-        // Then
-        assertTrue(clinic instanceof com.datavet.shared.domain.model.AggregateRoot,
-                "Clinic should extend AggregateRoot");
-        
-        // Test domain events functionality
-        assertNotNull(clinic.getDomainEvents(), "Should have domain events collection");
-        assertFalse(clinic.getDomainEvents().isEmpty(), "Should have at least one domain event after creation");
-        
-        // Test that domain events are immutable
-        List<DomainEvent> events = clinic.getDomainEvents();
-        assertThrows(UnsupportedOperationException.class, () -> events.add(null), 
-                "Domain events collection should be immutable");
-        
-        // Test clear domain events
-        int initialEventCount = clinic.getDomainEvents().size();
-        clinic.clearDomainEvents();
-        assertTrue(clinic.getDomainEvents().isEmpty(), "Domain events should be cleared");
-        
-        // Test that new events can be added after clearing
-        clinic.update("Updated Name", "Updated Legal Name", "987654321",
-                address, phone, email, "http://example.com/updated-logo.png", "PREMIUM");
-        assertFalse(clinic.getDomainEvents().isEmpty(), "Should have new domain events after update");
+        assertThat(event).isInstanceOf(com.datavet.shared.domain.event.DomainEvent.class);
+    }
+
+    // =========================================================================
+    // ClinicDeactivatedEvent
+    // =========================================================================
+
+    @Test
+    @DisplayName("ClinicDeactivatedEvent.of() should set all fields correctly")
+    void clinicDeactivatedEvent_ShouldSetAllFields() {
+        ClinicDeactivatedEvent event = ClinicDeactivatedEvent.of("clinic-1", "Clínica Test", "Cierre temporal");
+
+        assertThat(event.getClinicId()).isEqualTo("clinic-1");
+        assertThat(event.getClinicName()).isEqualTo("Clínica Test");
+        assertThat(event.getReason()).isEqualTo("Cierre temporal");
+        assertThat(event.getOccurredOn()).isNotNull();
+        assertThat(event.occurredOn()).isNotNull();
     }
 
     @Test
-    @DisplayName("Should handle multiple domain events correctly")
-    void shouldHandleMultipleDomainEventsCorrectly() {
-        // Given
-        Address address = new Address("123 Test Street", "Test City", "12345");
-        Phone phone = new Phone("+1234567890");
-        Email email = new Email("test@example.com");
-        
-        Clinic clinic = Clinic.create("ClinicId", "Test Clinic", "Test Legal Name", "123456789",
-                address, phone, email, "http://example.com/logo.png", "ACTIVE");
-        
-        // When - perform multiple operations without clearing events
-        clinic.update("Updated Clinic", "Updated Legal Name", "987654321",
-                address, phone, email, "http://example.com/updated-logo.png", "PREMIUM");
-        clinic.delete();
+    @DisplayName("ClinicDeactivatedEvent.occurredOn() should match getOccurredOn()")
+    void clinicDeactivatedEvent_OccurredOnShouldBeConsistent() {
+        ClinicDeactivatedEvent event = ClinicDeactivatedEvent.of("clinic-1", "Clínica Test", "Cierre temporal");
 
-        // Then
-        List<DomainEvent> events = clinic.getDomainEvents();
-        assertEquals(3, events.size(), "Should have three domain events: created, updated, deleted");
-        
-        // Verify event order and types
-        assertInstanceOf(ClinicCreatedEvent.class, events.get(0), "First event should be ClinicCreatedEvent");
-        assertInstanceOf(ClinicUpdatedEvent.class, events.get(1), "Second event should be ClinicUpdatedEvent");
-        assertInstanceOf(ClinicDeletedEvent.class, events.get(2), "Third event should be ClinicDeletedEvent");
+        assertThat(event.occurredOn()).isEqualTo(event.getOccurredOn());
     }
 
     @Test
-    @DisplayName("Should validate value object constraints")
-    void shouldValidateValueObjectConstraints() {
-        // Test Address validation
-        assertThrows(IllegalArgumentException.class, () -> 
-                new Address(null, "Test City", "12345"), 
-                "Address should reject null street");
-        
-        assertThrows(IllegalArgumentException.class, () -> 
-                new Address("", "Test City", "12345"), 
-                "Address should reject empty street");
-        
-        assertThrows(IllegalArgumentException.class, () -> 
-                new Address("123 Test Street", null, "12345"), 
-                "Address should reject null city");
-        
-        // Test Email validation
-        assertThrows(IllegalArgumentException.class, () -> 
-                new Email(null), 
-                "Email should reject null value");
-        
-        assertThrows(IllegalArgumentException.class, () -> 
-                new Email(""), 
-                "Email should reject empty value");
-        
-        assertThrows(IllegalArgumentException.class, () -> 
-                new Email("invalid-email"), 
-                "Email should reject invalid format");
-        
-        // Test Phone validation
-        assertThrows(IllegalArgumentException.class, () -> 
-                new Phone(null), 
-                "Phone should reject null value");
-        
-        assertThrows(IllegalArgumentException.class, () -> 
-                new Phone(""), 
-                "Phone should reject empty value");
-        
-        assertThrows(IllegalArgumentException.class, () -> 
-                new Phone("invalid-phone"), 
-                "Phone should reject invalid format");
-    }
+    @DisplayName("ClinicDeactivatedEvent should implement DomainEvent")
+    void clinicDeactivatedEvent_ShouldImplementDomainEvent() {
+        ClinicDeactivatedEvent event = ClinicDeactivatedEvent.of("clinic-1", "Clínica Test", "Cierre temporal");
 
-    @Test
-    @DisplayName("Should handle value object immutability correctly")
-    void shouldHandleValueObjectImmutabilityCorrectly() {
-        // Given
-        Address address = new Address("123 Test Street", "Test City", "12345");
-        Phone phone = new Phone("+1234567890");
-        Email email = new Email("test@example.com");
-        
-        Clinic clinic = Clinic.create("ClinicId", "Test Clinic", "Test Legal Name", "123456789",
-                address, phone, email, "http://example.com/logo.png", "ACTIVE");
-
-        // When - get value objects
-        Address clinicAddress = clinic.getAddress();
-        Phone clinicPhone = clinic.getPhone();
-        Email clinicEmail = clinic.getEmail();
-
-        // Then - verify they are the same instances (immutable)
-        assertSame(address, clinicAddress, "Address should be the same instance");
-        assertSame(phone, clinicPhone, "Phone should be the same instance");
-        assertSame(email, clinicEmail, "Email should be the same instance");
-        
-        // Verify value object methods work correctly
-        assertEquals("123 Test Street, Test City 12345", address.getFullAddress(), 
-                "Address should format full address correctly");
-        assertEquals("test@example.com", email.toString(), 
-                "Email should return value in toString");
-        assertEquals("+1234567890", phone.toString(), 
-                "Phone should return value in toString");
+        assertThat(event).isInstanceOf(com.datavet.shared.domain.event.DomainEvent.class);
     }
 }

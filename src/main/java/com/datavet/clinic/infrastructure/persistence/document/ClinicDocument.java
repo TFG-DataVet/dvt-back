@@ -1,12 +1,10 @@
 package com.datavet.clinic.infrastructure.persistence.document;
 
-
+import com.datavet.clinic.domain.model.ClinicStatus;
+import com.datavet.clinic.domain.model.LegalType;
 import com.datavet.shared.domain.valueobject.Address;
 import com.datavet.shared.domain.valueobject.Email;
 import com.datavet.shared.domain.valueobject.Phone;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -17,13 +15,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Document(collection = "clinic")
 @CompoundIndexes({
-    @CompoundIndex(name = "email_idx", def = "{'email.value':1}", unique = true),
-    @CompoundIndex(name = "legal_number_idx", def = "{'legalNumber':1}", unique = true)
+        @CompoundIndex(name = "email_idx",        def = "{'email.value': 1}", unique = true),
+        @CompoundIndex(name = "legal_number_idx", def = "{'legalNumber': 1}", unique = true),
+        @CompoundIndex(name = "status_idx",       def = "{'status': 1}")
 })
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -34,35 +33,39 @@ public class ClinicDocument {
     @Id
     private String id;
 
-    @NotBlank
-    @Size(max = 50)
+    @Field("clinic_name")
     private String name;
 
     @Field("legal_name")
-    @NotBlank
-    @Size(max = 100)
     private String legalName;
 
     @Field("legal_number")
-    @NotBlank
-    @Size(max = 150)
     private String legalNumber;
 
-    @NotNull
+    @Field("legal_type")
+    private LegalType legalType;
+
     private Address address;
-
-    @NotNull
-    private Phone phone;
-
-    @NotNull
-    private Email email;
+    private Phone   phone;
+    private Email   email;
 
     @Field("logo_url")
     private String logoUrl;
 
-    @Field("suscription_status")
-    @NotBlank
-    private String suscriptionStatus;
+    // Campos del schedule aplanados — evita subdocumento innecesario en Mongo
+    @Field("schedule_open_days")
+    private String    scheduleOpenDays;
+
+    @Field("schedule_open_time")
+    private LocalTime scheduleOpenTime;
+
+    @Field("schedule_close_time")
+    private LocalTime scheduleCloseTime;
+
+    @Field("schedule_notes")
+    private String    scheduleNotes;
+
+    private ClinicStatus status;
 
     @CreatedDate
     @Field("created_at")

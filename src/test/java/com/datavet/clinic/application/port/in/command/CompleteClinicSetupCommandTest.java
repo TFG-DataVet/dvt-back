@@ -7,8 +7,8 @@ import com.datavet.shared.domain.valueobject.Email;
 import com.datavet.shared.domain.valueobject.Phone;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -20,8 +20,8 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("CreateClinicCommand Validation Tests")
-class CreateClinicCommandTest {
+@DisplayName("CompleteClinicSetupCommand Validation Tests")
+class CompleteClinicSetupCommandTest {
 
     private Validator validator;
 
@@ -38,83 +38,50 @@ class CreateClinicCommandTest {
     @Test
     @DisplayName("Should pass validation with valid data")
     void shouldPassValidationWithValidData() {
-        Address address = new Address("123 Test Street", "Test City", "12345");
-        Phone phone = new Phone("+1234567890");
-        Email email = new Email("test@example.com");
-        ClinicSchedule schedule = ClinicSchedule.of(
-                "Lunes - Viernes", LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra los fines de semana");
+        CompleteClinicSetupCommand command = buildValidCommandWith(b -> b);
 
-        CreateClinicCommand command = new CreateClinicCommand(
-                "Test Clinic", "Test Legal Name", "12345678",
-                LegalType.AUTONOMO, address, phone, email,
-                "https://example.com/logo.png", schedule);
+        Set<ConstraintViolation<CompleteClinicSetupCommand>> violations = validator.validate(command);
 
-        Set<ConstraintViolation<CreateClinicCommand>> violations = validator.validate(command);
-
-        assertTrue(violations.isEmpty());
-        assertEquals("Test Clinic", command.getClinicName());
+        assertTrue(violations.isEmpty(), "No debe haber errores con datos válidos");
     }
 
     @Test
     @DisplayName("Should pass validation when optional fields are null")
     void shouldPassValidationWhenOptionalFieldsAreNull() {
-        Address address = new Address("123 Test Street", "Test City", null); // postalCode opcional
-        Phone phone = new Phone("+1234567890");
-        Email email = new Email("test@example.com");
-        ClinicSchedule schedule = ClinicSchedule.of(
-                "Lunes - Viernes", LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra los fines de semana");
+        CompleteClinicSetupCommand command = buildValidCommandWith(b -> b.logoUrl(null));
 
-        CreateClinicCommand command = new CreateClinicCommand(
-                "Test Clinic", "Test Legal Name", "12345678",
-                LegalType.AUTONOMO, address, phone, email,
-                null, // logoUrl es opcional
-                schedule);
-
-        Set<ConstraintViolation<CreateClinicCommand>> violations = validator.validate(command);
+        Set<ConstraintViolation<CompleteClinicSetupCommand>> violations = validator.validate(command);
 
         assertTrue(violations.isEmpty(), "No debe haber errores con logoUrl nulo");
     }
 
     // =========================================================================
-    // clinicName
+    // clinicId
     // =========================================================================
 
     @Test
-    @DisplayName("Should fail validation when clinic name is blank")
-    void shouldFailValidationWhenClinicNameIsBlank() {
-        CreateClinicCommand command = buildValidCommandWith(b -> b.clinicName(""));
+    @DisplayName("Should fail validation when clinicId is blank")
+    void shouldFailValidationWhenClinicIdIsBlank() {
+        CompleteClinicSetupCommand command = buildValidCommandWith(b -> b.clinicId(""));
 
-        Set<ConstraintViolation<CreateClinicCommand>> violations = validator.validate(command);
+        Set<ConstraintViolation<CompleteClinicSetupCommand>> violations = validator.validate(command);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v ->
-                v.getPropertyPath().toString().equals("clinicName") &&
-                        v.getMessage().equals("El nombre de la clinica es requerido.")));
+                v.getPropertyPath().toString().equals("clinicId") &&
+                        v.getMessage().equals("El identicador único de la clinica es requerido.")));
     }
 
     @Test
-    @DisplayName("Should fail validation when clinic name is null")
-    void shouldFailValidationWhenClinicNameIsNull() {
-        CreateClinicCommand command = buildValidCommandWith(b -> b.clinicName(null));
+    @DisplayName("Should fail validation when clinicId is null")
+    void shouldFailValidationWhenClinicIdIsNull() {
+        CompleteClinicSetupCommand command = buildValidCommandWith(b -> b.clinicId(null));
 
-        Set<ConstraintViolation<CreateClinicCommand>> violations = validator.validate(command);
-
-        assertFalse(violations.isEmpty());
-        assertTrue(violations.stream().anyMatch(v ->
-                v.getPropertyPath().toString().equals("clinicName")));
-    }
-
-    @Test
-    @DisplayName("Should fail validation when clinic name exceeds 100 characters")
-    void shouldFailValidationWhenClinicNameExceedsMaxLength() {
-        CreateClinicCommand command = buildValidCommandWith(b -> b.clinicName("a".repeat(101)));
-
-        Set<ConstraintViolation<CreateClinicCommand>> violations = validator.validate(command);
+        Set<ConstraintViolation<CompleteClinicSetupCommand>> violations = validator.validate(command);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v ->
-                v.getPropertyPath().toString().equals("clinicName") &&
-                        v.getMessage().equals("El nombre de la clinica no debe de tener mas de 100 caracteres.")));
+                v.getPropertyPath().toString().equals("clinicId")));
     }
 
     // =========================================================================
@@ -124,9 +91,9 @@ class CreateClinicCommandTest {
     @Test
     @DisplayName("Should fail validation when legal name is blank")
     void shouldFailValidationWhenLegalNameIsBlank() {
-        CreateClinicCommand command = buildValidCommandWith(b -> b.legalName(""));
+        CompleteClinicSetupCommand command = buildValidCommandWith(b -> b.legalName(""));
 
-        Set<ConstraintViolation<CreateClinicCommand>> violations = validator.validate(command);
+        Set<ConstraintViolation<CompleteClinicSetupCommand>> violations = validator.validate(command);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v ->
@@ -137,9 +104,9 @@ class CreateClinicCommandTest {
     @Test
     @DisplayName("Should fail validation when legal name is null")
     void shouldFailValidationWhenLegalNameIsNull() {
-        CreateClinicCommand command = buildValidCommandWith(b -> b.legalName(null));
+        CompleteClinicSetupCommand command = buildValidCommandWith(b -> b.legalName(null));
 
-        Set<ConstraintViolation<CreateClinicCommand>> violations = validator.validate(command);
+        Set<ConstraintViolation<CompleteClinicSetupCommand>> violations = validator.validate(command);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v ->
@@ -149,9 +116,9 @@ class CreateClinicCommandTest {
     @Test
     @DisplayName("Should fail validation when legal name exceeds 150 characters")
     void shouldFailValidationWhenLegalNameExceedsMaxLength() {
-        CreateClinicCommand command = buildValidCommandWith(b -> b.legalName("a".repeat(151)));
+        CompleteClinicSetupCommand command = buildValidCommandWith(b -> b.legalName("a".repeat(151)));
 
-        Set<ConstraintViolation<CreateClinicCommand>> violations = validator.validate(command);
+        Set<ConstraintViolation<CompleteClinicSetupCommand>> violations = validator.validate(command);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v ->
@@ -166,9 +133,9 @@ class CreateClinicCommandTest {
     @Test
     @DisplayName("Should fail validation when legal number is blank")
     void shouldFailValidationWhenLegalNumberIsBlank() {
-        CreateClinicCommand command = buildValidCommandWith(b -> b.legalNumber(""));
+        CompleteClinicSetupCommand command = buildValidCommandWith(b -> b.legalNumber(""));
 
-        Set<ConstraintViolation<CreateClinicCommand>> violations = validator.validate(command);
+        Set<ConstraintViolation<CompleteClinicSetupCommand>> violations = validator.validate(command);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v ->
@@ -179,9 +146,9 @@ class CreateClinicCommandTest {
     @Test
     @DisplayName("Should fail validation when legal number is null")
     void shouldFailValidationWhenLegalNumberIsNull() {
-        CreateClinicCommand command = buildValidCommandWith(b -> b.legalNumber(null));
+        CompleteClinicSetupCommand command = buildValidCommandWith(b -> b.legalNumber(null));
 
-        Set<ConstraintViolation<CreateClinicCommand>> violations = validator.validate(command);
+        Set<ConstraintViolation<CompleteClinicSetupCommand>> violations = validator.validate(command);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v ->
@@ -191,9 +158,9 @@ class CreateClinicCommandTest {
     @Test
     @DisplayName("Should fail validation when legal number exceeds 50 characters")
     void shouldFailValidationWhenLegalNumberExceedsMaxLength() {
-        CreateClinicCommand command = buildValidCommandWith(b -> b.legalNumber("a".repeat(51)));
+        CompleteClinicSetupCommand command = buildValidCommandWith(b -> b.legalNumber("a".repeat(51)));
 
-        Set<ConstraintViolation<CreateClinicCommand>> violations = validator.validate(command);
+        Set<ConstraintViolation<CompleteClinicSetupCommand>> violations = validator.validate(command);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v ->
@@ -208,9 +175,9 @@ class CreateClinicCommandTest {
     @Test
     @DisplayName("Should fail validation when legalType is null")
     void shouldFailValidationWhenLegalTypeIsNull() {
-        CreateClinicCommand command = buildValidCommandWith(b -> b.legalType(null));
+        CompleteClinicSetupCommand command = buildValidCommandWith(b -> b.legalType(null));
 
-        Set<ConstraintViolation<CreateClinicCommand>> violations = validator.validate(command);
+        Set<ConstraintViolation<CompleteClinicSetupCommand>> violations = validator.validate(command);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v ->
@@ -225,9 +192,9 @@ class CreateClinicCommandTest {
     @Test
     @DisplayName("Should fail validation when address is null")
     void shouldFailValidationWhenAddressIsNull() {
-        CreateClinicCommand command = buildValidCommandWith(b -> b.address(null));
+        CompleteClinicSetupCommand command = buildValidCommandWith(b -> b.address(null));
 
-        Set<ConstraintViolation<CreateClinicCommand>> violations = validator.validate(command);
+        Set<ConstraintViolation<CompleteClinicSetupCommand>> violations = validator.validate(command);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v ->
@@ -258,9 +225,9 @@ class CreateClinicCommandTest {
     @Test
     @DisplayName("Should fail validation when phone is null")
     void shouldFailValidationWhenPhoneIsNull() {
-        CreateClinicCommand command = buildValidCommandWith(b -> b.phone(null));
+        CompleteClinicSetupCommand command = buildValidCommandWith(b -> b.phone(null));
 
-        Set<ConstraintViolation<CreateClinicCommand>> violations = validator.validate(command);
+        Set<ConstraintViolation<CompleteClinicSetupCommand>> violations = validator.validate(command);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v ->
@@ -294,9 +261,9 @@ class CreateClinicCommandTest {
     @Test
     @DisplayName("Should fail validation when email is null")
     void shouldFailValidationWhenEmailIsNull() {
-        CreateClinicCommand command = buildValidCommandWith(b -> b.email(null));
+        CompleteClinicSetupCommand command = buildValidCommandWith(b -> b.email(null));
 
-        Set<ConstraintViolation<CreateClinicCommand>> violations = validator.validate(command);
+        Set<ConstraintViolation<CompleteClinicSetupCommand>> violations = validator.validate(command);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v ->
@@ -327,9 +294,10 @@ class CreateClinicCommandTest {
     @Test
     @DisplayName("Should fail validation when logoUrl exceeds 255 characters")
     void shouldFailValidationWhenLogoUrlExceedsMaxLength() {
-        CreateClinicCommand command = buildValidCommandWith(b -> b.logoUrl("https://example.com/" + "a".repeat(240)));
+        CompleteClinicSetupCommand command = buildValidCommandWith(b ->
+                b.logoUrl("https://example.com/" + "a".repeat(240)));
 
-        Set<ConstraintViolation<CreateClinicCommand>> violations = validator.validate(command);
+        Set<ConstraintViolation<CompleteClinicSetupCommand>> violations = validator.validate(command);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v ->
@@ -343,25 +311,22 @@ class CreateClinicCommandTest {
     @Test
     @DisplayName("Should fail validation when schedule is null")
     void shouldFailValidationWhenScheduleIsNull() {
-        CreateClinicCommand command = buildValidCommandWith(b -> b.schedule(null));
+        CompleteClinicSetupCommand command = buildValidCommandWith(b -> b.schedule(null));
 
-        Set<ConstraintViolation<CreateClinicCommand>> violations = validator.validate(command);
+        Set<ConstraintViolation<CompleteClinicSetupCommand>> violations = validator.validate(command);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v ->
-                v.getPropertyPath().toString().equals("schedule")));
+                v.getPropertyPath().toString().equals("schedule") &&
+                        v.getMessage().equals("El horario de la clinica es requerido")));
     }
 
     // =========================================================================
     // Helper
     // =========================================================================
 
-    /**
-     * Construye un command válido por defecto y aplica una customización sobre el builder,
-     * permitiendo invalidar un solo campo por test.
-     */
-    private CreateClinicCommand buildValidCommandWith(
-            java.util.function.UnaryOperator<CreateClinicCommand.CreateClinicCommandBuilder> customizer) {
+    private CompleteClinicSetupCommand buildValidCommandWith(
+            java.util.function.UnaryOperator<CompleteClinicSetupCommand.CompleteClinicSetupCommandBuilder> customizer) {
 
         Address address = new Address("123 Test Street", "Test City", "12345");
         Phone phone = new Phone("+1234567890");
@@ -369,8 +334,8 @@ class CreateClinicCommandTest {
         ClinicSchedule schedule = ClinicSchedule.of(
                 "Lunes - Viernes", LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra los fines de semana");
 
-        CreateClinicCommand.CreateClinicCommandBuilder builder = CreateClinicCommand.builder()
-                .clinicName("Test Clinic")
+        CompleteClinicSetupCommand.CompleteClinicSetupCommandBuilder builder = CompleteClinicSetupCommand.builder()
+                .clinicId("clinic-123")
                 .legalName("Test Legal Name")
                 .legalNumber("12345678")
                 .legalType(LegalType.AUTONOMO)
