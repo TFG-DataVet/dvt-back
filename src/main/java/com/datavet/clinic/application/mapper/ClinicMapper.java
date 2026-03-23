@@ -4,25 +4,38 @@ import com.datavet.clinic.application.dto.ClinicResponse;
 import com.datavet.clinic.domain.model.Clinic;
 
 public class ClinicMapper {
-    
+
+    private ClinicMapper() {}
+
     public static ClinicResponse toResponse(Clinic clinic) {
-        // Convert Address value object to AddressDto
-        ClinicResponse.AddressDto addressDto = new ClinicResponse.AddressDto(
+
+        ClinicResponse.AddressDto addressDto = clinic.getAddress() != null
+                ? new ClinicResponse.AddressDto(
                 clinic.getAddress().getStreet(),
                 clinic.getAddress().getCity(),
-                clinic.getAddress().getPostalCode()
-        );
-        
+                clinic.getAddress().getPostalCode())
+                : null;
+
+        ClinicResponse.ScheduleDto scheduleDto = clinic.getSchedule() != null
+                ? new ClinicResponse.ScheduleDto(
+                clinic.getSchedule().getOpenDays(),
+                clinic.getSchedule().getOpenTime(),
+                clinic.getSchedule().getCloseTime(),
+                clinic.getSchedule().getNotes())
+                : null;
+
         return new ClinicResponse(
                 clinic.getClinicID(),
                 clinic.getClinicName(),
                 clinic.getLegalName(),
                 clinic.getLegalNumber(),
+                clinic.getLegalType(),
                 addressDto,
-                clinic.getPhone().getValue(),  // Extract value from Phone value object
-                clinic.getEmail().getValue(),  // Extract value from Email value object
+                clinic.getPhone()  != null ? clinic.getPhone().getValue()  : null,
+                clinic.getEmail()  != null ? clinic.getEmail().getValue()  : null,
                 clinic.getLogoUrl(),
-                clinic.getSuscriptionStatus()
+                scheduleDto,
+                clinic.getStatus()
         );
     }
 }

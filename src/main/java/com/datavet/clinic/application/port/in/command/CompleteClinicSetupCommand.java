@@ -10,16 +10,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 @Value
 @Builder
-@RequiredArgsConstructor
-public class CreateClinicCommand {
-    @NotBlank(message = "El nombre de la clinica es requerido.")
-    @Size(max = 100, message = "El nombre de la clinica no debe de tener mas de 100 caracteres.")
-    private String clinicName;
+public class CompleteClinicSetupCommand {
+    @NotBlank(message = "El identicador único de la clinica es requerido.")
+    private String clinicId;
 
     @NotBlank(message = "El nombre fiscal de la clinica es requerido.")
     @Size(max = 150, message = "El nombre fiscal de la clinia no debe de tener mas de 150 caracteres.")
@@ -50,3 +47,4 @@ public class CreateClinicCommand {
     @NotNull(message = "El horario de la clinica es requerido")
     private ClinicSchedule schedule;
 }
+

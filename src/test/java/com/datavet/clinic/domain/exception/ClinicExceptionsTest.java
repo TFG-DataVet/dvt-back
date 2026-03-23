@@ -2,66 +2,158 @@ package com.datavet.clinic.domain.exception;
 
 import com.datavet.shared.domain.validation.ValidationError;
 import com.datavet.shared.domain.validation.ValidationResult;
+
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Tests for Clinic domain exceptions.
- * Validates that exceptions are created correctly with proper messages and data.
- */
+@DisplayName("Clinic Domain Exceptions Tests")
 class ClinicExceptionsTest {
 
+    // =========================================================================
+    // ClinicNotFoundException
+    // =========================================================================
+
     @Test
-    void clinicNotFoundExceptionShouldContainClinicId() {
-        // Given
-        String clinicId = "hola";
+    @DisplayName("ClinicNotFoundException(entityType, id) should produce exact message")
+    void clinicNotFoundException_WithEntityTypeAndId_ShouldProduceExactMessage() {
+        ClinicNotFoundException exception = new ClinicNotFoundException("Clinic", "clinic-123");
 
-        // When
-        ClinicNotFoundException exception = new ClinicNotFoundException("Clinic", clinicId);
-
-        // Then
         assertThat(exception.getMessage())
-                .isNotNull()
-                .contains("Clinic")
-                .contains("not found")
-                .contains("id")
-                .contains(clinicId.toString());
+                .isEqualTo("Clinic not found with id: clinic-123");
     }
 
     @Test
-    void clinicAlreadyExistsExceptionShouldContainFieldInfo() {
-        // Given
-        String fieldName = "email";
-        String fieldValue = "test@clinic.com";
+    @DisplayName("ClinicNotFoundException(message) should preserve the message as-is")
+    void clinicNotFoundException_WithRawMessage_ShouldPreserveMessage() {
+        ClinicNotFoundException exception = new ClinicNotFoundException("Custom error message");
 
-        // When
-        ClinicAlreadyExistsException exception = 
-                new ClinicAlreadyExistsException(fieldName, fieldValue);
-
-        // Then
-        assertThat(exception.getMessage())
-                .isNotNull()
-                .contains("Clinic")
-                .contains("already exists")
-                .contains(fieldName)
-                .contains(fieldValue);
+        assertThat(exception.getMessage()).isEqualTo("Custom error message");
     }
 
     @Test
-    void clinicValidationExceptionShouldContainValidationResult() {
-        // Given
-        ValidationResult validationResult = new ValidationResult();
-        validationResult.addError("clinicName", "Clinic name is required");
-        validationResult.addError("email", "Email is invalid");
+    @DisplayName("ClinicNotFoundException should be a RuntimeException")
+    void clinicNotFoundException_ShouldBeRuntimeException() {
+        ClinicNotFoundException exception = new ClinicNotFoundException("Clinic", "clinic-123");
 
-        // When
-        ClinicValidationException exception = new ClinicValidationException(validationResult);
+        assertThat(exception).isInstanceOf(RuntimeException.class);
+    }
 
-        // Then
-        assertThat(exception.getValidationResult())
-                .isNotNull()
-                .isEqualTo(validationResult);
+    @Test
+    @DisplayName("ClinicNotFoundException(message, cause) should preserve both")
+    void clinicNotFoundException_WithMessageAndCause_ShouldPreserveBoth() {
+        Throwable cause = new IllegalStateException("DB timeout");
+        ClinicNotFoundException exception = new ClinicNotFoundException("wrapped error", cause);
+
+        assertThat(exception.getMessage()).isEqualTo("wrapped error");
+        assertThat(exception.getCause()).isSameAs(cause);
+    }
+
+    // =========================================================================
+    // ClinicAlreadyExistsException
+    // =========================================================================
+
+    @Test
+    @DisplayName("ClinicAlreadyExistsException(fieldName, fieldValue) should produce exact message")
+    void clinicAlreadyExistsException_WithFieldNameAndValue_ShouldProduceExactMessage() {
+        ClinicAlreadyExistsException exception =
+                new ClinicAlreadyExistsException("email", "test@clinic.com");
+
+        assertThat(exception.getMessage())
+                .isEqualTo("Clinic already exists with email: test@clinic.com");
+    }
+
+    @Test
+    @DisplayName("ClinicAlreadyExistsException(fieldName, fieldValue) works for legalNumber")
+    void clinicAlreadyExistsException_WithLegalNumber_ShouldProduceExactMessage() {
+        ClinicAlreadyExistsException exception =
+                new ClinicAlreadyExistsException("legalNumber", "12345678A");
+
+        assertThat(exception.getMessage())
+                .isEqualTo("Clinic already exists with legalNumber: 12345678A");
+    }
+
+    @Test
+    @DisplayName("ClinicAlreadyExistsException(message) should preserve the message as-is")
+    void clinicAlreadyExistsException_WithRawMessage_ShouldPreserveMessage() {
+        ClinicAlreadyExistsException exception =
+                new ClinicAlreadyExistsException("Custom conflict message");
+
+        assertThat(exception.getMessage()).isEqualTo("Custom conflict message");
+    }
+
+    @Test
+    @DisplayName("ClinicAlreadyExistsException should be a RuntimeException")
+    void clinicAlreadyExistsException_ShouldBeRuntimeException() {
+        ClinicAlreadyExistsException exception =
+                new ClinicAlreadyExistsException("email", "test@clinic.com");
+
+        assertThat(exception).isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    @DisplayName("ClinicAlreadyExistsException(message, cause) should preserve both")
+    void clinicAlreadyExistsException_WithMessageAndCause_ShouldPreserveBoth() {
+        Throwable cause = new IllegalStateException("DB timeout");
+        ClinicAlreadyExistsException exception =
+                new ClinicAlreadyExistsException("wrapped error", cause);
+
+        assertThat(exception.getMessage()).isEqualTo("wrapped error");
+        assertThat(exception.getCause()).isSameAs(cause);
+    }
+
+    // =========================================================================
+    // ClinicValidationException
+    // =========================================================================
+
+    @Test
+    @DisplayName("ClinicValidationException should expose the ValidationResult")
+    void clinicValidationException_ShouldExposeValidationResult() {
+        ValidationResult result = new ValidationResult();
+        result.addError("clinicName", "El nombre no puede estar vacío");
+
+        ClinicValidationException exception = new ClinicValidationException(result);
+
+        assertThat(exception.getValidationResult()).isSameAs(result);
+    }
+
+    @Test
+    @DisplayName("ClinicValidationException message should start with 'Clinic validation failed:'")
+    void clinicValidationException_MessageShouldStartWithPrefix() {
+        ValidationResult result = new ValidationResult();
+        result.addError("clinicName", "El nombre no puede estar vacío");
+
+        ClinicValidationException exception = new ClinicValidationException(result);
+
+        assertThat(exception.getMessage()).startsWith("Clinic validation failed:");
+    }
+
+    @Test
+    @DisplayName("ClinicValidationException message should include all field:message pairs")
+    void clinicValidationException_MessageShouldIncludeAllErrors() {
+        ValidationResult result = new ValidationResult();
+        result.addError("clinicName", "El nombre no puede estar vacío");
+        result.addError("legalName", "El nombre fiscal no puede estar vacío");
+        result.addError("email", "El email no puede ser nulo");
+
+        ClinicValidationException exception = new ClinicValidationException(result);
+
+        assertThat(exception.getMessage())
+                .contains("clinicName: El nombre no puede estar vacío")
+                .contains("legalName: El nombre fiscal no puede estar vacío")
+                .contains("email: El email no puede ser nulo");
+    }
+
+    @Test
+    @DisplayName("ClinicValidationException ValidationResult should contain all errors with correct fields")
+    void clinicValidationException_ValidationResultShouldContainAllErrors() {
+        ValidationResult result = new ValidationResult();
+        result.addError("clinicName", "El nombre no puede estar vacío");
+        result.addError("email", "El email no puede ser nulo");
+
+        ClinicValidationException exception = new ClinicValidationException(result);
+
         assertThat(exception.getValidationResult().getErrors())
                 .hasSize(2)
                 .extracting(ValidationError::getField)
@@ -69,22 +161,38 @@ class ClinicExceptionsTest {
     }
 
     @Test
-    void clinicValidationExceptionShouldFormatErrorsCorrectly() {
-        // Given
-        ValidationResult validationResult = new ValidationResult();
-        validationResult.addError("clinicName", "Clinic name is required");
-        validationResult.addError("legalName", "Legal name exceeds maximum length");
-        validationResult.addError("email", "Email format is invalid");
+    @DisplayName("ClinicValidationException with single error should not include comma separator")
+    void clinicValidationException_WithSingleError_ShouldNotHaveCommaSeparator() {
+        ValidationResult result = new ValidationResult();
+        result.addError("clinicName", "El nombre no puede estar vacío");
 
-        // When
-        ClinicValidationException exception = new ClinicValidationException(validationResult);
+        ClinicValidationException exception = new ClinicValidationException(result);
 
-        // Then
         assertThat(exception.getMessage())
-                .isNotNull()
-                .contains("Clinic validation failed")
-                .contains("clinicName: Clinic name is required")
-                .contains("legalName: Legal name exceeds maximum length")
-                .contains("email: Email format is invalid");
+                .contains("clinicName: El nombre no puede estar vacío")
+                .doesNotContain(", ");
+    }
+
+    @Test
+    @DisplayName("ClinicValidationException with multiple errors should separate them with commas")
+    void clinicValidationException_WithMultipleErrors_ShouldSeparateWithCommas() {
+        ValidationResult result = new ValidationResult();
+        result.addError("clinicName", "El nombre no puede estar vacío");
+        result.addError("email", "El email no puede ser nulo");
+
+        ClinicValidationException exception = new ClinicValidationException(result);
+
+        assertThat(exception.getMessage()).contains(", ");
+    }
+
+    @Test
+    @DisplayName("ClinicValidationException should be a RuntimeException")
+    void clinicValidationException_ShouldBeRuntimeException() {
+        ValidationResult result = new ValidationResult();
+        result.addError("clinicName", "El nombre no puede estar vacío");
+
+        ClinicValidationException exception = new ClinicValidationException(result);
+
+        assertThat(exception).isInstanceOf(RuntimeException.class);
     }
 }

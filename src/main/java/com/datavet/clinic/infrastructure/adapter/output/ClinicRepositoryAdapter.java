@@ -2,6 +2,7 @@ package com.datavet.clinic.infrastructure.adapter.output;
 
 import com.datavet.clinic.application.port.out.ClinicRepositoryPort;
 import com.datavet.clinic.domain.model.Clinic;
+import com.datavet.clinic.domain.valueobject.ClinicSchedule;
 import com.datavet.clinic.infrastructure.persistence.document.ClinicDocument;
 import com.datavet.clinic.infrastructure.persistence.repository.MongoClinicRepositoryAdapter;
 import com.datavet.shared.domain.valueobject.Email;
@@ -23,28 +24,46 @@ public class ClinicRepositoryAdapter implements ClinicRepositoryPort {
                 .name(clinic.getClinicName())
                 .legalName(clinic.getLegalName())
                 .legalNumber(clinic.getLegalNumber())
+                .legalType(clinic.getLegalType())
                 .address(clinic.getAddress())
                 .phone(clinic.getPhone())
                 .email(clinic.getEmail())
                 .logoUrl(clinic.getLogoUrl())
-                .suscriptionStatus(clinic.getSuscriptionStatus())
+                .scheduleOpenDays(clinic.getSchedule()  != null ? clinic.getSchedule().getOpenDays()   : null)
+                .scheduleOpenTime(clinic.getSchedule()  != null ? clinic.getSchedule().getOpenTime()   : null)
+                .scheduleCloseTime(clinic.getSchedule() != null ? clinic.getSchedule().getCloseTime()  : null)
+                .scheduleNotes(clinic.getSchedule()     != null ? clinic.getSchedule().getNotes()      : null)
+                .status(clinic.getStatus())
                 .build();
     }
 
-    private Clinic toDomain(ClinicDocument clinicDoc) {
-        return Clinic.builder()
-                .clinicID(clinicDoc.getId())
-                .clinicName(clinicDoc.getName())
-                .legalName(clinicDoc.getLegalName())
-                .legalNumber(clinicDoc.getLegalNumber())
-                .address(clinicDoc.getAddress())
-                .phone(clinicDoc.getPhone())
-                .email(clinicDoc.getEmail())
-                .logoUrl(clinicDoc.getLogoUrl())
-                .suscriptionStatus(clinicDoc.getSuscriptionStatus())
-                .createdAt(clinicDoc.getCreatedAt())
-                .updatedAt(clinicDoc.getUpdatedAt())
-                .build();
+    private Clinic toDomain(ClinicDocument doc) {
+        // Reconstruimos el value object solo si hay datos de schedule
+        ClinicSchedule schedule = null;
+        if (doc.getScheduleOpenDays() != null) {
+            schedule = ClinicSchedule.of(
+                    doc.getScheduleOpenDays(),
+                    doc.getScheduleOpenTime(),
+                    doc.getScheduleCloseTime(),
+                    doc.getScheduleNotes()
+            );
+        }
+
+        return Clinic.reconstitute(
+                doc.getId(),
+                doc.getName(),
+                doc.getLegalName(),
+                doc.getLegalNumber(),
+                doc.getLegalType(),
+                doc.getAddress(),
+                doc.getPhone(),
+                doc.getEmail(),
+                doc.getLogoUrl(),
+                schedule,
+                doc.getStatus(),
+                doc.getCreatedAt(),
+                doc.getUpdatedAt()
+        );
     }
 
     @Override
