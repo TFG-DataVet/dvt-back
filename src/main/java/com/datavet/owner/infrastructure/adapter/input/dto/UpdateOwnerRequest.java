@@ -18,9 +18,11 @@ public class UpdateOwnerRequest {
     @Size(max = 50, message = "Owner lastname must not exceed 50 characters")
     private String lastName;
 
-    @NotBlank(message = "Owner dni must not be empty")
-    @Size(max = 10, message = "Owner DNI must not exceed 10 characters")
-    private String dni;
+    @NotBlank(message = "Owner type dni must not be empty")
+    private String documentId;
+
+    @NotBlank(message = "Owner number dni must not be empty")
+    private String documentNumber;
 
     @Pattern(regexp = "^[+]?[0-9\\s\\-()]{7,15}$", message = "Phone number format is invalid")
     private String phone;

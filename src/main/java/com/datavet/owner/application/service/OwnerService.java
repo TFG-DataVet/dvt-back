@@ -32,11 +32,6 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
 
     @Override
     public Owner createOwner(CreateOwnerCommand command) {
-        // Validate command using shared validation framework
-        ValidationResult validationResult = createOwnerCommandValidator.validate(command);
-        if ( validationResult.hasErrors()) {
-            throw new OwnerValidationException(validationResult);
-        }
 
         // Check for duplicate email (value object is already created in command)
         if ( ownerRepositoryPort.existsByEmail(command.getOwnerEmail())){
@@ -44,8 +39,8 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
         }
 
         // Check exists dni
-        if (ownerRepositoryPort.existsByDni(command.getOwnerDni())) {
-            throw new OwnerAlreadyExistsException("dni", command.getOwnerDni());
+        if (ownerRepositoryPort.existsByDocumentNumber(command.getOwnerDni().getDocumentNumber())) {
+            throw new OwnerAlreadyExistsException("dni", command.getOwnerDni().getDocumentNumber());
         }
 
         // Check for phone
@@ -55,15 +50,15 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
 
         // Use Factory method to create owner with domain events
         Owner owner = Owner.create(
-                null,
-                "10",
+                command.getClinidId(),
                 command.getOwnerName(),
                 command.getOwnerLastName(),
                 command.getOwnerDni(),
                 command.getOwnerPhone(),
                 command.getOwnerEmail(),
                 command.getOwnerAddress(),
-                command.getUrl()
+                command.getUrl(),
+                command.isAcceptTermsAndCond()
         );
 
         // Publish domain events BEFORE saving (While ew still have them)
@@ -76,11 +71,6 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
 
     @Override
     public Owner updateOwner(UpdateOwnerCommand command) {
-        ValidationResult validationResult = updateClinicCommandValidator.validate(command);
-        if ( validationResult.hasErrors()) {
-            throw new OwnerValidationException(validationResult);
-        }
-
         Owner existing = ownerRepositoryPort.findById(command.getOwnerID())
                 .orElseThrow(() -> new OwnerNotFoundException(command.getOwnerID()));
 

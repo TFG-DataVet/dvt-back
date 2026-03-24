@@ -1,28 +1,36 @@
 package com.datavet.owner.application.port.in.command;
 
 import com.datavet.shared.domain.valueobject.Address;
+import com.datavet.shared.domain.valueobject.DocumentId;
 import com.datavet.shared.domain.valueobject.Email;
 import com.datavet.shared.domain.valueobject.Phone;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 @Value
-@RequiredArgsConstructor
+@Builder
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class CreateOwnerCommand {
     
+    @NotBlank(message = "Clinic id is required")
+    @Size(max = 50, message = "Clinic id can't be mayor a 50  ")
+    private String clinidId;
+
     @NotBlank(message = "Owner name is required")
     @Size(max = 50, message = "Owner name is required")
     private String ownerName;
-    
+
     @NotBlank(message = "Owner name is required")
     @Size(max = 50, message = "Owner lastname is required")
     private String ownerLastName;
     
-    @NotBlank(message = "Dni is required")
-    @Size(max = 10, message = "Owner dni is required")
-    private String ownerDni;
+    @NotNull(message = "Dni is required")
+    private DocumentId ownerDni;
     
     @NotBlank(message = "Phone is required")
     @Size(max= 9, message = "Owner phone is required")
@@ -37,4 +45,6 @@ public class CreateOwnerCommand {
     private Address ownerAddress;
 
     private String url;
+
+    private boolean acceptTermsAndCond;
 }

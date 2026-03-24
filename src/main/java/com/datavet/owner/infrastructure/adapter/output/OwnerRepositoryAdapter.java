@@ -4,6 +4,8 @@ import com.datavet.owner.application.port.out.OwnerRepositoryPort;
 import com.datavet.owner.domain.model.Owner;
 import com.datavet.owner.infrastructure.persistence.document.OwnerDocument;
 import com.datavet.owner.infrastructure.persistence.repository.MongoOwnerRepositoryAdapter;
+import com.datavet.shared.domain.valueobject.Address;
+import com.datavet.shared.domain.valueobject.DocumentId;
 import com.datavet.shared.domain.valueobject.Email;
 import com.datavet.shared.domain.valueobject.Phone;
 import lombok.RequiredArgsConstructor;
@@ -18,30 +20,45 @@ public class OwnerRepositoryAdapter implements OwnerRepositoryPort {
 
     private final MongoOwnerRepositoryAdapter repository;
 
-    private OwnerDocument toDocument(Owner owner){
+    // domain → document
+    private OwnerDocument toDocument(Owner owner) {
         return OwnerDocument.builder()
                 .id(owner.getId())
                 .clinicId(owner.getClinicId())
                 .firstName(owner.getName())
                 .lastName(owner.getLastName())
-                .dni(owner.getDocumentNumber())
-                .phone(owner.getPhone())
-                .email(owner.getEmail())
-                .address(owner.getAddress())
+                .documentType(owner.getDocumentNumber().getDocumentType())
+                .documentNumber(owner.getDocumentNumber().getDocumentNumber())
+                .phone(owner.getPhone().getValue())
+                .email(owner.getEmail().getValue())
+                .address(owner.getAddress().getStreet())
+                .city(owner.getAddress().getCity())
+                .postalCode(owner.getAddress().getPostalCode())
+                .petIds(owner.getPetIds())
+                .avatarUrl(owner.getAvatarUrl())
+                .active(owner.isActive())
+                .acceptTermsAndCond(owner.isAcceptTermsAndCond())
                 .build();
     }
 
-    private Owner toDomain(OwnerDocument document){
-        return Owner.builder()
-                .id(document.getId())
-                .clinicId(document.getClinicId())
-                .lastName(document.getLastName())
-                .name(document.getFirstName())
-                .documentNumber(document.getDni())
-                .phone(document.getPhone())
-                .email(document.getEmail())
-                .address(document.getAddress())
-                .build();
+    // document → domain
+    private Owner toDomain(OwnerDocument doc) {
+        return Owner.reconstitute(
+                doc.getId(),
+                doc.getClinicId(),
+                doc.getFirstName(),
+                doc.getLastName(),
+                DocumentId.of(doc.getDocumentType(), doc.getDocumentNumber()),
+                new Phone(doc.getPhone()),
+                new Email(doc.getEmail()),
+                new Address(doc.getAddress(), doc.getCity(), doc.getPostalCode()),
+                doc.getPetIds(),
+                doc.getAvatarUrl(),
+                doc.isActive(),
+                doc.isAcceptTermsAndCond(),
+                doc.getCreatedAt(),
+                doc.getUpdatedAt()
+        );
     }
 
     @Override
@@ -75,8 +92,8 @@ public class OwnerRepositoryAdapter implements OwnerRepositoryPort {
     }
 
     @Override
-    public boolean existsByDni(String dni) {
-        return repository.existsByDni(dni);
+    public boolean existsByDocumentNumber(String dni) {
+        return repository.existsByDocumentNumber(dni);
     }
 
     @Override
@@ -86,7 +103,7 @@ public class OwnerRepositoryAdapter implements OwnerRepositoryPort {
 
     @Override
     public boolean existsByDniAndOwnerIdNot(String dni, String id) {
-        return repository.existsByDniAndIdNot(dni, id);
+        return repository.existsByDocumentNumberAndIdNot(dni, id);
     }
 
     @Override

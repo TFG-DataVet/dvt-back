@@ -4,9 +4,12 @@ import com.datavet.owner.application.port.in.command.CreateOwnerCommand;
 import com.datavet.owner.application.port.in.command.UpdateOwnerCommand;
 import com.datavet.owner.domain.model.Owner;
 import com.datavet.shared.domain.valueobject.Address;
+import com.datavet.shared.domain.valueobject.DocumentId;
 import com.datavet.shared.domain.valueobject.Email;
 import com.datavet.shared.domain.valueobject.Phone;
 import org.bson.types.ObjectId;
+
+import java.util.UUID;
 
 /**
  * Test data builder for creating valid Owner test data.
@@ -30,136 +33,99 @@ public class OwnerTestDataBuilder {
      * Uses new ObjectId strings for ownerID and clinicID.
      * Use this as a starting point and customize fields as needed.
      */
-    public static Owner.OwnerBuilder aValidOwner() {
-        return Owner.builder()
-                .id(new ObjectId().toString())
-                .clinicId(new ObjectId().toString())
-                .name(DEFAULT_OWNER_NAME)
-                .lastName(DEFAULT_OWNER_LAST_NAME)
-                .documentNumber(DEFAULT_DNI)
-                .phone(aValidPhone())
-                .email(aValidEmail())
-                .address(aValidAddress())
-                .avatarUrl("esto es una web");
-    }
-
-    /**
-     * Creates a valid Owner using the factory method with default test data.
-     * Generates new ObjectId strings for IDs.
-     */
-    public static Owner buildValidOwner() {
+    public static Owner aValidOwner() {
         return Owner.create(
-                new ObjectId().toString(),
-                new ObjectId().toString(),
+                UUID.randomUUID().toString(),
                 DEFAULT_OWNER_NAME,
                 DEFAULT_OWNER_LAST_NAME,
-                DEFAULT_DNI,
+                aValidDocument(),
                 aValidPhone(),
                 aValidEmail(),
                 aValidAddress(),
-                "esto es una web"
-        );
-    }
-
-    /**
-     * Creates a valid Owner using the factory method with a specific owner ID.
-     * Generates a new ObjectId string for clinicID.
-     */
-    public static Owner buildValidOwnerWithId(String ownerId) {
-        return Owner.create(
-                ownerId,
-                new ObjectId().toString(),
-                DEFAULT_OWNER_NAME,
-                DEFAULT_OWNER_LAST_NAME,
-                DEFAULT_DNI,
-                aValidPhone(),
-                aValidEmail(),
-                aValidAddress(),
-                "esto es una web"
-        );
+                "esto es una web",
+                true);
     }
 
     /**
      * Creates a valid Owner using the factory method with specific owner and clinic IDs.
      */
-    public static Owner buildValidOwnerWithIds(String ownerId, String clinicId) {
+    public static Owner buildValidOwnerWithId(String clinicId) {
+
         return Owner.create(
-                ownerId,
                 clinicId,
                 DEFAULT_OWNER_NAME,
                 DEFAULT_OWNER_LAST_NAME,
-                DEFAULT_DNI,
+                aValidDocument(),
                 aValidPhone(),
                 aValidEmail(),
                 aValidAddress(),
-                "esto es una web"
-        );
+                "esto es una web",
+                true);
     }
 
     /**
      * Creates a valid Owner using the factory method with a specific email.
      */
-    public static Owner buildValidOwnerWithEmail(String ownerId, String email) {
+    public static Owner buildValidOwnerWithEmail(String email) {
         return Owner.create(
-                ownerId,
-                new ObjectId().toString(),
+                UUID.randomUUID().toString(),
                 DEFAULT_OWNER_NAME,
                 DEFAULT_OWNER_LAST_NAME,
-                DEFAULT_DNI,
+                aValidDocument(),
                 aValidPhone(),
                 new Email(email),
                 aValidAddress(),
-                "esto es una web"
-        );
+                "esto es una web",
+                true);
     }
 
     /**
      * Creates a valid Owner using the factory method with a specific DNI.
      */
-    public static Owner buildValidOwnerWithDni(String ownerId, String dni) {
+    public static Owner buildValidOwnerWithDni(String type, String dni) {
         return Owner.create(
-                ownerId,
-                new ObjectId().toString(),
+                UUID.randomUUID().toString(),
                 DEFAULT_OWNER_NAME,
                 DEFAULT_OWNER_LAST_NAME,
-                dni,
+                DocumentId.of(type, dni),
                 aValidPhone(),
                 aValidEmail(),
                 aValidAddress(),
-                "esto es un email"
-        );
+                "esto es un email",
+                true);
     }
 
     /**
      * Creates a valid Owner using the factory method with a specific phone.
      */
-    public static Owner buildValidOwnerWithPhone(String ownerId, String phone) {
+    public static Owner buildValidOwnerWithPhone(String phone) {
         return Owner.create(
-                ownerId,
-                new ObjectId().toString(),
+                UUID.randomUUID().toString(),
                 DEFAULT_OWNER_NAME,
                 DEFAULT_OWNER_LAST_NAME,
-                DEFAULT_DNI,
+                aValidDocument(),
                 new Phone(phone),
                 aValidEmail(),
                 aValidAddress(),
-                "esto es una web"
-        );
+                "esto es una web",
+                true);
     }
 
     /**
      * Creates a valid CreateOwnerCommand with default test data.
      */
     public static CreateOwnerCommand aValidCreateCommand() {
-        return new CreateOwnerCommand(
-                DEFAULT_OWNER_NAME,
-                DEFAULT_OWNER_LAST_NAME,
-                DEFAULT_DNI,
-                aValidPhone(),
-                aValidEmail(),
-                aValidAddress(),
-                "esto es una web"
-        );
+        return  CreateOwnerCommand.builder()
+                .clinidId(UUID.randomUUID().toString())
+                .ownerName(DEFAULT_OWNER_NAME)
+                .ownerLastName(DEFAULT_OWNER_LAST_NAME)
+                .ownerDni(aValidDocument())
+                .ownerPhone(aValidPhone())
+                .ownerEmail(aValidEmail())
+                .ownerAddress(aValidAddress())
+                .url("Esto es una web")
+                .acceptTermsAndCond(true)
+                .build();
     }
 
     /**
@@ -167,31 +133,35 @@ public class OwnerTestDataBuilder {
      * Useful for testing uniqueness constraints.
      */
     public static CreateOwnerCommand aCreateCommandWithEmail(String email) {
-        return new CreateOwnerCommand(
-                DEFAULT_OWNER_NAME,
-                DEFAULT_OWNER_LAST_NAME,
-                DEFAULT_DNI,
-                aValidPhone(),
-                new Email(email),
-                aValidAddress(),
-                "Esto es una web"
-        );
+        return CreateOwnerCommand.builder()
+                .clinidId(UUID.randomUUID().toString())
+                .ownerName(DEFAULT_OWNER_NAME)
+                .ownerLastName(DEFAULT_OWNER_LAST_NAME)
+                .ownerDni(aValidDocument())
+                .ownerPhone(aValidPhone())
+                .ownerEmail(new Email(email))
+                .ownerAddress(aValidAddress())
+                .url("Esto es una web")
+                .acceptTermsAndCond(true)
+                .build();
     }
 
     /**
      * Creates a CreateOwnerCommand with a specific DNI.
      * Useful for testing uniqueness constraints.
      */
-    public static CreateOwnerCommand aCreateCommandWithDni(String dni) {
-        return new CreateOwnerCommand(
-                DEFAULT_OWNER_NAME,
-                DEFAULT_OWNER_LAST_NAME,
-                dni,
-                aValidPhone(),
-                aValidEmail(),
-                aValidAddress(),
-                "Esto es una web"
-        );
+    public static CreateOwnerCommand aCreateCommandWithDni(String type, String dni) {
+        return CreateOwnerCommand.builder()
+                .clinidId(UUID.randomUUID().toString())
+                .ownerName(DEFAULT_OWNER_NAME)
+                .ownerLastName(DEFAULT_OWNER_LAST_NAME)
+                .ownerDni(DocumentId.of(type, dni))
+                .ownerPhone(aValidPhone())
+                .ownerEmail(aValidEmail())
+                .ownerAddress(aValidAddress())
+                .url("Esto es una web")
+                .acceptTermsAndCond(true)
+                .build();
     }
 
     /**
@@ -199,30 +169,34 @@ public class OwnerTestDataBuilder {
      * Useful for testing uniqueness constraints.
      */
     public static CreateOwnerCommand aCreateCommandWithPhone(String phone) {
-        return new CreateOwnerCommand(
-                DEFAULT_OWNER_NAME,
-                DEFAULT_OWNER_LAST_NAME,
-                DEFAULT_DNI,
-                new Phone(phone),
-                aValidEmail(),
-                aValidAddress(),
-                "esto es una web"
-        );
+        return CreateOwnerCommand.builder()
+                .clinidId(UUID.randomUUID().toString())
+                .ownerName(DEFAULT_OWNER_NAME)
+                .ownerLastName(DEFAULT_OWNER_LAST_NAME)
+                .ownerDni(aValidDocument())
+                .ownerPhone(new Phone(phone))
+                .ownerEmail(aValidEmail())
+                .ownerAddress(aValidAddress())
+                .url("Esto es una web")
+                .acceptTermsAndCond(true)
+                .build();
     }
 
     /**
      * Creates a CreateOwnerCommand with a specific owner name.
      */
     public static CreateOwnerCommand aCreateCommandWithOwnerName(String ownerName) {
-        return new CreateOwnerCommand(
-                ownerName,
-                DEFAULT_OWNER_LAST_NAME,
-                DEFAULT_DNI,
-                aValidPhone(),
-                aValidEmail(),
-                aValidAddress(),
-                "esto es una web"
-        );
+        return CreateOwnerCommand.builder()
+                .clinidId(UUID.randomUUID().toString())
+                .ownerName(ownerName)
+                .ownerLastName(DEFAULT_OWNER_LAST_NAME)
+                .ownerDni(aValidDocument())
+                .ownerPhone(aValidPhone())
+                .ownerEmail(aValidEmail())
+                .ownerAddress(aValidAddress())
+                .url("Esto es una web")
+                .acceptTermsAndCond(true)
+                .build();
     }
 
     /**
@@ -232,13 +206,13 @@ public class OwnerTestDataBuilder {
     public static UpdateOwnerCommand aValidUpdateCommand(String ownerId) {
         return UpdateOwnerCommand.builder()
                 .ownerID(ownerId)
-                .ownerName("Updated Name")
-                .ownerLastName("Updated LastName")
-                .ownerDni("87654321B")
-                .ownerPhone(new Phone("+34698765432"))
-                .ownerEmail(new Email("updated@example.com"))
-//                .ownerPassword("password123")
-                .ownerAddress(new Address("Calle Nueva 456", "Barcelona", "08001"))
+                .ownerName(DEFAULT_OWNER_NAME)
+                .ownerLastName(DEFAULT_OWNER_LAST_NAME)
+                .ownerDni(aValidDocument())
+                .ownerPhone(aValidPhone())
+                .ownerEmail(aValidEmail())
+                .ownerAddress(aValidAddress())
+                .url("Esto es una web")
                 .build();
     }
 
@@ -246,16 +220,16 @@ public class OwnerTestDataBuilder {
      * Creates an UpdateOwnerCommand with a specific email.
      * Useful for testing uniqueness constraints during updates.
      */
-    public static UpdateOwnerCommand anUpdateCommandWithEmail(String ownerId, Email email) {
+    public static UpdateOwnerCommand anUpdateCommandWithEmail(String ownerId, String email) {
         return UpdateOwnerCommand.builder()
                 .ownerID(ownerId)
-                .ownerName("Updated Name")
-                .ownerLastName("Updated LastName")
-                .ownerDni("87654321B")
-                .ownerPhone(new Phone("+34698765432"))
-                .ownerEmail(email)
-//                .ownerPassword("password123")
+                .ownerName(DEFAULT_OWNER_NAME)
+                .ownerLastName(DEFAULT_OWNER_LAST_NAME)
+                .ownerDni(aValidDocument())
+                .ownerPhone(aValidPhone())
+                .ownerEmail(new Email(email))
                 .ownerAddress(aValidAddress())
+                .url("Esto es una web")
                 .build();
     }
 
@@ -263,16 +237,16 @@ public class OwnerTestDataBuilder {
      * Creates an UpdateOwnerCommand with a specific DNI.
      * Useful for testing uniqueness constraints during updates.
      */
-    public static UpdateOwnerCommand anUpdateCommandWithDni(String ownerId, String dni) {
+    public static UpdateOwnerCommand anUpdateCommandWithDni(String ownerId, String type,String dni) {
         return UpdateOwnerCommand.builder()
                 .ownerID(ownerId)
-                .ownerName("Updated Name")
-                .ownerLastName("Updated LastName")
-                .ownerDni(dni)
-                .ownerPhone(new Phone("+34698765432"))
-                .ownerEmail(new Email("updated@example.com"))
-//                .ownerPassword("password123")
+                .ownerName(DEFAULT_OWNER_NAME)
+                .ownerLastName(DEFAULT_OWNER_LAST_NAME)
+                .ownerDni(DocumentId.of(type, dni))
+                .ownerPhone(aValidPhone())
+                .ownerEmail(aValidEmail())
                 .ownerAddress(aValidAddress())
+                .url("Esto es una web")
                 .build();
     }
 
@@ -283,6 +257,9 @@ public class OwnerTestDataBuilder {
         return new Address(DEFAULT_STREET, DEFAULT_CITY, DEFAULT_POSTAL_CODE);
     }
 
+    public static DocumentId aValidDocument() {
+        return DocumentId.of("DNI", "23402587H");
+    }
     /**
      * Creates a valid Phone with default test data.
      */

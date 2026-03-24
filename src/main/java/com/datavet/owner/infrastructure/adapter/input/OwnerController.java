@@ -9,6 +9,7 @@ import com.datavet.owner.domain.model.Owner;
 import com.datavet.owner.infrastructure.adapter.input.dto.CreateOwnerRequest;
 import com.datavet.owner.infrastructure.adapter.input.dto.UpdateOwnerRequest;
 import com.datavet.shared.domain.valueobject.Address;
+import com.datavet.shared.domain.valueobject.DocumentId;
 import com.datavet.shared.domain.valueobject.Email;
 import com.datavet.shared.domain.valueobject.Phone;
 import jakarta.validation.Valid;
@@ -28,15 +29,17 @@ public class OwnerController {
 
     @PostMapping
     public ResponseEntity<OwnerResponse> create(@Valid @RequestBody CreateOwnerRequest request) {
-         CreateOwnerCommand  command =  new CreateOwnerCommand(
-                request.getName(),
-                request.getLastName(),
-                request.getDni(),
-                new Phone(request.getPhone()),
-                new Email(request.getEmail()),
-                new Address(request.getAddress(), request.getCity(), request.getPostalCode()),
-                request.getUrl()
-        );
+         CreateOwnerCommand  command =  CreateOwnerCommand.builder()
+                 .clinidId(request.getClinicId())
+                 .ownerName(request.getName())
+                 .ownerLastName(request.getLastName())
+                 .ownerDni(DocumentId.of(request.getDocumentId(), request.getDocumentNumber()))
+                 .ownerPhone(new Phone(request.getPhone()))
+                 .ownerEmail(new Email(request.getEmail()))
+                 .ownerAddress(new Address(request.getAddress(), request.getCity(), request.getPostalCode()))
+                 .url(request.getUrl())
+                 .acceptTermsAndCond(request.isAcceptTermsAndCond())
+                 .build();
 
         Owner owner = ownerUseCase.createOwner(command);
         return ResponseEntity.status(201).body(OwnerMapper.toResponse(owner));
@@ -66,7 +69,7 @@ public class OwnerController {
                 .ownerID(id)
                 .ownerName(request.getName())
                 .ownerLastName(request.getLastName())
-                .ownerDni(request.getDni())
+                .ownerDni(DocumentId.of(request.getDocumentId(), request.getDocumentNumber()))
                 .ownerPhone(new Phone(request.getPhone()))
                 .ownerEmail(new Email( request.getEmail()))
                 .ownerAddress(new Address(request.getAddress(), request.getCity(), request.getPostalCode()))
