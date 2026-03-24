@@ -1,0 +1,23 @@
+# Create a new Employee
+POST http://127.0.0.1:8080/employees
+Content-Type: application/json
+
+{
+  "userId": "id_user",
+  "firstName": "moises",
+  "lastName": "velez",
+  "documentType": "DNI",
+  "documentNumber": "05295618Y",
+  "phone": "123456789",
+  "address": "Av. Imaginación 32",
+  "city": "Narnia",
+  "postalCode": "123456",
+  "avatarUrl": "www.google.com/avatar",
+  "speciality": "Cortar pollo",
+  "licenseNumber": "123456789",
+  "hireDate": "2020-03-24",
+  "role": "POLLERO"
+}
+
+###
+
