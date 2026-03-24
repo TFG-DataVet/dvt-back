@@ -27,7 +27,7 @@ public interface MongoOwnerRepositoryAdapter extends MongoRepository<OwnerDocume
      * @param dni the DNI to check
      * @return true if an owner with the DNI exists, false otherwise
      */
-    boolean existsByDni(String dni);
+    boolean existsByDocumentNumber(String dni);
 
     /**
      * Checks if an owner exists with the given email and DNI.
@@ -36,7 +36,7 @@ public interface MongoOwnerRepositoryAdapter extends MongoRepository<OwnerDocume
      * @param dni the DNI to check
      * @return true if an owner with both email and DNI exists, false otherwise
      */
-    boolean existsByEmailAndDni(Email email, String dni);
+    boolean existsByEmailAndDocumentNumber(Email email, String dni);
 
     /**
      * Checks if an owner exists with the given phone.
@@ -54,7 +54,7 @@ public interface MongoOwnerRepositoryAdapter extends MongoRepository<OwnerDocume
      * @param id the owner ID to exclude from the check
      * @return true if another owner with the DNI exists, false otherwise
      */
-    boolean existsByDniAndIdNot(String dni, String id);
+    boolean existsByDocumentNumberAndIdNot(String dni, String id);
 
     Optional<OwnerDocument> findByEmail(Email email);
 }
