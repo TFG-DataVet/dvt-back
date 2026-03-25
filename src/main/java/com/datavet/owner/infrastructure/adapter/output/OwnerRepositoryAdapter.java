@@ -30,7 +30,7 @@ public class OwnerRepositoryAdapter implements OwnerRepositoryPort {
                 .documentType(owner.getDocumentNumber().getDocumentType())
                 .documentNumber(owner.getDocumentNumber().getDocumentNumber())
                 .phone(owner.getPhone().getValue())
-                .email(owner.getEmail().getValue())
+                .email(owner.getEmail().toString())
                 .address(owner.getAddress().getStreet())
                 .city(owner.getAddress().getCity())
                 .postalCode(owner.getAddress().getPostalCode())

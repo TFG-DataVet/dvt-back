@@ -6,8 +6,8 @@ import com.datavet.shared.domain.valueobject.Email;
 
 public interface ClinicRepositoryPort extends Repository<Clinic, String> {
     // Domain-specific methods preserved
-    boolean existsByEmail(Email email);
+    boolean existsByEmail(String email);
     boolean existsByLegalNumber(String legalNumber);
-    boolean existsByEmailAndIdNot(Email email, String id);
+    boolean existsByEmailAndIdNot(String email, String id);
     boolean existsByLegalNumberAndIdNot(String legalNumber, String id);
 }

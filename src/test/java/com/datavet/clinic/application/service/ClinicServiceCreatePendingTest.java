@@ -35,13 +35,13 @@ class ClinicServiceCreatePendingTest {
     @Mock
     private DomainEventPublisher domainEventPublisher;
 
-    private Email email;
+    private String email;
     private Phone phone;
 
     @BeforeEach
     void setUp() {
         clinicService = new ClinicService(clinicRepositoryPort, domainEventPublisher);
-        email = new Email("clinica@test.com");
+        email = "clinica@test.com";
         phone = new Phone("+34912345678");
     }
 
@@ -94,7 +94,7 @@ class ClinicServiceCreatePendingTest {
 
         Clinic saved = captor.getValue();
         assertThat(saved.getClinicName()).isEqualTo("Clínica Test");
-        assertThat(saved.getEmail()).isEqualTo(email);
+        assertThat(saved.getEmail().getValue()).isEqualTo(email);
         assertThat(saved.getPhone()).isEqualTo(phone);
         assertThat(saved.getLegalName()).isNull();
         assertThat(saved.getLegalNumber()).isNull();
@@ -213,7 +213,7 @@ class ClinicServiceCreatePendingTest {
     private CreatePendingClinicCommand buildCommand() {
         return CreatePendingClinicCommand.builder()
                 .clinicName("Clínica Test")
-                .email(email)
+                .email(new Email(email))
                 .phone(phone)
                 .build();
     }

@@ -19,7 +19,7 @@ import java.time.LocalTime;
 
 @Document(collection = "clinic")
 @CompoundIndexes({
-        @CompoundIndex(name = "email_idx",        def = "{'email.value': 1}", unique = true),
+        @CompoundIndex(name = "email_idx",        def = "{'email': 1}", unique = true),
         @CompoundIndex(name = "legal_number_idx", def = "{'legalNumber': 1}", unique = true),
         @CompoundIndex(name = "status_idx",       def = "{'status': 1}")
 })
@@ -47,7 +47,7 @@ public class ClinicDocument {
 
     private Address address;
     private Phone   phone;
-    private Email   email;
+    private String   email;
 
     @Field("logo_url")
     private String logoUrl;

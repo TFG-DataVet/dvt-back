@@ -1,5 +1,6 @@
 package com.datavet.owner.infrastructure.persistence.document;
 
+import com.datavet.shared.domain.valueobject.Email;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
