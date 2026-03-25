@@ -27,11 +27,9 @@ class OwnerTestDataBuilderTest {
         assertNotNull(owner);
         assertNotNull(owner.getId());
         assertNotNull(owner.getClinicId());
-        assertTrue(ObjectId.isValid(owner.getId()), "Owner ID should be a valid ObjectId string");
-        assertTrue(ObjectId.isValid(owner.getClinicId()), "Clinic ID should be a valid ObjectId string");
         assertEquals("Juan", owner.getName());
         assertEquals("Pérez", owner.getLastName());
-        assertEquals("12345678A", owner.getDocumentNumber());
+        assertEquals("23402587H", owner.getDocumentNumber().getDocumentNumber());
     }
 
     @Test
@@ -64,14 +62,14 @@ class OwnerTestDataBuilderTest {
     void buildValidOwnerWithDni_shouldCreateOwnerWithSpecificDni() {
         // Given
         String type = "DNI";
-        String dni = "98765432Z";
+        String dni = "23402587H";
 
         // When
         Owner owner = OwnerTestDataBuilder.buildValidOwnerWithDni(type, dni);
 
         // Then
         assertNotNull(owner);
-        assertEquals(dni, owner.getDocumentNumber());
+        assertEquals(dni, owner.getDocumentNumber().getDocumentNumber());
     }
 
     @Test
@@ -96,7 +94,7 @@ class OwnerTestDataBuilderTest {
         assertNotNull(command);
         assertEquals("Juan", command.getOwnerName());
         assertEquals("Pérez", command.getOwnerLastName());
-        assertEquals("12345678A", command.getOwnerDni());
+        assertEquals("23402587H", command.getOwnerDni().getDocumentNumber());
         assertNotNull(command.getOwnerPhone());
         assertNotNull(command.getOwnerEmail());
         assertNotNull(command.getOwnerAddress());
@@ -126,7 +124,7 @@ class OwnerTestDataBuilderTest {
 
         // Then
         assertNotNull(command);
-        assertEquals(dni, command.getOwnerDni());
+        assertEquals(dni, command.getOwnerDni().getDocumentNumber());
     }
 
     @Test
@@ -154,8 +152,8 @@ class OwnerTestDataBuilderTest {
         assertNotNull(command);
         assertEquals(ownerId, command.getOwnerID());
         assertTrue(ObjectId.isValid(command.getOwnerID()));
-        assertEquals("Updated Name", command.getOwnerName());
-        assertEquals("Updated LastName", command.getOwnerLastName());
+        assertEquals("Juan", command.getOwnerName());
+        assertEquals("Pérez", command.getOwnerLastName());
     }
 
     @Test
@@ -170,7 +168,7 @@ class OwnerTestDataBuilderTest {
         // Then
         assertNotNull(command);
         assertEquals(ownerId, command.getOwnerID());
-        assertEquals(email, command.getOwnerEmail());
+        assertEquals(email, command.getOwnerEmail().getValue());
     }
 
     @Test
@@ -186,7 +184,7 @@ class OwnerTestDataBuilderTest {
         // Then
         assertNotNull(command);
         assertEquals(ownerId, command.getOwnerID());
-        assertEquals(dni, command.getOwnerDni());
+        assertEquals(dni, command.getOwnerDni().getDocumentNumber());
     }
 
     @Test

@@ -27,7 +27,7 @@ public class ClinicRepositoryAdapter implements ClinicRepositoryPort {
                 .legalType(clinic.getLegalType())
                 .address(clinic.getAddress())
                 .phone(clinic.getPhone())
-                .email(clinic.getEmail())
+                .email(clinic.getEmail().toString())
                 .logoUrl(clinic.getLogoUrl())
                 .scheduleOpenDays(clinic.getSchedule()  != null ? clinic.getSchedule().getOpenDays()   : null)
                 .scheduleOpenTime(clinic.getSchedule()  != null ? clinic.getSchedule().getOpenTime()   : null)
@@ -57,7 +57,7 @@ public class ClinicRepositoryAdapter implements ClinicRepositoryPort {
                 doc.getLegalType(),
                 doc.getAddress(),
                 doc.getPhone(),
-                doc.getEmail(),
+                new Email(doc.getEmail()),
                 doc.getLogoUrl(),
                 schedule,
                 doc.getStatus(),
@@ -92,7 +92,7 @@ public class ClinicRepositoryAdapter implements ClinicRepositoryPort {
     }
 
     @Override
-    public boolean existsByEmail(Email email) {
+    public boolean existsByEmail(String email) {
         return repository.existsByEmail(email);
     }
 
@@ -102,7 +102,7 @@ public class ClinicRepositoryAdapter implements ClinicRepositoryPort {
     }
 
     @Override
-    public boolean existsByEmailAndIdNot(Email email, String id) {
+    public boolean existsByEmailAndIdNot(String email, String id) {
         return repository.existsByEmailAndIdNot(email, id);
     }
 

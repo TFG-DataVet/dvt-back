@@ -91,7 +91,7 @@ class ClinicRepositoryIntegrationTest {
         ClinicDocument found = repository.findById(saved.getId()).orElseThrow();
 
         assertThat(found.getEmail()).isNotNull();
-        assertThat(found.getEmail().getValue()).isEqualTo("clinica@test.com");
+        assertThat(found.getEmail()).isEqualTo("clinica@test.com");
     }
 
     @Test
@@ -131,7 +131,7 @@ class ClinicRepositoryIntegrationTest {
         List<ClinicDocument> all = repository.findAll();
 
         assertThat(all).hasSize(2);
-        assertThat(all).extracting(c -> c.getEmail().getValue())
+        assertThat(all).extracting(c -> c.getEmail())
                 .containsExactlyInAnyOrder("clinica1@test.com", "clinica2@test.com");
     }
 
@@ -184,13 +184,13 @@ class ClinicRepositoryIntegrationTest {
     void existsByEmail_WhenEmailExists_ShouldReturnTrue() {
         repository.save(buildDocument("clinica@test.com", "12345678A"));
 
-        assertThat(repository.existsByEmail(new Email("clinica@test.com"))).isTrue();
+        assertThat(repository.existsByEmail("clinica@test.com")).isTrue();
     }
 
     @Test
     @DisplayName("existsByEmail: should return false when email is not registered")
     void existsByEmail_WhenEmailNotExists_ShouldReturnFalse() {
-        assertThat(repository.existsByEmail(new Email("noexiste@test.com"))).isFalse();
+        assertThat(repository.existsByEmail("noexiste@test.com")).isFalse();
     }
 
     // =========================================================================
@@ -220,7 +220,7 @@ class ClinicRepositoryIntegrationTest {
     void existsByEmailAndIdNot_WhenEmailBelongsToSameClinic_ShouldReturnFalse() {
         ClinicDocument saved = repository.save(buildDocument("clinica@test.com", "12345678A"));
 
-        assertThat(repository.existsByEmailAndIdNot(new Email("clinica@test.com"), saved.getId()))
+        assertThat(repository.existsByEmailAndIdNot("clinica@test.com", saved.getId()))
                 .isFalse();
     }
 
@@ -230,7 +230,7 @@ class ClinicRepositoryIntegrationTest {
         ClinicDocument clinic1 = repository.save(buildDocument("clinica1@test.com", "12345678A"));
         repository.save(buildDocument("clinica2@test.com", "87654321B"));
 
-        assertThat(repository.existsByEmailAndIdNot(new Email("clinica2@test.com"), clinic1.getId()))
+        assertThat(repository.existsByEmailAndIdNot("clinica2@test.com", clinic1.getId()))
                 .isTrue();
     }
 
@@ -239,7 +239,7 @@ class ClinicRepositoryIntegrationTest {
     void existsByEmailAndIdNot_WhenEmailNotExists_ShouldReturnFalse() {
         ClinicDocument saved = repository.save(buildDocument("clinica@test.com", "12345678A"));
 
-        assertThat(repository.existsByEmailAndIdNot(new Email("noexiste@test.com"), saved.getId()))
+        assertThat(repository.existsByEmailAndIdNot("noexiste@test.com", saved.getId()))
                 .isFalse();
     }
 
@@ -287,7 +287,7 @@ class ClinicRepositoryIntegrationTest {
                 .legalType(LegalType.AUTONOMO)
                 .address(address)
                 .phone(phone)
-                .email(new Email(emailValue))
+                .email(emailValue)
                 .logoUrl("https://example.com/logo.png")
                 .scheduleOpenDays("Lunes - Viernes")
                 .scheduleOpenTime(LocalTime.of(9, 0))

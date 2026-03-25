@@ -44,7 +44,7 @@ class ClinicServiceUpdateTest {
     @Mock
     private DomainEventPublisher domainEventPublisher;
 
-    private Email email;
+    private String email;
     private Phone phone;
     private Address address;
     private ClinicSchedule schedule;
@@ -52,7 +52,7 @@ class ClinicServiceUpdateTest {
     @BeforeEach
     void setUp() {
         clinicService = new ClinicService(clinicRepositoryPort, domainEventPublisher);
-        email    = new Email("clinica@test.com");
+        email    = "clinica@test.com";
         phone    = new Phone("+34912345678");
         address  = new Address("Calle Test 1", "Madrid", "28001");
         schedule = ClinicSchedule.of("Lunes - Viernes", LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra fines de semana");
@@ -77,7 +77,7 @@ class ClinicServiceUpdateTest {
         assertThat(result.getClinicName()).isEqualTo("Clínica Actualizada");
         assertThat(result.getLegalName()).isEqualTo("Clínica Actualizada S.L.");
         assertThat(result.getLegalNumber()).isEqualTo("12345678A");
-        assertThat(result.getEmail()).isEqualTo(email);
+        assertThat(result.getEmail().getValue()).isEqualTo(email);
         assertThat(result.getAddress()).isEqualTo(address);
         assertThat(result.getPhone()).isEqualTo(phone);
         assertThat(result.getLogoUrl()).isEqualTo("https://example.com/logo-nuevo.png");
@@ -327,7 +327,7 @@ class ClinicServiceUpdateTest {
                 LegalType.AUTONOMO,
                 address,
                 phone,
-                email,
+                new Email(email),
                 "https://example.com/logo.png",
                 schedule
         );
@@ -342,7 +342,7 @@ class ClinicServiceUpdateTest {
                 .legalType(LegalType.AUTONOMO)
                 .address(address)
                 .phone(phone)
-                .email(email)
+                .email(new Email(email))
                 .logoUrl("https://example.com/logo-nuevo.png")
                 .schedule(schedule)
                 .build();
