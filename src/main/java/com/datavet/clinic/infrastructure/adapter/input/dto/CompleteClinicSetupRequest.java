@@ -5,12 +5,14 @@ import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Getter
 @Setter
 public class CompleteClinicSetupRequest {
 
+    // Datos de la clínica
     @NotBlank(message = "La razón social es obligatoria")
     @Size(max = 150)
     private String legalName;
@@ -55,4 +57,33 @@ public class CompleteClinicSetupRequest {
     private LocalTime scheduleCloseTime;
 
     private String scheduleNotes;
+
+    // Datos del Employee del CLINIC_OWNER
+    @NotBlank(message = "El número de documento es obligatorio")
+    @Size(max = 20)
+    private String ownerDocumentType;
+
+    @NotBlank(message = "El número de documento es obligatorio")
+    @Size(max = 20)
+    private String ownerDocumentNumber;
+
+    @NotBlank(message = "La dirección del responsable es obligatoria")
+    @Size(max = 200)
+    private String ownerAddress;
+
+    @NotBlank(message = "La ciudad del responsable es obligatoria")
+    @Size(max = 50)
+    private String ownerCity;
+
+    @Size(max = 10)
+    private String ownerPostalCode;
+
+    @NotNull(message = "La fecha de alta es obligatoria")
+    private LocalDate ownerHireDate;
+
+    @Size(max = 255)
+    private String ownerAvatarUrl;
+
+    @Size(max = 100)
+    private String ownerSpeciality;
 }
