@@ -8,13 +8,11 @@ import com.datavet.owner.application.validation.CreateOwnerCommandValidator;
 import com.datavet.owner.application.validation.UpdateOwnerCommandValidator;
 import com.datavet.owner.domain.exception.OwnerAlreadyExistsException;
 import com.datavet.owner.domain.exception.OwnerNotFoundException;
-import com.datavet.owner.domain.exception.OwnerValidationException;
 import com.datavet.owner.domain.model.Owner;
 import com.datavet.shared.application.service.ApplicationService;
 import com.datavet.shared.domain.event.DomainEvent;
 import com.datavet.shared.domain.event.DomainEventPublisher;
 import com.datavet.shared.domain.exception.email.EmailAlreadyExistsException;
-import com.datavet.shared.domain.validation.ValidationResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +32,7 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
     public Owner createOwner(CreateOwnerCommand command) {
 
         // Check for duplicate email (value object is already created in command)
-        if ( ownerRepositoryPort.existsByEmail(command.getOwnerEmail())){
+        if ( ownerRepositoryPort.existsByEmail(command.getOwnerEmail().getValue())){
             throw new OwnerAlreadyExistsException("email", command.getOwnerEmail().getValue());
         }
 
@@ -74,15 +72,12 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
         Owner existing = ownerRepositoryPort.findById(command.getOwnerID())
                 .orElseThrow(() -> new OwnerNotFoundException(command.getOwnerID()));
 
-        boolean emailIsChanging = !existing.getEmail().getValue()
-                .equalsIgnoreCase(command.getOwnerEmail().getValue());
+        ownerRepositoryPort.findByEmail(command.getOwnerEmail().getValue())
+                .ifPresent(ownerWithSameEmail -> {
 
-        if (emailIsChanging) {
-            ownerRepositoryPort.findByEmail(command.getOwnerEmail())
-                    .ifPresent(o -> {
+                    if (!ownerWithSameEmail.getOwnerId().equals(command.getOwnerID()))
                         throw new EmailAlreadyExistsException("Owner", command.getOwnerEmail().getValue());
-                    });
-        }
+                });
 
         existing.update(
                 command.getOwnerName(),

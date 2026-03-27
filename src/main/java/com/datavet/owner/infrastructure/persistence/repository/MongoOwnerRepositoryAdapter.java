@@ -19,7 +19,7 @@ public interface MongoOwnerRepositoryAdapter extends MongoRepository<OwnerDocume
      * @param email the email to check
      * @return true if an owner with the email exists, false otherwise
      */
-    boolean existsByEmail(Email email);
+    boolean existsByEmail(String email);
 
     /**
      * Checks if an owner exists with the given DNI.
@@ -56,5 +56,5 @@ public interface MongoOwnerRepositoryAdapter extends MongoRepository<OwnerDocume
      */
     boolean existsByDocumentNumberAndIdNot(String dni, String id);
 
-    Optional<OwnerDocument> findByEmail(Email email);
+    Optional<OwnerDocument> findByEmail(String email);
 }

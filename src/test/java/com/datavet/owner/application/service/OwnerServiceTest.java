@@ -80,7 +80,6 @@ class OwnerServiceTest {
                 .acceptTermsAndCond(true)
                 .build();
 
-        when(createOwnerCommandValidator.validate(command)).thenReturn(new ValidationResult());
         when(ownerRepositoryPort.existsByEmail(any())).thenReturn(false);
         when(ownerRepositoryPort.existsByDocumentNumber(anyString())).thenReturn(false);
         when(ownerRepositoryPort.existsByPhone(any())).thenReturn(false);
@@ -110,7 +109,6 @@ class OwnerServiceTest {
                 .acceptTermsAndCond(true)
                 .build();
 
-        when(createOwnerCommandValidator.validate(command)).thenReturn(new ValidationResult());
         when(ownerRepositoryPort.existsByEmail(any())).thenReturn(true);
 
         // When/Then

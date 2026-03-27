@@ -23,7 +23,7 @@ public class OwnerRepositoryAdapter implements OwnerRepositoryPort {
     // domain → document
     private OwnerDocument toDocument(Owner owner) {
         return OwnerDocument.builder()
-                .id(owner.getId())
+                .id(owner.getOwnerId())
                 .clinicId(owner.getClinicId())
                 .firstName(owner.getName())
                 .lastName(owner.getLastName())
@@ -87,7 +87,7 @@ public class OwnerRepositoryAdapter implements OwnerRepositoryPort {
     }
 
     @Override
-    public boolean existsByEmail(Email email) {
+    public boolean existsByEmail(String email) {
         return repository.existsByEmail(email);
     }
 
@@ -107,7 +107,7 @@ public class OwnerRepositoryAdapter implements OwnerRepositoryPort {
     }
 
     @Override
-    public Optional<Owner> findByEmail(Email email) {
+    public Optional<Owner> findByEmail(String email) {
         return repository.findByEmail(email).map(this::toDomain);
     }
 

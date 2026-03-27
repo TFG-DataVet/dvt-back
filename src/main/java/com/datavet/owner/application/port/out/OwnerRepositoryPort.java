@@ -9,9 +9,9 @@ import java.util.Optional;
 
 public interface OwnerRepositoryPort extends Repository<Owner, String> {
     //Domain-specific methods preserved
-    boolean existsByEmail(Email email);
+    boolean existsByEmail(String email);
     boolean existsByDocumentNumber(String dni);
     boolean existsByPhone(Phone phone);
     boolean existsByDniAndOwnerIdNot(String legalNumber, String id);
-    Optional<Owner> findByEmail(Email email);
+    Optional<Owner> findByEmail(String email);
 }

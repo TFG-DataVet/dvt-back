@@ -25,7 +25,7 @@ class OwnerTestDataBuilderTest {
 
         // Then
         assertNotNull(owner);
-        assertNotNull(owner.getId());
+        assertNotNull(owner.getOwnerId());
         assertNotNull(owner.getClinicId());
         assertEquals("Juan", owner.getName());
         assertEquals("Pérez", owner.getLastName());
