@@ -11,9 +11,6 @@ import com.datavet.shared.domain.valueobject.Address;
 import com.datavet.shared.domain.valueobject.DocumentId;
 import com.datavet.shared.domain.valueobject.Email;
 import com.datavet.shared.domain.valueobject.Phone;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -27,7 +24,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Owner extends AggregateRoot<String> implements Document<String> {
 
-    private String id;
+    private String ownerId;
     private String clinicId;
     private String name;
     private String lastName;
@@ -42,9 +39,8 @@ public class Owner extends AggregateRoot<String> implements Document<String> {
     private LocalDateTime createdAt;
     private LocalDateTime updateAt;
 
-    @Override
     public String getId() {
-        return this.id;
+        return this.ownerId;
     }
 
     private void validate(){
@@ -130,7 +126,7 @@ public class Owner extends AggregateRoot<String> implements Document<String> {
         this.updateAt = LocalDateTime.now();
 
         validate();
-        addDomainEvent(OwnerUpdatedEvent.of(id, name));
+        addDomainEvent(OwnerUpdatedEvent.of(ownerId, name));
     }
 
     /**
@@ -138,7 +134,7 @@ public class Owner extends AggregateRoot<String> implements Document<String> {
      */
 
     public void delete(){
-        addDomainEvent(OwnerDeletedEvent.of(this.id, this.name));
+        addDomainEvent(OwnerDeletedEvent.of(this.ownerId, this.name));
     }
 
     public List<String> getPetIds() {
@@ -165,7 +161,7 @@ public class Owner extends AggregateRoot<String> implements Document<String> {
     public void desactivate() {
         this.active = false;
         this.updateAt = LocalDateTime.now();
-        addDomainEvent(OwnerUpdatedEvent.of(this.id, this.name));
+        addDomainEvent(OwnerUpdatedEvent.of(this.ownerId, this.name));
     }
 
     public void activate() {

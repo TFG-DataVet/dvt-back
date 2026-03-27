@@ -13,7 +13,7 @@ public class OwnerMapper {
         );
 
         return new OwnerResponse(
-                owner.getId(),
+                owner.getOwnerId(),
                 owner.getName(),
                 owner.getLastName(),
                 owner.getDocumentNumber(),
