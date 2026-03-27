@@ -1,0 +1,102 @@
+# Paso 1 para registrarnos en la app:
+#   Pediremos solamente los siguientes datos:
+#       - clinicName    : String
+#       - firstName     : String
+#       - lastName      : String
+#       - email         : String
+#       - phone         : String
+#       - password      : String
+#
+#   Una vez ejecutado esto, nos aparecerá en la consola un mensaje de Email de verificación con un Token
+#   Dicho Token lo debemos de copiar para poder pegarlo en el paso 2
+
+###
+POST http://localhost:8080/auth/register
+Content-Type: application/json
+
+{
+  "clinicName": "MisMascotas",
+  "firstName": "Jesús",
+  "lastName": "Santiago",
+  "email": "mismascotas@gmail.com",
+  "phone": "+34-123456789",
+  "password": "Mi_super_contraseña_1"
+}
+
+###
+
+# Paso 2:
+#   Con el token que copialos lo pegalo en el siguiente endpoint y ejecutado.
+#   Esto nos dará una respuesta parecida a esto:
+#       {
+#         "accessToken": "JWT_TEMPORAL_ONBOARDING", // Debemos de copiar este token ahora
+#           "refreshToken": null,
+#           "tokenType": "Bearer",
+#           "expiresIn": 3600,
+#           "user": {
+#               "userId": "...",
+#               "employeeId": null,
+#               "clinicId": "...",
+#               "email": "...",
+#               "role": "CLINIC_OWNER"
+#             }
+#       }
+#   Con esta respuesta debemos de copiar el token de accessToken, que lo usaremos en el paso 3.
+
+GET http://localhost:8080/auth/verify-email?token=83b5bed1-584d-474f-9e7d-76c92940f03d
+
+
+###
+
+# Paso 3:
+#   En este paso completaremos el registro de la clinica, con el terminaremos de llenar los datos de la clinica.
+#   Los cuales son:
+#       legalName               : String
+#       legalNumber             : String
+#       legalType               : Enum [AUTONOMO SOCIEDAD_LIMITADA SOCIEDAD_ANONIMA SOCIEDAD_CIVIL COMUNIDAD_DE_BIENES OTHER]
+#       address                 : String
+#       city                    : String
+#       codePostal              : String
+#       phone                   : String
+#       email                   : String
+#       logoUrl                 : String
+#       schedulesOpenDays       : String
+#       scheduleOpenTime        : LocalTime
+#       scheduleCloseTime       : LocalTime
+#       scheduleNotes           : String
+#       ownerDocumentId         : Enum [DNI, NIE, PASAPORTE]
+#       ownerDocumentNumber     : String
+#       ownerAddress            : String
+#       ownerCity               : String
+#       ownerPostalCode         : String
+#       ownerHireDate           : LocalDate
+#       ownerAvatarUrl          : String
+#       ownerSpeciality         : String
+
+PATCH http://localhost:8080/clinic/d9febbc9-aaf1-4f31-a76d-8db9257df226/complete-setup
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiIxNjlkZGQzOS0xOGNjLTRmM2QtODg1Yi04NWNjZWVhNDBhYWQiLCJjbGluaWNJZCI6ImQ5ZmViYmM5LWFhZjEtNGYzMS1hNzZkLThkYjkyNTdkZjIyNiIsInNjb3BlIjoiT05CT0FSRElOR19PTkxZIiwiaWF0IjoxNzc0NjUwNTgwLCJleHAiOjE3NzQ2NTQxODB9.5jOLWFe3S5YHzkNFH8ySxsaQVdDEX9932_QUwPNkRPCWejwZLo3q51hoKO4wndN9
+
+{
+  "legalName": "MisMascotas SL",
+  "legalNumber": "123456789",
+  "legalType": "SOCIEDAD_LIMITADA",
+  "address": "AV. Imaginación",
+  "city": "Narnia",
+  "codePostal": "28285",
+  "phone": "1234656789",
+  "email": "emailDelaClinica@gmail.com",
+  "logoUrl": "esto_es_un_link_de_foto",
+  "scheduleOpenDays": "Lunes, Martes, Miercoles, Jueves, Viernes, Sabado",
+  "scheduleOpenTime": "09:00",
+  "scheduleCloseTime": "18:00",
+  "scheduleNotes": "Atendemos urgencias llamando al +34-321456987",
+  "ownerDocumentType": "DNI",
+  "ownerDocumentNumber": "71515267X",
+  "ownerAddress": "AV. Creatividad",
+  "ownerCity": "Madagascar",
+  "ownerPostalCode": "28283",
+  "ownerHireDate": "2024-01-01",
+  "ownerAvatarUrl": "esto_es_el_avatar_del_dueño",
+  "ownerSpeciality": "Dueño"
+}

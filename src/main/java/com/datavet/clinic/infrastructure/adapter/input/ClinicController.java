@@ -1,5 +1,8 @@
 package com.datavet.clinic.infrastructure.adapter.input;
 
+import com.datavet.auth.application.dto.TokenResponse;
+import com.datavet.auth.application.port.in.AuthUseCase;
+import com.datavet.auth.infrastructure.security.AuthenticatedUser;
 import com.datavet.clinic.application.dto.ClinicResponse;
 import com.datavet.clinic.application.mapper.ClinicMapper;
 import com.datavet.clinic.application.port.in.ClinicUseCase;
@@ -11,11 +14,13 @@ import com.datavet.clinic.domain.model.Clinic;
 import com.datavet.clinic.domain.valueobject.ClinicSchedule;
 import com.datavet.clinic.infrastructure.adapter.input.dto.*;
 import com.datavet.shared.domain.valueobject.Address;
+import com.datavet.shared.domain.valueobject.DocumentId;
 import com.datavet.shared.domain.valueobject.Email;
 import com.datavet.shared.domain.valueobject.Phone;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +31,7 @@ import java.util.List;
 public class ClinicController {
 
     private final ClinicUseCase clinicUseCase;
+    private final AuthUseCase authUseCase;
 
     /**
      * Paso 1 del onboarding — crea la clínica en estado PENDING_SETUP.
@@ -49,17 +55,32 @@ public class ClinicController {
      * Paso 3 del onboarding — completa los datos de la clínica.
      * Requiere JWT temporal con scope ONBOARDING_ONLY.
      */
+    /**
+     * Paso 3 del onboarding — completa los datos de la clínica,
+     * crea el Employee del CLINIC_OWNER y devuelve JWT definitivo.
+     * Requiere JWT temporal con scope ONBOARDING_ONLY.
+     */
     @PatchMapping("/{id}/complete-setup")
-    public ResponseEntity<ClinicResponse> completeSetup(
+    public ResponseEntity<TokenResponse> completeSetup(
             @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody CompleteClinicSetupRequest request) {
+
+        // Validamos que el JWT sea de onboarding
+        if (!currentUser.hasOnboardingAccess()) {
+            return ResponseEntity.status(403).build();
+        }
 
         CompleteClinicSetupCommand command = CompleteClinicSetupCommand.builder()
                 .clinicId(id)
+                .userId(currentUser.getUserId())
                 .legalName(request.getLegalName())
                 .legalNumber(request.getLegalNumber())
                 .legalType(request.getLegalType())
-                .address(new Address(request.getAddress(), request.getCity(), request.getCodePostal()))
+                .address(new Address(
+                        request.getAddress(),
+                        request.getCity(),
+                        request.getCodePostal()))
                 .phone(new Phone(request.getPhone()))
                 .email(new Email(request.getEmail()))
                 .logoUrl(request.getLogoUrl())
@@ -68,10 +89,20 @@ public class ClinicController {
                         request.getScheduleOpenTime(),
                         request.getScheduleCloseTime(),
                         request.getScheduleNotes()))
+                .ownerDocumentNumber(DocumentId.of(
+                        request.getOwnerDocumentType(), request.getOwnerDocumentNumber()))
+                .ownerAddress(new Address(
+                        request.getOwnerAddress(),
+                        request.getOwnerCity(),
+                        request.getOwnerPostalCode()))
+                .ownerHireDate(request.getOwnerHireDate())
+                .ownerAvatarUrl(request.getOwnerAvatarUrl())
+                .ownerSpeciality(request.getOwnerSpeciality())
                 .build();
 
-        Clinic clinic = clinicUseCase.completeClinicSetup(command);
-        return ResponseEntity.ok(ClinicMapper.toResponse(clinic));
+        // AuthService orquesta: completa clínica + crea Employee + activa User
+        TokenResponse tokenResponse = authUseCase.completeOnboarding(command);
+        return ResponseEntity.ok(tokenResponse);
     }
 
     /**
