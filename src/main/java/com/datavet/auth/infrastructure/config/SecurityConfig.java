@@ -36,6 +36,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,  "/auth/verify-email").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/resend-verification").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/activate-account").permitAll()
 
                         // Onboarding — requiere JWT temporal (validado en el controller)
                         .requestMatchers(HttpMethod.PATCH, "/clinic/*/complete-setup").authenticated()

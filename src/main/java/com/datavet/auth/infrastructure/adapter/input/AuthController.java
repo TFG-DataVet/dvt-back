@@ -84,7 +84,14 @@ public class AuthController {
         );
 
         return ResponseEntity.ok(
-                TokenResponse.of(onboardingToken, null, 3600L, userInfo));
+                TokenResponse.of(onboardingToken, null, 3600L, userInfo, "COMPLETE_SETUP"));
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Void> resendVerification(
+            @RequestBody @Valid ResendVerificationRequest request) {
+        authUseCase.resendVerificationEmail(request.getEmail());
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -146,6 +153,14 @@ public class AuthController {
                         .build()
         );
 
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Activar cuenta de empleado*/
+    @PostMapping("/activate-account")
+    public ResponseEntity<Void> activateAccount(
+            @Valid @RequestBody ActivateAccountRequest request) {
+        authUseCase.activateAccount(request.getToken(), request.getPassword());
         return ResponseEntity.noContent().build();
     }
 }

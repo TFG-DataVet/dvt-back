@@ -61,8 +61,8 @@ public class User extends AggregateRoot<String> implements Document<String> {
             result.addError("User", "El email no puede ser nulo");
         }
 
-        if (password == null) {
-            result.addError("User", "La contraseña no puede ser nula");
+        if (password == null && status == UserStatus.ACTIVE) {
+            result.addError("User", "La contraseña no puede ser nula para usuarios activos");
         }
 
         if (role == null) {
@@ -165,6 +165,39 @@ public class User extends AggregateRoot<String> implements Document<String> {
         return user;
     }
 
+    /** Crear un User para un empleado que no ha confirmado su correo ni tiene contraseña */
+    public static User createPendingEmployee(String clinicId, String employeeId,
+                                             Email email, UserRole role,
+                                             String emailVerificationToken) {
+        if (role == UserRole.SUPER_ADMIN || role == UserRole.CLINIC_OWNER) {
+            throw new InvalidCredentialsException(
+                    "Este método solo puede crear usuarios de tipo empleado");
+        }
+
+        String uuid = UUID.randomUUID().toString();
+
+        User user = new User(
+                uuid,
+                employeeId,
+                clinicId,
+                email,
+                null,       // sin password hasta que el empleado la establezca
+                role,
+                UserStatus.PENDING_EMAIL_VERIFICATION,
+                null,       // firstName
+                null,       // lastName
+                emailVerificationToken,
+                LocalDateTime.now().plusHours(24),
+                LocalDateTime.now(),
+                null
+        );
+
+        // Saltamos validate() porque password es null intencionalmente
+        user.addDomainEvent(
+                UserCreatedEvent.of(uuid, email.getValue(), role, clinicId));
+        return user;
+    }
+
     /**
      * Reconstituye un User desde persistencia.
      */
@@ -208,6 +241,18 @@ public class User extends AggregateRoot<String> implements Document<String> {
         addDomainEvent(UserEmailVerifiedEvent.of(this.id, this.email.getValue()));
     }
 
+//    Enviar nuevo correo de verificación
+
+    public void renewVerificationToken(String newToken) {
+        if (this.status != UserStatus.PENDING_EMAIL_VERIFICATION) {
+            throw new InvalidCredentialsException(
+                    "Este usuario no está pendiente de verificación de email");
+        }
+        this.emailVerificationToken  = newToken;
+        this.emailVerificationExpiry = LocalDateTime.now().plusHours(24);
+        this.updatedAt               = LocalDateTime.now();
+    }
+
     public void activate(String employeeId) {
         if (this.status != UserStatus.PENDING_CLINIC_SETUP) {
             throw new InvalidCredentialsException(
@@ -217,6 +262,28 @@ public class User extends AggregateRoot<String> implements Document<String> {
         this.employeeId = employeeId;
         this.status     = UserStatus.ACTIVE;
         this.updatedAt  = LocalDateTime.now();
+    }
+
+    public void activateWithPassword(String token, HashedPassword password) {
+        if (this.status != UserStatus.PENDING_EMAIL_VERIFICATION) {
+            throw new InvalidCredentialsException(
+                    "Esta cuenta no está pendiente de activación");
+        }
+
+        if (this.emailVerificationToken == null
+                || !this.emailVerificationToken.equals(token)) {
+            throw new EmailTokenExpiredException();
+        }
+
+        if (LocalDateTime.now().isAfter(this.emailVerificationExpiry)) {
+            throw new EmailTokenExpiredException();
+        }
+
+        this.password                = password;
+        this.status                  = UserStatus.ACTIVE;
+        this.emailVerificationToken  = null;
+        this.emailVerificationExpiry = null;
+        this.updatedAt               = LocalDateTime.now();
     }
 
     public void changePassword(HashedPassword newPassword) {

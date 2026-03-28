@@ -35,13 +35,12 @@ public class EmployeeController {
             @Valid @RequestBody CreateEmployeeRequest request) {
 
         CreateEmployeeCommand command = CreateEmployeeCommand.builder()
-                .userId(request.getUserId())
-                .clinicId(currentUser.getClinicId())   // TODO: vendrá del JWT
-//                .clinicId("id_clinic")   // TODO: vendrá del JWT
+                .clinicId(currentUser.getClinicId())
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .documentNumber(DocumentId.of(request.getDocumentType(), request.getDocumentNumber()))
                 .phone(new Phone(request.getPhone()))
+                .email(request.getEmail())
                 .address(new Address(request.getAddress(), request.getCity(), request.getPostalCode()))
                 .avatarUrl(request.getAvatarUrl())
                 .speciality(request.getSpeciality())
@@ -180,11 +179,4 @@ public class EmployeeController {
         return ResponseEntity.ok(responses);
     }
 
-    /**
-     * TODO: Cuando Auth esté implementado, este método leerá el clinicId
-     *       directamente del SecurityContext en lugar de recibirlo como parámetro.
-     */
-    private String extractClinicIdFromContext() {
-        return null;
-    }
 }

@@ -3,14 +3,15 @@
 ## Orden de ejecución
 
 ```
-1. Registrar clínica (onboarding paso 1)
-2. Verificar email (onboarding paso 2)
-3. Completar setup de clínica (onboarding paso 3)  ← devuelve JWT definitivo
-4. Login (alternativa a paso 3 si ya tienes cuenta)
-5. Registrar empleado
-6. Registrar owner
-7. Registrar mascota
-8. Login con el empleado
+1.  Registrar clínica (onboarding paso 1)
+2.  Verificar email (onboarding paso 2)
+3.  Completar setup de clínica (onboarding paso 3) ← devuelve JWT definitivo
+4.  Login (para sesiones posteriores o si el JWT temporal expiró)
+5.  Registrar empleado
+6.  Empleado activa su cuenta (establece contraseña)
+7.  Login con el empleado
+8.  Registrar owner (dueño de mascota)
+9.  Registrar mascota
 ```
 
 ---
@@ -34,6 +35,7 @@ Content-Type: application/json
   "password": ""
 }
 ```
+
 **Respuesta esperada:** `201 Created`
 ```json
 {
@@ -43,7 +45,8 @@ Content-Type: application/json
   "message": "Registro completado. Revisa tu email para verificar tu cuenta."
 }
 ```
-> El token de verificación aparecerá en los **logs de la consola** (MVP sin SMTP real).
+
+> El token de verificación aparecerá en los **logs de la consola**.
 > Copia el token del log — lo necesitas en el paso 2.
 
 ---
@@ -62,6 +65,7 @@ Content-Type: application/json
   "refreshToken": null,
   "tokenType": "Bearer",
   "expiresIn": 3600,
+  "nextStep": "COMPLETE_SETUP",
   "user": {
     "userId": "...",
     "employeeId": null,
@@ -71,8 +75,33 @@ Content-Type: application/json
   }
 }
 ```
+
 > Guarda el `accessToken` — es el JWT temporal con scope `ONBOARDING_ONLY`.
-> Lo necesitas en el paso 3.
+> Expira en 1 hora. Si expira antes de completar el paso 3, usa el **paso 4 (login)**
+> para obtener un nuevo JWT temporal automáticamente.
+
+---
+
+## 2b. Reenviar email de verificación (si el token expiró antes del paso 2)
+
+Solo necesario si el token del paso 1 expiró antes de verificarlo.
+
+**Método:** `POST`
+**URL:** `http://localhost:8080/auth/resend-verification`
+**Headers:**
+```
+Content-Type: application/json
+```
+**Body:**
+```json
+{
+  "email": ""
+}
+```
+
+**Respuesta esperada:** `204 No Content`
+
+> El nuevo token aparecerá en los logs de consola.
 
 ---
 
@@ -112,6 +141,7 @@ Authorization: Bearer JWT_TEMPORAL_DEL_PASO_2
   "ownerSpeciality": ""
 }
 ```
+
 > Valores válidos para `legalType`:
 > `AUTONOMO` `SOCIEDAD_LIMITADA` `SOCIEDAD_ANONIMA` `SOCIEDAD_CIVIL` `COMUNIDAD_DE_BIENES` `OTHER`
 
@@ -122,6 +152,7 @@ Authorization: Bearer JWT_TEMPORAL_DEL_PASO_2
   "refreshToken": "...",
   "tokenType": "Bearer",
   "expiresIn": 3600,
+  "nextStep": null,
   "user": {
     "userId": "...",
     "employeeId": "...",
@@ -131,12 +162,17 @@ Authorization: Bearer JWT_TEMPORAL_DEL_PASO_2
   }
 }
 ```
+
 > Guarda el `accessToken` y el `refreshToken`.
 > A partir de aquí usas el `accessToken` en todas las llamadas siguientes.
 
 ---
 
-## 4. Login (para sesiones posteriores)
+## 4. Login
+
+Úsalo en dos situaciones:
+- Sesiones posteriores (el JWT definitivo expiró)
+- El JWT temporal del paso 2 expiró antes de completar el paso 3
 
 **Método:** `POST`
 **URL:** `http://localhost:8080/auth/login`
@@ -151,13 +187,17 @@ Content-Type: application/json
   "password": ""
 }
 ```
+
 **Respuesta esperada:** `200 OK`
+
+Si el usuario ya completó el setup (`nextStep: null`):
 ```json
 {
-  "accessToken": "...",
+  "accessToken": "JWT_DEFINITIVO",
   "refreshToken": "...",
   "tokenType": "Bearer",
   "expiresIn": 3600,
+  "nextStep": null,
   "user": {
     "userId": "...",
     "employeeId": "...",
@@ -167,6 +207,21 @@ Content-Type: application/json
   }
 }
 ```
+
+Si el usuario aún no completó el setup (`nextStep: "COMPLETE_SETUP"`):
+```json
+{
+  "accessToken": "JWT_TEMPORAL_ONBOARDING",
+  "refreshToken": null,
+  "tokenType": "Bearer",
+  "expiresIn": 3600,
+  "nextStep": "COMPLETE_SETUP",
+  "user": { ... }
+}
+```
+
+> Si recibes `nextStep: "COMPLETE_SETUP"` ve directamente al paso 3
+> usando el `accessToken` recibido.
 
 ---
 
@@ -182,7 +237,7 @@ Authorization: Bearer JWT_DEL_PASO_3_O_4
 **Body:**
 ```json
 {
-  "userId": "",
+  "email": "",
   "firstName": "",
   "lastName": "",
   "documentNumber": "",
@@ -197,11 +252,13 @@ Authorization: Bearer JWT_DEL_PASO_3_O_4
   "role": "CLINIC_VETERINARIAN"
 }
 ```
-> Valores válidos para `role`:
-> `CLINIC_ADMIN` `CLINIC_VETERINARIAN` `CLINIC_STAFF`
+
+> Valores válidos para `role`: `CLINIC_ADMIN` `CLINIC_VETERINARIAN` `CLINIC_STAFF`
 >
 > `licenseNumber` es obligatorio si `role` es `CLINIC_VETERINARIAN`.
-> `userId` es el ID del User que se habrá creado previamente con el endpoint de creación de usuario empleado (pendiente de implementar en el MVP — por ahora puedes pasar cualquier string).
+>
+> Al crear el empleado se le enviará automáticamente un email de activación.
+> El token de activación aparecerá en los **logs de la consola**.
 
 **Respuesta esperada:** `201 Created`
 ```json
@@ -212,20 +269,92 @@ Authorization: Bearer JWT_DEL_PASO_3_O_4
   "firstName": "...",
   "lastName": "...",
   "fullName": "...",
+  "documentNumber": "...",
+  "phone": "...",
+  "speciality": "...",
+  "licenseNumber": "...",
+  "hireDate": "...",
+  "active": true,
   ...
+}
+```
+
+> Copia el token de activación del log de consola — lo necesitas en el paso 6.
+
+---
+
+## 6. Empleado activa su cuenta
+
+El empleado usa el token recibido por email para establecer su contraseña
+y activar su cuenta.
+
+**Método:** `POST`
+**URL:** `http://localhost:8080/auth/activate-account`
+**Headers:**
+```
+Content-Type: application/json
+```
+**Body:**
+```json
+{
+  "token": "TOKEN_DEL_LOG_DE_CONSOLA",
+  "password": ""
+}
+```
+
+> La contraseña debe tener mínimo 8 caracteres, al menos una mayúscula,
+> una minúscula y un número.
+
+**Respuesta esperada:** `204 No Content`
+
+> La cuenta queda activa. El empleado ya puede hacer login.
+
+---
+
+## 7. Login con el empleado
+
+**Método:** `POST`
+**URL:** `http://localhost:8080/auth/login`
+**Headers:**
+```
+Content-Type: application/json
+```
+**Body:**
+```json
+{
+  "email": "",
+  "password": ""
+}
+```
+
+**Respuesta esperada:** `200 OK`
+```json
+{
+  "accessToken": "...",
+  "refreshToken": "...",
+  "tokenType": "Bearer",
+  "expiresIn": 3600,
+  "nextStep": null,
+  "user": {
+    "userId": "...",
+    "employeeId": "...",
+    "clinicId": "...",
+    "email": "...",
+    "role": "CLINIC_VETERINARIAN"
+  }
 }
 ```
 
 ---
 
-## 6. Registrar owner (dueño de mascota)
+## 8. Registrar owner (dueño de mascota)
 
 **Método:** `POST`
 **URL:** `http://localhost:8080/owner`
 **Headers:**
 ```
 Content-Type: application/json
-Authorization: Bearer JWT_DEL_PASO_3_O_4
+Authorization: Bearer JWT_DEL_PASO_3_4_O_7
 ```
 **Body:**
 ```json
@@ -241,6 +370,7 @@ Authorization: Bearer JWT_DEL_PASO_3_O_4
   "url": ""
 }
 ```
+
 **Respuesta esperada:** `201 Created`
 ```json
 {
@@ -250,21 +380,27 @@ Authorization: Bearer JWT_DEL_PASO_3_O_4
   "dni": "...",
   "phone": "...",
   "email": "...",
-  "address": { ... }
+  "address": {
+    "street": "...",
+    "city": "...",
+    "postalCode": "...",
+    "fullAddress": "..."
+  }
 }
 ```
+
 > Guarda el `ownerId` — lo necesitas para registrar la mascota.
 
 ---
 
-## 7. Registrar mascota
+## 9. Registrar mascota
 
 **Método:** `POST`
 **URL:** `http://localhost:8080/pets`
 **Headers:**
 ```
 Content-Type: application/json
-Authorization: Bearer JWT_DEL_PASO_3_O_4
+Authorization: Bearer JWT_DEL_PASO_3_4_O_7
 ```
 **Body:**
 ```json
@@ -283,10 +419,11 @@ Authorization: Bearer JWT_DEL_PASO_3_O_4
   "ownerPhone": ""
 }
 ```
+
 > Valores válidos para `sex`: `MALE` `FEMALE` `UNKNOWN`
 >
 > `ownerId`, `ownerName`, `ownerLastName` y `ownerPhone` deben corresponder
-> al owner registrado en el paso 6.
+> al owner registrado en el paso 8.
 
 **Respuesta esperada:** `201 Created`
 ```json
@@ -300,47 +437,33 @@ Authorization: Bearer JWT_DEL_PASO_3_O_4
   "dateOfBirth": "...",
   "ageInYears": 0,
   "chipNumber": "...",
-  "owner": { ... },
-  ...
+  "owner": {
+    "ownerId": "...",
+    "name": "...",
+    "lastName": "...",
+    "phone": "...",
+    "fullName": "..."
+  },
+  "createdAt": "...",
+  "updatedAt": null
 }
 ```
-
----
-
-## 8. Login con el empleado
-
-> Primero necesitas crear el User del empleado. En el MVP esto se hace
-> llamando al endpoint interno de creación de usuario empleado.
-> Si no lo has implementado aún, salta este paso.
-
-**Método:** `POST`
-**URL:** `http://localhost:8080/auth/login`
-**Headers:**
-```
-Content-Type: application/json
-```
-**Body:**
-```json
-{
-  "email": "",
-  "password": ""
-}
-```
-**Respuesta esperada:** `200 OK` — misma estructura que el paso 4.
 
 ---
 
 ## Referencia rápida de tokens
 
-| Paso | Token obtenido | Úsalo en |
-|---|---|---|
-| Paso 2 | JWT temporal `ONBOARDING_ONLY` | Solo en el paso 3 |
-| Paso 3 / Login | JWT definitivo `FULL_ACCESS` | Todos los demás endpoints |
-| Paso 3 / Login | Refresh token | `POST /auth/refresh` cuando expire el access token |
+| Paso | Token obtenido | Scope | Úsalo en |
+|---|---|---|---|
+| Paso 2 / Login con setup pendiente | JWT temporal | `ONBOARDING_ONLY` | Solo en el paso 3 |
+| Paso 3 / Login normal | JWT definitivo | `FULL_ACCESS` | Todos los demás endpoints |
+| Paso 3 / Login normal | Refresh token | — | `POST /auth/refresh` |
+
+---
 
 ## Refresh del access token
 
-Cuando el `accessToken` expire (3600 segundos), llama a:
+Cuando el `accessToken` expire:
 
 **Método:** `POST`
 **URL:** `http://localhost:8080/auth/refresh`
@@ -351,6 +474,52 @@ Content-Type: application/json
 **Body:**
 ```json
 {
-  "refreshToken": "TU_REFRESH_TOKEN"
+  "refreshToken": ""
 }
 ```
+
+**Respuesta esperada:** `200 OK` — mismo formato que el login.
+
+---
+
+## Cambiar contraseña
+
+**Método:** `PATCH`
+**URL:** `http://localhost:8080/auth/password`
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer JWT_DEFINITIVO
+```
+**Body:**
+```json
+{
+  "currentPassword": "",
+  "newPassword": ""
+}
+```
+
+**Respuesta esperada:** `204 No Content`
+
+> Tras cambiar la contraseña todos los refresh tokens activos quedan invalidados.
+> Tendrás que hacer login de nuevo en todos los dispositivos.
+
+---
+
+## Logout
+
+**Método:** `POST`
+**URL:** `http://localhost:8080/auth/logout`
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer JWT_DEFINITIVO
+```
+**Body:**
+```json
+{
+  "refreshToken": ""
+}
+```
+
+**Respuesta esperada:** `204 No Content`

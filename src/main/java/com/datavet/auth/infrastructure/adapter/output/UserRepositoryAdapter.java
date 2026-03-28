@@ -28,7 +28,7 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
                 .employeeId(user.getEmployeeId())
                 .clinicId(user.getClinicId())
                 .email(user.getEmail().getValue())
-                .passwordHash(user.getPassword().getValue())
+                .passwordHash(user.getPassword() != null ? user.getPassword().getValue() : null)
                 .role(user.getRole())
                 .status(user.getStatus())
                 .firstName(user.getFirstName())
@@ -44,7 +44,7 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
                 doc.getEmployeeId(),
                 doc.getClinicId(),
                 new Email(doc.getEmail()),
-                HashedPassword.ofHash(doc.getPasswordHash()),
+                doc.getPasswordHash() != null ? HashedPassword.ofHash(doc.getPasswordHash()) : null,
                 doc.getRole(),
                 doc.getStatus(),
                 doc.getFirstName(),

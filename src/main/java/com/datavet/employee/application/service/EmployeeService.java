@@ -1,9 +1,10 @@
 package com.datavet.employee.application.service;
 
-import com.datavet.employee.application.mapper.EmployeeMapper;
+import com.datavet.auth.domain.model.UserRole;
 import com.datavet.employee.application.port.in.EmployeeUseCase;
 import com.datavet.employee.application.port.in.command.*;
 import com.datavet.employee.application.port.out.EmployeeRepositoryPort;
+import com.datavet.employee.application.port.out.UserCreationPort;
 import com.datavet.employee.domain.exception.EmployeeAlreadyExistsException;
 import com.datavet.employee.domain.exception.EmployeeNotFoundException;
 import com.datavet.employee.domain.model.Employee;
@@ -26,19 +27,19 @@ public class EmployeeService implements EmployeeUseCase, ApplicationService {
 
     private final EmployeeRepositoryPort employeeRepositoryPort;
     private final DomainEventPublisher   domainEventPublisher;
+    private final UserCreationPort userCreationPort;
 
     @Override
     @Transactional
     public Employee createEmployee(CreateEmployeeCommand command) {
-        // Unicidad del documentNumber dentro de la clínica
         if (employeeRepositoryPort.existsByDocumentNumberAndClinicId(
                 command.getDocumentNumber().getDocumentNumber(), command.getClinicId())) {
             throw new EmployeeAlreadyExistsException("documentNumber", command.getDocumentNumber().getDocumentNumber());
         }
 
-        // El dominio valida todos los campos y licenseNumber si role == CLINIC_VETERINARIAN
+        // Creamos el Employee primero para obtener su ID
         Employee employee = Employee.create(
-                command.getUserId(),
+                null,           // userId — se asigna tras crear el User
                 command.getClinicId(),
                 command.getFirstName(),
                 command.getLastName(),
@@ -52,8 +53,20 @@ public class EmployeeService implements EmployeeUseCase, ApplicationService {
                 command.getRole()
         );
 
-        publishDomainEvents(employee);
-        return employeeRepositoryPort.save(employee);
+
+        // Creamos el User pendiente de activación
+        String userId = userCreationPort.createPendingEmployeeUser(
+                command.getClinicId(),
+                employee.getId(),
+                command.getEmail(),
+                UserRole.valueOf(command.getRole())
+        );
+        employee.assignUserId(userId);
+
+        Employee savedEmployee = employeeRepositoryPort.save(employee);
+
+        publishDomainEvents(savedEmployee);
+        return employeeRepositoryPort.save(savedEmployee);
     }
 
     @Override

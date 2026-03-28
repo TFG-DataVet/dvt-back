@@ -22,4 +22,6 @@ public interface EmailPort {
      * @param clinicName    nombre de la clínica
      */
     void sendWelcomeEmail(String toEmail, String clinicName);
+
+    void sendEmployeeActivationEmail(String toEmail, String token);
 }

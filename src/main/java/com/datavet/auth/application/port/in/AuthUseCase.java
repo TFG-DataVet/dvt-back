@@ -1,10 +1,6 @@
 package com.datavet.auth.application.port.in;
 
-import com.datavet.auth.application.port.in.command.ChangePasswordCommand;
-import com.datavet.auth.application.port.in.command.CreateEmployeeUserCommand;
-import com.datavet.auth.application.port.in.command.LoginCommand;
-import com.datavet.auth.application.port.in.command.RegisterClinicOwnerCommand;
-import com.datavet.auth.application.port.in.command.VerifyEmailCommand;
+import com.datavet.auth.application.port.in.command.*;
 import com.datavet.auth.application.dto.TokenResponse;
 import com.datavet.auth.domain.model.User;
 import com.datavet.clinic.application.port.in.command.CompleteClinicSetupCommand;
@@ -31,4 +27,8 @@ public interface AuthUseCase extends UseCase {
     void          deactivateUser    (String userId, String reason);
 
     TokenResponse completeOnboarding(CompleteClinicSetupCommand command);
+
+    void resendVerificationEmail(String email);
+
+    void activateAccount(String token, String rawPassword);
 }

@@ -23,6 +23,7 @@ public class CreateEmployeeCommand {
     String    lastName;
     DocumentId documentNumber;
     Phone     phone;
+    String        email;
     Address   address;
     String    avatarUrl;
     String    speciality;
