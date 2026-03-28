@@ -9,6 +9,8 @@ import com.datavet.shared.domain.valueobject.Phone;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -19,56 +21,37 @@ class OwnerTestDataBuilderTest {
     @Test
     void buildValidOwner_shouldCreateOwnerWithObjectIdStrings() {
         // When
-        Owner owner = OwnerTestDataBuilder.buildValidOwner();
+        Owner owner = OwnerTestDataBuilder.aValidOwner();
 
         // Then
         assertNotNull(owner);
-        assertNotNull(owner.getId());
+        assertNotNull(owner.getOwnerId());
         assertNotNull(owner.getClinicId());
-        assertTrue(ObjectId.isValid(owner.getId()), "Owner ID should be a valid ObjectId string");
-        assertTrue(ObjectId.isValid(owner.getClinicId()), "Clinic ID should be a valid ObjectId string");
         assertEquals("Juan", owner.getName());
         assertEquals("Pérez", owner.getLastName());
-        assertEquals("12345678A", owner.getDocumentNumber());
-    }
-
-    @Test
-    void buildValidOwnerWithId_shouldCreateOwnerWithSpecificId() {
-        // Given
-        String specificId = new ObjectId().toString();
-
-        // When
-        Owner owner = OwnerTestDataBuilder.buildValidOwnerWithId(specificId);
-
-        // Then
-        assertNotNull(owner);
-        assertEquals(specificId, owner.getId());
-        assertTrue(ObjectId.isValid(owner.getClinicId()));
+        assertEquals("23402587H", owner.getDocumentNumber().getDocumentNumber());
     }
 
     @Test
     void buildValidOwnerWithIds_shouldCreateOwnerWithSpecificIds() {
         // Given
-        String ownerId = new ObjectId().toString();
-        String clinicId = new ObjectId().toString();
+        String clinicId = UUID.randomUUID().toString();
 
         // When
-        Owner owner = OwnerTestDataBuilder.buildValidOwnerWithIds(ownerId, clinicId);
+        Owner owner = OwnerTestDataBuilder.buildValidOwnerWithId(clinicId);
 
         // Then
         assertNotNull(owner);
-        assertEquals(ownerId, owner.getId());
         assertEquals(clinicId, owner.getClinicId());
     }
 
     @Test
     void buildValidOwnerWithEmail_shouldCreateOwnerWithSpecificEmail() {
         // Given
-        String specificId = new ObjectId().toString();
         String email = "custom@example.com";
 
         // When
-        Owner owner = OwnerTestDataBuilder.buildValidOwnerWithEmail(specificId, email);
+        Owner owner = OwnerTestDataBuilder.buildValidOwnerWithEmail(email);
 
         // Then
         assertNotNull(owner);
@@ -78,25 +61,24 @@ class OwnerTestDataBuilderTest {
     @Test
     void buildValidOwnerWithDni_shouldCreateOwnerWithSpecificDni() {
         // Given
-        String specificId = new ObjectId().toString();
-        String dni = "98765432Z";
+        String type = "DNI";
+        String dni = "23402587H";
 
         // When
-        Owner owner = OwnerTestDataBuilder.buildValidOwnerWithDni(specificId, dni);
+        Owner owner = OwnerTestDataBuilder.buildValidOwnerWithDni(type, dni);
 
         // Then
         assertNotNull(owner);
-        assertEquals(dni, owner.getDocumentNumber());
+        assertEquals(dni, owner.getDocumentNumber().getDocumentNumber());
     }
 
     @Test
     void buildValidOwnerWithPhone_shouldCreateOwnerWithSpecificPhone() {
         // Given
-        String specificId = new ObjectId().toString();
         String phone = "+34699999999";
 
         // When
-        Owner owner = OwnerTestDataBuilder.buildValidOwnerWithPhone(specificId, phone);
+        Owner owner = OwnerTestDataBuilder.buildValidOwnerWithPhone(phone);
 
         // Then
         assertNotNull(owner);
@@ -112,7 +94,7 @@ class OwnerTestDataBuilderTest {
         assertNotNull(command);
         assertEquals("Juan", command.getOwnerName());
         assertEquals("Pérez", command.getOwnerLastName());
-        assertEquals("12345678A", command.getOwnerDni());
+        assertEquals("23402587H", command.getOwnerDni().getDocumentNumber());
         assertNotNull(command.getOwnerPhone());
         assertNotNull(command.getOwnerEmail());
         assertNotNull(command.getOwnerAddress());
@@ -134,14 +116,15 @@ class OwnerTestDataBuilderTest {
     @Test
     void aCreateCommandWithDni_shouldCreateCommandWithSpecificDni() {
         // Given
-        String dni = "11111111A";
+        String type = "DNI";
+        String dni = "23402587H";
 
         // When
-        CreateOwnerCommand command = OwnerTestDataBuilder.aCreateCommandWithDni(dni);
+        CreateOwnerCommand command = OwnerTestDataBuilder.aCreateCommandWithDni(type, dni);
 
         // Then
         assertNotNull(command);
-        assertEquals(dni, command.getOwnerDni());
+        assertEquals(dni, command.getOwnerDni().getDocumentNumber());
     }
 
     @Test
@@ -169,15 +152,15 @@ class OwnerTestDataBuilderTest {
         assertNotNull(command);
         assertEquals(ownerId, command.getOwnerID());
         assertTrue(ObjectId.isValid(command.getOwnerID()));
-        assertEquals("Updated Name", command.getOwnerName());
-        assertEquals("Updated LastName", command.getOwnerLastName());
+        assertEquals("Juan", command.getOwnerName());
+        assertEquals("Pérez", command.getOwnerLastName());
     }
 
     @Test
     void anUpdateCommandWithEmail_shouldCreateCommandWithSpecificEmail() {
         // Given
-        String ownerId = new ObjectId().toString();
-        Email email = new Email("newemail@example.com");
+        String ownerId = UUID.randomUUID().toString();
+        String email = "newemail@example.com";
 
         // When
         UpdateOwnerCommand command = OwnerTestDataBuilder.anUpdateCommandWithEmail(ownerId, email);
@@ -185,22 +168,23 @@ class OwnerTestDataBuilderTest {
         // Then
         assertNotNull(command);
         assertEquals(ownerId, command.getOwnerID());
-        assertEquals(email, command.getOwnerEmail());
+        assertEquals(email, command.getOwnerEmail().getValue());
     }
 
     @Test
     void anUpdateCommandWithDni_shouldCreateCommandWithSpecificDni() {
         // Given
-        String ownerId = new ObjectId().toString();
-        String dni = "22222222B";
+        String ownerId = UUID.randomUUID().toString();
+        String type = "DNI";
+        String dni = "23402587H";
 
         // When
-        UpdateOwnerCommand command = OwnerTestDataBuilder.anUpdateCommandWithDni(ownerId, dni);
+        UpdateOwnerCommand command = OwnerTestDataBuilder.anUpdateCommandWithDni(ownerId, type, dni);
 
         // Then
         assertNotNull(command);
         assertEquals(ownerId, command.getOwnerID());
-        assertEquals(dni, command.getOwnerDni());
+        assertEquals(dni, command.getOwnerDni().getDocumentNumber());
     }
 
     @Test

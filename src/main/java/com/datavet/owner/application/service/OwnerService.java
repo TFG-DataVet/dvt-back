@@ -8,13 +8,11 @@ import com.datavet.owner.application.validation.CreateOwnerCommandValidator;
 import com.datavet.owner.application.validation.UpdateOwnerCommandValidator;
 import com.datavet.owner.domain.exception.OwnerAlreadyExistsException;
 import com.datavet.owner.domain.exception.OwnerNotFoundException;
-import com.datavet.owner.domain.exception.OwnerValidationException;
 import com.datavet.owner.domain.model.Owner;
 import com.datavet.shared.application.service.ApplicationService;
 import com.datavet.shared.domain.event.DomainEvent;
 import com.datavet.shared.domain.event.DomainEventPublisher;
 import com.datavet.shared.domain.exception.email.EmailAlreadyExistsException;
-import com.datavet.shared.domain.validation.ValidationResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -32,20 +30,15 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
 
     @Override
     public Owner createOwner(CreateOwnerCommand command) {
-        // Validate command using shared validation framework
-        ValidationResult validationResult = createOwnerCommandValidator.validate(command);
-        if ( validationResult.hasErrors()) {
-            throw new OwnerValidationException(validationResult);
-        }
 
         // Check for duplicate email (value object is already created in command)
-        if ( ownerRepositoryPort.existsByEmail(command.getOwnerEmail())){
+        if ( ownerRepositoryPort.existsByEmail(command.getOwnerEmail().getValue())){
             throw new OwnerAlreadyExistsException("email", command.getOwnerEmail().getValue());
         }
 
         // Check exists dni
-        if (ownerRepositoryPort.existsByDni(command.getOwnerDni())) {
-            throw new OwnerAlreadyExistsException("dni", command.getOwnerDni());
+        if (ownerRepositoryPort.existsByDocumentNumber(command.getOwnerDni().getDocumentNumber())) {
+            throw new OwnerAlreadyExistsException("dni", command.getOwnerDni().getDocumentNumber());
         }
 
         // Check for phone
@@ -55,15 +48,15 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
 
         // Use Factory method to create owner with domain events
         Owner owner = Owner.create(
-                null,
-                "10",
+                command.getClinidId(),
                 command.getOwnerName(),
                 command.getOwnerLastName(),
                 command.getOwnerDni(),
                 command.getOwnerPhone(),
                 command.getOwnerEmail(),
                 command.getOwnerAddress(),
-                command.getUrl()
+                command.getUrl(),
+                command.isAcceptTermsAndCond()
         );
 
         // Publish domain events BEFORE saving (While ew still have them)
@@ -76,23 +69,15 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
 
     @Override
     public Owner updateOwner(UpdateOwnerCommand command) {
-        ValidationResult validationResult = updateClinicCommandValidator.validate(command);
-        if ( validationResult.hasErrors()) {
-            throw new OwnerValidationException(validationResult);
-        }
-
         Owner existing = ownerRepositoryPort.findById(command.getOwnerID())
                 .orElseThrow(() -> new OwnerNotFoundException(command.getOwnerID()));
 
-        boolean emailIsChanging = !existing.getEmail().getValue()
-                .equalsIgnoreCase(command.getOwnerEmail().getValue());
+        ownerRepositoryPort.findByEmail(command.getOwnerEmail().getValue())
+                .ifPresent(ownerWithSameEmail -> {
 
-        if (emailIsChanging) {
-            ownerRepositoryPort.findByEmail(command.getOwnerEmail())
-                    .ifPresent(o -> {
+                    if (!ownerWithSameEmail.getOwnerId().equals(command.getOwnerID()))
                         throw new EmailAlreadyExistsException("Owner", command.getOwnerEmail().getValue());
-                    });
-        }
+                });
 
         existing.update(
                 command.getOwnerName(),

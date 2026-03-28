@@ -1,5 +1,6 @@
 package com.datavet.owner.application.dto;
 
+import com.datavet.shared.domain.valueobject.DocumentId;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +12,7 @@ public class OwnerResponse {
     private String ownerId;
     private String firstName;
     private String lastName;
-    private String dni;
+    private DocumentId dni;
     private String phone;
     private String email;
     @JsonProperty("address")

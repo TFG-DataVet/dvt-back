@@ -10,6 +10,7 @@ import com.datavet.owner.testutil.OwnerTestDataBuilder;
 import com.datavet.shared.domain.event.DomainEventPublisher;
 import com.datavet.shared.domain.validation.ValidationResult;
 import com.datavet.shared.domain.valueobject.Address;
+import com.datavet.shared.domain.valueobject.DocumentId;
 import com.datavet.shared.domain.valueobject.Email;
 import com.datavet.shared.domain.valueobject.Phone;
 import org.bson.types.ObjectId;
@@ -22,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -47,28 +49,39 @@ class OwnerServiceTest {
     private String testOwnerId;
     private Owner testOwner;
 
+    private static final String DEFAULT_OWNER_NAME = "Juan";
+    private static final String DEFAULT_OWNER_LAST_NAME = "Pérez";
+    private static final String DEFAULT_STREET = "Calle Mayor 123";
+    private static final String DEFAULT_CITY = "Madrid";
+    private static final String DEFAULT_POSTAL_CODE = "28001";
+    private static final String DEFAULT_PHONE = "+34612345678";
+    private static final String DEFAULT_EMAIL = "juan.perez@example.com";
+
     @BeforeEach
     void setUp() {
         testOwnerId = new ObjectId().toString();
-        testOwner = OwnerTestDataBuilder.buildValidOwner();
+        testOwner = OwnerTestDataBuilder.aValidOwner();
     }
 
     @Test
     void createOwner_WithValidCommand_ShouldReturnOwner() {
         // Given
-        CreateOwnerCommand command = new CreateOwnerCommand(
-                "Juan",
-                "Pérez",
-                "12345678A",
-                new Phone("+34612345678"),
-                new Email("juan@example.com"),
-                new Address("Calle Mayor 123", "Madrid", "28001"),
-                "esto es una web"
-        );
 
-        when(createOwnerCommandValidator.validate(command)).thenReturn(new ValidationResult());
+        CreateOwnerCommand command =
+                CreateOwnerCommand.builder()
+                .clinidId(UUID.randomUUID().toString())
+                .ownerName(DEFAULT_OWNER_NAME)
+                .ownerLastName(DEFAULT_OWNER_LAST_NAME)
+                .ownerDni(aValidDocument())
+                .ownerPhone(aValidPhone())
+                .ownerEmail(aValidEmail())
+                .ownerAddress(aValidAddress())
+                .url("Esto es una web")
+                .acceptTermsAndCond(true)
+                .build();
+
         when(ownerRepositoryPort.existsByEmail(any())).thenReturn(false);
-        when(ownerRepositoryPort.existsByDni(anyString())).thenReturn(false);
+        when(ownerRepositoryPort.existsByDocumentNumber(anyString())).thenReturn(false);
         when(ownerRepositoryPort.existsByPhone(any())).thenReturn(false);
         when(ownerRepositoryPort.save(any(Owner.class))).thenReturn(testOwner);
 
@@ -84,17 +97,18 @@ class OwnerServiceTest {
     @Test
     void createOwner_WithDuplicateEmail_ShouldThrowException() {
         // Given
-        CreateOwnerCommand command = new CreateOwnerCommand(
-                "Juan",
-                "Pérez",
-                "12345678A",
-                new Phone("+34612345678"),
-                new Email("juan@example.com"),
-                new Address("Calle Mayor 123", "Madrid", "28001"),
-                "esto es una web"
-        );
+        CreateOwnerCommand command = CreateOwnerCommand.builder()
+                .clinidId(UUID.randomUUID().toString())
+                .ownerName(DEFAULT_OWNER_NAME)
+                .ownerLastName(DEFAULT_OWNER_LAST_NAME)
+                .ownerDni(aValidDocument())
+                .ownerPhone(aValidPhone())
+                .ownerEmail(aValidEmail())
+                .ownerAddress(aValidAddress())
+                .url("Esto es una web")
+                .acceptTermsAndCond(true)
+                .build();
 
-        when(createOwnerCommandValidator.validate(command)).thenReturn(new ValidationResult());
         when(ownerRepositoryPort.existsByEmail(any())).thenReturn(true);
 
         // When/Then
@@ -158,7 +172,7 @@ class OwnerServiceTest {
     @Test
     void getAllOwners_ShouldReturnAllOwners() {
         // Given
-        List<Owner> owners = List.of(testOwner, OwnerTestDataBuilder.buildValidOwner());
+        List<Owner> owners = List.of(testOwner, OwnerTestDataBuilder.aValidOwner());
         when(ownerRepositoryPort.findAll()).thenReturn(owners);
 
         // When
@@ -167,5 +181,29 @@ class OwnerServiceTest {
         // Then
         assertThat(result).hasSize(2);
         verify(ownerRepositoryPort).findAll();
+    }
+
+    /**
+     * Creates a valid Address with default test data.
+     */
+    public static Address aValidAddress() {
+        return new Address(DEFAULT_STREET, DEFAULT_CITY, DEFAULT_POSTAL_CODE);
+    }
+
+    public static DocumentId aValidDocument() {
+        return DocumentId.of("DNI", "23402587H");
+    }
+    /**
+     * Creates a valid Phone with default test data.
+     */
+    public static Phone aValidPhone() {
+        return new Phone(DEFAULT_PHONE);
+    }
+
+    /**
+     * Creates a valid Email with default test data.
+     */
+    public static Email aValidEmail() {
+        return new Email(DEFAULT_EMAIL);
     }
 }

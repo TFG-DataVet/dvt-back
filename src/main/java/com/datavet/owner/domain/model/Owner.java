@@ -3,96 +3,105 @@ package com.datavet.owner.domain.model;
 import com.datavet.owner.domain.event.OwnerCreatedEvent;
 import com.datavet.owner.domain.event.OwnerDeletedEvent;
 import com.datavet.owner.domain.event.OwnerUpdatedEvent;
+import com.datavet.owner.domain.exception.OwnerValidationException;
 import com.datavet.shared.domain.model.AggregateRoot;
 import com.datavet.shared.domain.model.Document;
+import com.datavet.shared.domain.validation.ValidationResult;
 import com.datavet.shared.domain.valueobject.Address;
+import com.datavet.shared.domain.valueobject.DocumentId;
 import com.datavet.shared.domain.valueobject.Email;
 import com.datavet.shared.domain.valueobject.Phone;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
-@Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Owner extends AggregateRoot<String> implements Document<String> {
 
-    private String id;
-
+    private String ownerId;
     private String clinicId;
-
-    @NotBlank
-    @Size(max = 50)
     private String name;
-
-    @NotBlank
-    @Size(max = 100)
     private String lastName;
-
-    @NotNull
-    @Size(min = 9, max = 9)
-    private String documentNumber;
-
-    @NotNull
+    private DocumentId documentNumber;
     private Phone phone;
-
-    @NotBlank
     private Email email;
-
-    @NotNull
     private Address address;
-
-    @Builder.Default
     private List<String> petIds = new ArrayList<>();
-
     private String avatarUrl;
-
     private boolean active;
-
+    private boolean acceptTermsAndCond;
     private LocalDateTime createdAt;
     private LocalDateTime updateAt;
 
-    @Override
     public String getId() {
-        return this.id;
+        return this.ownerId;
+    }
+
+    private void validate(){
+        ValidationResult result = new ValidationResult();
+
+        if (name == null || name.isBlank()) {
+            result.addError("Nombre", "El nombre del dueño no puede estar vacio o ser nulo");
+        }
+
+        if (lastName == null || lastName.isBlank()) {
+            result.addError("Apellido", "El apellido del dueño no puede estar vacio o ser nulo");
+        }
+
+        if (documentNumber == null) {
+            result.addError("Documento", "El documento del dueño no puede ser nulo");
+        }
+
+        if (phone == null) {
+            result.addError("Telefono", "El telefono del dueño no puede ser nulo");
+        }
+
+        if (address == null) {
+            result.addError("Direcciones", "La dirección del dueño no puede estar vacio o ser nulo");
+        }
+
+        if (acceptTermsAndCond == false) {
+            result.addError("Terminos y condiciones", "Los terminos y condiciones deben ser aceptados para poder continuar");
+        }
+
+        if (result.hasErrors()) {
+            throw new OwnerValidationException(result);
+        }
     }
 
     public static Owner create(
-            String id,
-            String clinicId,
-            String name,
-            String lastName,
-            String documentNumber,
-            Phone phone,
-            Email email,
-            Address address,
-            String avatarUrl) {
-        Owner  owner = Owner.builder()
-                .id(id)
-                .clinicId(clinicId)
-                .name(name)
-                .lastName(lastName)
-                .documentNumber(documentNumber)
-                .phone(phone)
-                .email(email)
-                .address(address)
-                .avatarUrl(avatarUrl)
-                .petIds(new ArrayList<>())
-                .createdAt(LocalDateTime.now())
-                .updateAt(LocalDateTime.now())
-                .active(true)
-                .build();
+            String clinicId, String name, String lastName, DocumentId documentNumber, Phone phone,
+            Email email, Address address, String avatarUrl, boolean acceptTermsAndCond) {
 
-        owner.addDomainEvent(OwnerCreatedEvent.of(id, name, documentNumber));
+        String uuid = UUID.randomUUID().toString();
+
+        Owner  owner = new Owner(
+                uuid, clinicId, name, lastName, documentNumber, phone,
+                email, address, new ArrayList<>(), avatarUrl, true,
+                acceptTermsAndCond, LocalDateTime.now(), LocalDateTime.now());
+
+        owner.validate();
+
+        owner.addDomainEvent(OwnerCreatedEvent.of(uuid, name, documentNumber.getDocumentNumber()));
         return owner;
     }
+
+    public static Owner reconstitute(
+            String id, String clinicId, String name, String lastName, DocumentId document,
+            Phone phone, Email email, Address address, List<String> petIds, String avatarUrl,
+            boolean active, boolean acceptTermsAndCond, LocalDateTime createdAt, LocalDateTime updateAt){
+
+        return new Owner(id, clinicId, name, lastName, document,
+                phone, email, address, petIds, avatarUrl,
+                active, acceptTermsAndCond, createdAt, updateAt);
+    }
+
 
     /**
      * Updates owner information and raises a OwnerUpdatedEvent.
@@ -102,7 +111,7 @@ public class Owner extends AggregateRoot<String> implements Document<String> {
             String name,
             String lastName,
             Email email,
-            String DocumentNumber,
+            DocumentId DocumentNumber,
             Address address,
             Phone phone,
             String avatarUrl
@@ -116,7 +125,8 @@ public class Owner extends AggregateRoot<String> implements Document<String> {
         this.avatarUrl = avatarUrl;
         this.updateAt = LocalDateTime.now();
 
-        addDomainEvent(OwnerUpdatedEvent.of(id, name));
+        validate();
+        addDomainEvent(OwnerUpdatedEvent.of(ownerId, name));
     }
 
     /**
@@ -124,7 +134,7 @@ public class Owner extends AggregateRoot<String> implements Document<String> {
      */
 
     public void delete(){
-        addDomainEvent(OwnerDeletedEvent.of(this.id, this.name));
+        addDomainEvent(OwnerDeletedEvent.of(this.ownerId, this.name));
     }
 
     public List<String> getPetIds() {
@@ -151,7 +161,7 @@ public class Owner extends AggregateRoot<String> implements Document<String> {
     public void desactivate() {
         this.active = false;
         this.updateAt = LocalDateTime.now();
-        addDomainEvent(OwnerUpdatedEvent.of(this.id, this.name));
+        addDomainEvent(OwnerUpdatedEvent.of(this.ownerId, this.name));
     }
 
     public void activate() {

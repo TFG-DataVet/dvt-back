@@ -12,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -37,7 +39,8 @@ class OwnerControllerIntegrationTest {
     // Test data constants
     private static final String VALID_NAME = "Juan";
     private static final String VALID_LAST_NAME = "Pérez";
-    private static final String VALID_DNI = "12345678A";
+    private static final String VALID_DNI_TYPE = "DNI";
+    private static final String VALID_DNI = "23402587H";
     private static final String VALID_PHONE = "+34612345678";
     private static final String VALID_EMAIL = "juan.perez@example.com";
     private static final String VALID_ADDRESS = "Calle Mayor 123";
@@ -58,18 +61,22 @@ class OwnerControllerIntegrationTest {
     void shouldCreateOwnerWithValidData() throws Exception {
         String requestJson = """
             {
+                "clinicId" : "9df7c696-a3ad-48ad-85bb-210072968645",
                 "name": "%s",
                 "lastName": "%s",
-                "dni": "%s",
+                "documentId": "%s",
+                "documentNumber": "%s",
                 "phone": "%s",
                 "email": "%s",
                 "address": "%s",
                 "city": "%s",
-                "postalCode": "%s"
+                "postalCode": "%s",
+                "acceptTermsAndCond": true
             }
             """.formatted(
                 VALID_NAME,
                 VALID_LAST_NAME,
+                VALID_DNI_TYPE,
                 VALID_DNI,
                 VALID_PHONE,
                 VALID_EMAIL,
@@ -87,7 +94,7 @@ class OwnerControllerIntegrationTest {
                 .andExpect(jsonPath("$.ownerId").isString())
                 .andExpect(jsonPath("$.firstName").value(VALID_NAME))
                 .andExpect(jsonPath("$.lastName").value(VALID_LAST_NAME))
-                .andExpect(jsonPath("$.dni").value(VALID_DNI))
+                .andExpect(jsonPath("$.dni.documentNumber").value(VALID_DNI))
                 .andExpect(jsonPath("$.email").value(VALID_EMAIL))
                 .andExpect(jsonPath("$.phone").value(VALID_PHONE))
                 .andExpect(jsonPath("$.address.street").value(VALID_ADDRESS))
@@ -118,7 +125,7 @@ class OwnerControllerIntegrationTest {
 
         // Verify the ID is a valid MongoDB ObjectId format (24 hex characters)
         String ownerId = objectMapper.readTree(response).get("ownerId").asText();
-        assert ownerId.matches("[0-9a-f]{24}");
+        assert ownerId.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
     }
 
     /**
@@ -226,7 +233,8 @@ class OwnerControllerIntegrationTest {
                 .andExpect(jsonPath("$.ownerId").value(ownerId))
                 .andExpect(jsonPath("$.firstName").value(VALID_NAME))
                 .andExpect(jsonPath("$.lastName").value(VALID_LAST_NAME))
-                .andExpect(jsonPath("$.dni").value(VALID_DNI))
+                .andExpect(jsonPath("$.dni").exists())
+                .andExpect(jsonPath("$.dni.documentNumber").value(VALID_DNI))
                 // Verify Address Value Object
                 .andExpect(jsonPath("$.address").exists())
                 .andExpect(jsonPath("$.address.street").value(VALID_ADDRESS))
@@ -249,14 +257,17 @@ class OwnerControllerIntegrationTest {
         String request1 = createValidRequestJson();
         String request2 = """
             {
+                "clinicId": "dff54cd7-b1ec-46cb-a7fd-1d87a0722d1f",
                 "name": "María",
                 "lastName": "García",
-                "dni": "87654321B",
+                "documentId" : "DNI",
+                "documentNumber" : "71515267X",
                 "phone": "+34698765432",
                 "email": "maria.garcia@example.com",
                 "address": "Calle Norte 456",
                 "city": "Barcelona",
-                "postalCode": "08001"
+                "postalCode": "08001",
+                "acceptTermsAndCond" : true
             }
             """;
 
@@ -315,9 +326,11 @@ class OwnerControllerIntegrationTest {
         // Update the owner
         String updateRequestJson = """
             {
+                "clinicId" : "0ac5508f-90ac-41e4-8cfa-abab5ef90de8",
                 "name": "Updated Name",
                 "lastName": "Updated LastName",
-                "dni": "%s",
+                "documentId": "DNI",
+                "documentNumber": "%s",
                 "phone": "+34612345679",
                 "email": "updated@example.com",
                 "address": "Updated Address 789",
@@ -345,13 +358,15 @@ class OwnerControllerIntegrationTest {
      */
     @Test
     void shouldReturn404WhenUpdatingNonExistentOwner() throws Exception {
-        String nonExistentId = new ObjectId().toString();
+        String uuid = UUID.randomUUID().toString();
 
         String updateRequestJson = """
             {
+                "clinidId" : "0ac5508f-90ac-41e4-8cfa-abab5ef90de8",
                 "name": "Test Name",
                 "lastName": "Test LastName",
-                "dni": "12345678A",
+                "documentId" : "DNI",
+                "documentNumber" : "71515267X",
                 "phone": "+34612345678",
                 "email": "test@example.com",
                 "address": "Test Address",
@@ -360,14 +375,14 @@ class OwnerControllerIntegrationTest {
             }
             """;
 
-        mockMvc.perform(put("/owner/{id}", nonExistentId)
+        mockMvc.perform(put("/owner/{id}", uuid)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateRequestJson))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.error").value("Not Found"))
-                .andExpect(jsonPath("$.message").value("Owner not found with id: " + nonExistentId));
+                .andExpect(jsonPath("$.message").value("Owner not found with id: " + uuid));
     }
 
     /**
@@ -420,14 +435,17 @@ class OwnerControllerIntegrationTest {
         // Create second owner with different email
         String request2 = """
             {
+                "clinicId": "ab53e632-0e49-4f22-bf57-798063e923f9",
                 "name": "María",
                 "lastName": "García",
-                "dni": "87654321B",
+                "documentId": "DNI",
+                "documentNumber": "32606784Y",
                 "phone": "+34698765432",
                 "email": "maria.garcia@example.com",
                 "address": "Calle Norte 456",
                 "city": "Barcelona",
-                "postalCode": "08001"
+                "postalCode": "08001",
+                "acceptTermsAndCond": true
             }
             """;
         
@@ -444,14 +462,17 @@ class OwnerControllerIntegrationTest {
         // Try to update second owner with email from first owner
         String updateRequestJson = """
             {
+                "clinicId": "ab53e632-0e49-4f22-bf57-798063e923f9",
                 "name": "María",
                 "lastName": "García",
-                "dni": "87654321B",
+                "documentId": "DNI",
+                "documentNumber": "71515267X",
                 "phone": "+34698765432",
                 "email": "%s",
                 "address": "Calle Norte 456",
                 "city": "Barcelona",
-                "postalCode": "08001"
+                "postalCode": "08001",
+                "acceptTermsAndCond": true
             }
             """.formatted(VALID_EMAIL);
 
@@ -487,9 +508,11 @@ class OwnerControllerIntegrationTest {
         // Update the owner keeping the same email
         String updateRequestJson = """
             {
+                "clinidId" : "9df7c696-a3ad-48ad-85bb-210072968645",
                 "name": "Updated Name",
                 "lastName": "Updated LastName",
-                "dni": "%s",
+                "documentId": "DNI",
+                "documentNumber": "%s",
                 "phone": "+34612345679",
                 "email": "%s",
                 "address": "Updated Address 789",
@@ -524,14 +547,17 @@ class OwnerControllerIntegrationTest {
         // Try to create another owner with the same email but different DNI
         String duplicateEmailRequest = """
             {
+                "clinicId": "14da71c1-b04c-4ba5-89c1-1f6489499ad1",
                 "name": "Different Name",
                 "lastName": "Different LastName",
-                "dni": "99999999Z",
+                "documentId":"DNI",
+                "documentNumber": "71515267X",
                 "phone": "+34699999999",
                 "email": "%s",
                 "address": "Different Address",
                 "city": "Different City",
-                "postalCode": "99999"
+                "postalCode": "99999",
+                "acceptTermsAndCond": true
             }
             """.formatted(VALID_EMAIL);
 
@@ -562,14 +588,17 @@ class OwnerControllerIntegrationTest {
         // Try to create another owner with the same DNI but different email
         String duplicateDniRequest = """
             {
+                "clinicId": "0ac5508f-90ac-41e4-8cfa-abab5ef90de8",
                 "name": "Different Name",
                 "lastName": "Different LastName",
-                "dni": "%s",
+                "documentId": "DNI",
+                "documentNumber": "%s",
                 "phone": "+34699999999",
                 "email": "different@example.com",
                 "address": "Different Address",
                 "city": "Different City",
-                "postalCode": "99999"
+                "postalCode": "99999",
+                "acceptTermsAndCond": true
             }
             """.formatted(VALID_DNI);
 
@@ -735,24 +764,30 @@ class OwnerControllerIntegrationTest {
     private String createValidRequestJson() {
         return """
             {
+                "clinicId": "%s",
                 "name": "%s",
                 "lastName": "%s",
-                "dni": "%s",
+                "documentId": "%s",
+                "documentNumber": "%s",
                 "phone": "%s",
                 "email": "%s",
                 "address": "%s",
                 "city": "%s",
-                "postalCode": "%s"
+                "postalCode": "%s",
+                "acceptTermsAndCond" :%b
             }
             """.formatted(
+                UUID.randomUUID().toString(),
                 VALID_NAME,
                 VALID_LAST_NAME,
+                VALID_DNI_TYPE,
                 VALID_DNI,
                 VALID_PHONE,
                 VALID_EMAIL,
                 VALID_ADDRESS,
                 VALID_CITY,
-                VALID_POSTAL_CODE
+                VALID_POSTAL_CODE,
+                true
             );
     }
 }
