@@ -11,8 +11,6 @@ import java.time.LocalDate;
 @Setter
 public class CreateEmployeeRequest {
 
-    @NotBlank(message = "El ID de usuario es obligatorio")
-    private String userId;
 
     @NotBlank(message = "El nombre es obligatorio")
     @Size(max = 50)
@@ -32,6 +30,11 @@ public class CreateEmployeeRequest {
     @NotBlank(message = "El teléfono es obligatorio")
     @Pattern(regexp = "^[+]?[0-9\\s\\-()]{7,15}$")
     private String phone;
+
+    @NotBlank(message = "El email es obligatorio")
+    @Email
+    @Size(max = 100)
+    private String email;
 
     @NotBlank(message = "La dirección es obligatoria")
     @Size(max = 200)

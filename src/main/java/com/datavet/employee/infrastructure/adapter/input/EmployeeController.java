@@ -1,5 +1,6 @@
 package com.datavet.employee.infrastructure.adapter.input;
 
+import com.datavet.auth.infrastructure.security.AuthenticatedUser;
 import com.datavet.employee.application.dto.EmployeeResponse;
 import com.datavet.employee.application.mapper.EmployeeMapper;
 import com.datavet.employee.application.port.in.EmployeeUseCase;
@@ -12,6 +13,7 @@ import com.datavet.shared.domain.valueobject.Phone;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,16 +31,16 @@ public class EmployeeController {
      */
     @PostMapping
     public ResponseEntity<EmployeeResponse> create(
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody CreateEmployeeRequest request) {
 
         CreateEmployeeCommand command = CreateEmployeeCommand.builder()
-                .userId(request.getUserId())
-//              .clinicId(extractClinicIdFromContext())   // TODO: vendrá del JWT
-                .clinicId("id_clinic")   // TODO: vendrá del JWT
+                .clinicId(currentUser.getClinicId())
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .documentNumber(DocumentId.of(request.getDocumentType(), request.getDocumentNumber()))
                 .phone(new Phone(request.getPhone()))
+                .email(request.getEmail())
                 .address(new Address(request.getAddress(), request.getCity(), request.getPostalCode()))
                 .avatarUrl(request.getAvatarUrl())
                 .speciality(request.getSpeciality())
@@ -165,19 +167,16 @@ public class EmployeeController {
 
     @GetMapping
     public ResponseEntity<List<EmployeeResponse>> getByClinic(
-            @RequestParam String clinicId) {
-        List<EmployeeResponse> responses = employeeUseCase.getEmployeesByClinic(clinicId)
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+
+        // SUPER_ADMIN podría ver todas las clínicas — por ahora solo ve la suya
+        List<EmployeeResponse> responses = employeeUseCase
+                .getEmployeesByClinic(currentUser.getClinicId())
                 .stream()
                 .map(EmployeeMapper::toResponse)
                 .toList();
+
         return ResponseEntity.ok(responses);
     }
 
-    /**
-     * TODO: Cuando Auth esté implementado, este método leerá el clinicId
-     *       directamente del SecurityContext en lugar de recibirlo como parámetro.
-     */
-    private String extractClinicIdFromContext() {
-        return null;
-    }
 }

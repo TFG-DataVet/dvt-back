@@ -1,0 +1,207 @@
+# Paso 1 para registrarnos en la app:
+#   Pediremos solamente los siguientes datos:
+#       - clinicName    : String
+#       - firstName     : String
+#       - lastName      : String
+#       - email         : String
+#       - phone         : String
+#       - password      : String
+#
+#   Una vez ejecutado esto, nos aparecerá en la consola un mensaje de Email de verificación con un Token
+#   Dicho Token lo debemos de copiar para poder pegarlo en el paso 2
+###
+POST http://localhost:8080/auth/register
+Content-Type: application/json
+
+{
+  "clinicName": "MisMascotas",
+  "firstName": "Jesús",
+  "lastName": "Santiago",
+  "email": "mismascotas@gmail.com",
+  "phone": "+34-123456789",
+  "password": "Mi_super_contraseña_1"
+}
+
+###
+
+# Paso intermedio si necesitamos re-enviar el email de verificación de email
+#   El cual nos dará el token de nuevo con una caducidad de 1 hora.
+#   En el debemos de enviar el mismo email que usamos en el paso 1
+
+###
+POST http://localhost:8080/auth/resend-verification
+Content-Type: application/json
+
+{
+  "email": "mismascotas@gmail.com"
+}
+
+###
+
+# Paso 2:
+#   Con el token que copialos lo pegalo en el siguiente endpoint y ejecutado.
+#   Esto nos dará una respuesta parecida a esto:
+#       {
+#         "accessToken": "JWT_TEMPORAL_ONBOARDING", // Debemos de copiar este token ahora
+#           "refreshToken": null,
+#           "tokenType": "Bearer",
+#           "expiresIn": 3600,
+#           "user": {
+#               "userId": "...",
+#               "employeeId": null,
+#               "clinicId": "...",
+#               "email": "...",
+#               "role": "CLINIC_OWNER"
+#             }
+#       }
+#   Con esta respuesta debemos de copiar el token de accessToken, que lo usaremos en el paso 3.
+
+GET http://localhost:8080/auth/verify-email?token={token}
+
+###
+
+#   Paso intermedio por si el usuario, pudo verificar su correo, pero no pudo completar el registro de la clinica
+#   y se le vencio el token.
+#
+#   La idea en este paso es que el usuario tenga que hacer login y en la respuesta del login, tendrá un atributo
+#   llamado nextStep, el cual si es null tiene acceso completo a la app, si es "COMPLETE-SETUP" se le redifige a la
+#   pantalla del paso 3, para que termine de cargar los datos de la clinica.
+
+###
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "mismascotas@gmail.com",
+  "password": "Mi_super_contraseña_1"
+}
+
+###
+
+# Paso 3:
+#   En este paso completaremos el registro de la clinica, con el terminaremos de llenar los datos de la clinica.
+#   Los cuales son:
+#       legalName               : String
+#       legalNumber             : String
+#       legalType               : Enum [AUTONOMO SOCIEDAD_LIMITADA SOCIEDAD_ANONIMA SOCIEDAD_CIVIL COMUNIDAD_DE_BIENES OTHER]
+#       address                 : String
+#       city                    : String
+#       codePostal              : String
+#       phone                   : String
+#       email                   : String
+#       logoUrl                 : String
+#       schedulesOpenDays       : String
+#       scheduleOpenTime        : LocalTime
+#       scheduleCloseTime       : LocalTime
+#       scheduleNotes           : String
+#       ownerDocumentId         : Enum [DNI, NIE, PASAPORTE]
+#       ownerDocumentNumber     : String
+#       ownerAddress            : String
+#       ownerCity               : String
+#       ownerPostalCode         : String
+#       ownerHireDate           : LocalDate
+#       ownerAvatarUrl          : String
+#       ownerSpeciality         : String
+
+PATCH http://localhost:8080/clinic/{clinicId}/complete-setup
+Content-Type: application/json
+Authorization: Bearer
+
+{
+  "legalName": "MisMascotas SL",
+  "legalNumber": "123456789",
+  "legalType": "SOCIEDAD_LIMITADA",
+  "address": "AV. Imaginación",
+  "city": "Narnia",
+  "codePostal": "28285",
+  "phone": "1234656789",
+  "email": "emailDelaClinica@gmail.com",
+  "logoUrl": "esto_es_un_link_de_foto",
+  "scheduleOpenDays": "Lunes, Martes, Miercoles, Jueves, Viernes, Sabado",
+  "scheduleOpenTime": "09:00",
+  "scheduleCloseTime": "18:00",
+  "scheduleNotes": "Atendemos urgencias llamando al +34-321456987",
+  "ownerDocumentType": "DNI",
+  "ownerDocumentNumber": "71515267X",
+  "ownerAddress": "AV. Creatividad",
+  "ownerCity": "Madagascar",
+  "ownerPostalCode": "28283",
+  "ownerHireDate": "2024-01-01",
+  "ownerAvatarUrl": "esto_es_el_avatar_del_dueño",
+  "ownerSpeciality": "Dueño"
+}
+
+###
+
+#   Paso 4 Registrar un empleado:
+#       Para poder registrar un empleado nosotros ddebemos de enviar los datos del empleados
+
+###
+POST http://localhost:8080/employees
+Content-Type: application/json
+Authorization: Bearer
+
+{
+  "firstName": "Jesús",
+  "lastName": "Contreras",
+  "documentType": "NIE",
+  "documentNumber": "Z1699417K",
+  "phone": "1234567898",
+  "email": "gmia@gmail.com",
+  "address": "Av.Creacion.",
+  "city": "Ciudad gotica.",
+  "postalCode": "123789",
+  "avatarUrl": "esto_es_un_link",
+  "speciality": "",
+  "licenseNumber": "123456897",
+  "hireDate": "2024-01-01",
+  "role": "CLINIC_VETERINARIAN"
+}
+
+###
+
+#   El empleado verifica su correo y selecciona su contraseña
+
+POST http://localhost:8080/auth/activate-account
+Content-Type: application/json
+
+{
+  "token": "",
+  "password": "Mi_super_contraseña_2"
+}
+
+###
+
+# Login del empleado:
+
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "gmia@gmail.com",
+  "password": "Mi_super_contraseña_2"
+}
+
+###
+
+#   Registrar dueño estando ya dentro del sistema
+
+POST http://localhost:8080/owner
+Content-Type: application/json
+Authorization: Bearer
+
+{
+  "name": "Moises",
+  "lastName": "Velez",
+  "dni": "123456789",
+  "phone": "987654321",
+  "email": "moi@ghmailc.com",
+  "address": "Av. Carcelaria",
+  "city": "Fondo de Bikini",
+  "postalCode": "65412",
+  "url": "Esta es una url"
+}
+
+
+###
+
