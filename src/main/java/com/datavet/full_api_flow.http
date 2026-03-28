@@ -56,7 +56,7 @@ Content-Type: application/json
 #       }
 #   Con esta respuesta debemos de copiar el token de accessToken, que lo usaremos en el paso 3.
 
-GET http://localhost:8080/auth/verify-email?token=fcc65c6c-a37d-4c08-b9f5-b94a2d434aa7
+GET http://localhost:8080/auth/verify-email?token={token}
 
 ###
 
@@ -103,9 +103,9 @@ Content-Type: application/json
 #       ownerAvatarUrl          : String
 #       ownerSpeciality         : String
 
-PATCH http://localhost:8080/clinic/e1fae08d-3a65-45bb-81f4-fd3849896bcf/complete-setup
+PATCH http://localhost:8080/clinic/{clinicId}/complete-setup
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzYWM0OWQ0Yy00ZGU2LTQwMjItYmI1MC0wZjcxZjIzNTRhMjciLCJjbGluaWNJZCI6ImUxZmFlMDhkLTNhNjUtNDViYi04MWY0LWZkMzg0OTg5NmJjZiIsImVtYWlsIjoibWlzbWFzY290YXNAZ21haWwuY29tIiwicm9sZSI6IkNMSU5JQ19PV05FUiIsInNjb3BlIjoiT05CT0FSRElOR19PTkxZIiwiaWF0IjoxNzc0NzI5NDk1LCJleHAiOjE3NzQ3MzMwOTV9.0M_KEGwjqzNSpb2-Is7LSsxIf7JeK-dr7wMKSiU3yYw
+Authorization: Bearer
 
 {
   "legalName": "MisMascotas SL",
@@ -139,7 +139,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzYWM0OWQ0Yy00ZGU2LTQwMjItY
 ###
 POST http://localhost:8080/employees
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzYWM0OWQ0Yy00ZGU2LTQwMjItYmI1MC0wZjcxZjIzNTRhMjciLCJlbXBsb3llZUlkIjoiZTZiMzJhYjItZGEwZi00MzYzLTkzNzAtYjVhN2I4NTYxMWM5IiwiY2xpbmljSWQiOiJlMWZhZTA4ZC0zYTY1LTQ1YmItODFmNC1mZDM4NDk4OTZiY2YiLCJlbWFpbCI6Im1pc21hc2NvdGFzQGdtYWlsLmNvbSIsInJvbGUiOiJDTElOSUNfT1dORVIiLCJzY29wZSI6IkZVTExfQUNDRVNTIiwiaWF0IjoxNzc0NzI5NTM1LCJleHAiOjE3NzQ3MzMxMzV9.RrIfUhoI2f406CAT7ErCX79onixImHG8KSRtCL0R818
+Authorization: Bearer
 
 {
   "firstName": "Jesús",
@@ -166,7 +166,7 @@ POST http://localhost:8080/auth/activate-account
 Content-Type: application/json
 
 {
-  "token": "7d305cdb-2fa1-4eda-8e88-43ee082ec163",
+  "token": "",
   "password": "Mi_super_contraseña_2"
 }
 
@@ -188,7 +188,7 @@ Content-Type: application/json
 
 POST http://localhost:8080/owner
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzYWM0OWQ0Yy00ZGU2LTQwMjItYmI1MC0wZjcxZjIzNTRhMjciLCJlbXBsb3llZUlkIjoiZTZiMzJhYjItZGEwZi00MzYzLTkzNzAtYjVhN2I4NTYxMWM5IiwiY2xpbmljSWQiOiJlMWZhZTA4ZC0zYTY1LTQ1YmItODFmNC1mZDM4NDk4OTZiY2YiLCJlbWFpbCI6Im1pc21hc2NvdGFzQGdtYWlsLmNvbSIsInJvbGUiOiJDTElOSUNfT1dORVIiLCJzY29wZSI6IkZVTExfQUNDRVNTIiwiaWF0IjoxNzc0NzI5NTM1LCJleHAiOjE3NzQ3MzMxMzV9.RrIfUhoI2f406CAT7ErCX79onixImHG8KSRtCL0R818
+Authorization: Bearer
 
 {
   "name": "Moises",
