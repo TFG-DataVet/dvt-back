@@ -9,7 +9,6 @@
 #
 #   Una vez ejecutado esto, nos aparecerá en la consola un mensaje de Email de verificación con un Token
 #   Dicho Token lo debemos de copiar para poder pegarlo en el paso 2
-
 ###
 POST http://localhost:8080/auth/register
 Content-Type: application/json
@@ -21,6 +20,20 @@ Content-Type: application/json
   "email": "mismascotas@gmail.com",
   "phone": "+34-123456789",
   "password": "Mi_super_contraseña_1"
+}
+
+###
+
+# Paso intermedio si necesitamos re-enviar el email de verificación de email
+#   El cual nos dará el token de nuevo con una caducidad de 1 hora.
+#   En el debemos de enviar el mismo email que usamos en el paso 1
+
+###
+POST http://localhost:8080/auth/resend-verification
+Content-Type: application/json
+
+{
+  "email": "mismascotas@gmail.com"
 }
 
 ###
@@ -43,8 +56,25 @@ Content-Type: application/json
 #       }
 #   Con esta respuesta debemos de copiar el token de accessToken, que lo usaremos en el paso 3.
 
-GET http://localhost:8080/auth/verify-email?token=83b5bed1-584d-474f-9e7d-76c92940f03d
+GET http://localhost:8080/auth/verify-email?token=fcc65c6c-a37d-4c08-b9f5-b94a2d434aa7
 
+###
+
+#   Paso intermedio por si el usuario, pudo verificar su correo, pero no pudo completar el registro de la clinica
+#   y se le vencio el token.
+#
+#   La idea en este paso es que el usuario tenga que hacer login y en la respuesta del login, tendrá un atributo
+#   llamado nextStep, el cual si es null tiene acceso completo a la app, si es "COMPLETE-SETUP" se le redifige a la
+#   pantalla del paso 3, para que termine de cargar los datos de la clinica.
+
+###
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "mismascotas@gmail.com",
+  "password": "Mi_super_contraseña_1"
+}
 
 ###
 
@@ -73,9 +103,9 @@ GET http://localhost:8080/auth/verify-email?token=83b5bed1-584d-474f-9e7d-76c929
 #       ownerAvatarUrl          : String
 #       ownerSpeciality         : String
 
-PATCH http://localhost:8080/clinic/d9febbc9-aaf1-4f31-a76d-8db9257df226/complete-setup
+PATCH http://localhost:8080/clinic/e1fae08d-3a65-45bb-81f4-fd3849896bcf/complete-setup
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiIxNjlkZGQzOS0xOGNjLTRmM2QtODg1Yi04NWNjZWVhNDBhYWQiLCJjbGluaWNJZCI6ImQ5ZmViYmM5LWFhZjEtNGYzMS1hNzZkLThkYjkyNTdkZjIyNiIsInNjb3BlIjoiT05CT0FSRElOR19PTkxZIiwiaWF0IjoxNzc0NjUwNTgwLCJleHAiOjE3NzQ2NTQxODB9.5jOLWFe3S5YHzkNFH8ySxsaQVdDEX9932_QUwPNkRPCWejwZLo3q51hoKO4wndN9
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzYWM0OWQ0Yy00ZGU2LTQwMjItYmI1MC0wZjcxZjIzNTRhMjciLCJjbGluaWNJZCI6ImUxZmFlMDhkLTNhNjUtNDViYi04MWY0LWZkMzg0OTg5NmJjZiIsImVtYWlsIjoibWlzbWFzY290YXNAZ21haWwuY29tIiwicm9sZSI6IkNMSU5JQ19PV05FUiIsInNjb3BlIjoiT05CT0FSRElOR19PTkxZIiwiaWF0IjoxNzc0NzI5NDk1LCJleHAiOjE3NzQ3MzMwOTV9.0M_KEGwjqzNSpb2-Is7LSsxIf7JeK-dr7wMKSiU3yYw
 
 {
   "legalName": "MisMascotas SL",
@@ -100,3 +130,78 @@ Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiIxNjlkZGQzOS0xOGNjLTRmM2QtO
   "ownerAvatarUrl": "esto_es_el_avatar_del_dueño",
   "ownerSpeciality": "Dueño"
 }
+
+###
+
+#   Paso 4 Registrar un empleado:
+#       Para poder registrar un empleado nosotros ddebemos de enviar los datos del empleados
+
+###
+POST http://localhost:8080/employees
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzYWM0OWQ0Yy00ZGU2LTQwMjItYmI1MC0wZjcxZjIzNTRhMjciLCJlbXBsb3llZUlkIjoiZTZiMzJhYjItZGEwZi00MzYzLTkzNzAtYjVhN2I4NTYxMWM5IiwiY2xpbmljSWQiOiJlMWZhZTA4ZC0zYTY1LTQ1YmItODFmNC1mZDM4NDk4OTZiY2YiLCJlbWFpbCI6Im1pc21hc2NvdGFzQGdtYWlsLmNvbSIsInJvbGUiOiJDTElOSUNfT1dORVIiLCJzY29wZSI6IkZVTExfQUNDRVNTIiwiaWF0IjoxNzc0NzI5NTM1LCJleHAiOjE3NzQ3MzMxMzV9.RrIfUhoI2f406CAT7ErCX79onixImHG8KSRtCL0R818
+
+{
+  "firstName": "Jesús",
+  "lastName": "Contreras",
+  "documentType": "NIE",
+  "documentNumber": "Z1699417K",
+  "phone": "1234567898",
+  "email": "gmia@gmail.com",
+  "address": "Av.Creacion.",
+  "city": "Ciudad gotica.",
+  "postalCode": "123789",
+  "avatarUrl": "esto_es_un_link",
+  "speciality": "",
+  "licenseNumber": "123456897",
+  "hireDate": "2024-01-01",
+  "role": "CLINIC_VETERINARIAN"
+}
+
+###
+
+#   El empleado verifica su correo y selecciona su contraseña
+
+POST http://localhost:8080/auth/activate-account
+Content-Type: application/json
+
+{
+  "token": "7d305cdb-2fa1-4eda-8e88-43ee082ec163",
+  "password": "Mi_super_contraseña_2"
+}
+
+###
+
+# Login del empleado:
+
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "gmia@gmail.com",
+  "password": "Mi_super_contraseña_2"
+}
+
+###
+
+#   Registrar dueño estando ya dentro del sistema
+
+POST http://localhost:8080/owner
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzYWM0OWQ0Yy00ZGU2LTQwMjItYmI1MC0wZjcxZjIzNTRhMjciLCJlbXBsb3llZUlkIjoiZTZiMzJhYjItZGEwZi00MzYzLTkzNzAtYjVhN2I4NTYxMWM5IiwiY2xpbmljSWQiOiJlMWZhZTA4ZC0zYTY1LTQ1YmItODFmNC1mZDM4NDk4OTZiY2YiLCJlbWFpbCI6Im1pc21hc2NvdGFzQGdtYWlsLmNvbSIsInJvbGUiOiJDTElOSUNfT1dORVIiLCJzY29wZSI6IkZVTExfQUNDRVNTIiwiaWF0IjoxNzc0NzI5NTM1LCJleHAiOjE3NzQ3MzMxMzV9.RrIfUhoI2f406CAT7ErCX79onixImHG8KSRtCL0R818
+
+{
+  "name": "Moises",
+  "lastName": "Velez",
+  "dni": "123456789",
+  "phone": "987654321",
+  "email": "moi@ghmailc.com",
+  "address": "Av. Carcelaria",
+  "city": "Fondo de Bikini",
+  "postalCode": "65412",
+  "url": "Esta es una url"
+}
+
+
+###
+

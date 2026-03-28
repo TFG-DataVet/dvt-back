@@ -24,6 +24,8 @@ import com.datavet.clinic.application.port.in.command.CompleteClinicSetupCommand
 import com.datavet.clinic.application.port.in.command.CreatePendingClinicCommand;
 import com.datavet.employee.application.port.in.EmployeeUseCase;
 import com.datavet.employee.application.port.in.command.CreateEmployeeCommand;
+import com.datavet.employee.application.port.out.EmployeeRepositoryPort;
+import com.datavet.employee.application.port.out.UserCreationPort;
 import com.datavet.employee.domain.model.Employee;
 import com.datavet.shared.application.service.ApplicationService;
 import com.datavet.shared.domain.event.DomainEvent;
@@ -42,7 +44,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AuthService implements AuthUseCase, ApplicationService {
+public class AuthService implements AuthUseCase, UserCreationPort, ApplicationService {
 
     private final UserRepositoryPort         userRepositoryPort;
     private final RefreshTokenRepositoryPort refreshTokenRepositoryPort;
@@ -52,8 +54,7 @@ public class AuthService implements AuthUseCase, ApplicationService {
     private final JwtUtil                    jwtUtil;
     private final DomainEventPublisher       domainEventPublisher;
     // Añadir al constructor de AuthService
-    private final EmployeeUseCase employeeUseCase;
-
+    private final EmployeeRepositoryPort employeeRepositoryPort;
     // -------------------------------------------------------------------------
     // Onboarding — Paso 1
     // -------------------------------------------------------------------------
@@ -117,6 +118,25 @@ public class AuthService implements AuthUseCase, ApplicationService {
         return userRepositoryPort.save(user);
     }
 
+    @Override
+    @Transactional
+    public void resendVerificationEmail(String email) {
+
+        User user = userRepositoryPort.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("email", email, true));
+
+        if (user.getStatus() != UserStatus.PENDING_EMAIL_VERIFICATION) {
+            throw new InvalidCredentialsException(
+                    "Este usuario no está pendiente de verificación de email");
+        }
+
+        String newToken = UUID.randomUUID().toString();
+        user.renewVerificationToken(newToken);
+
+        userRepositoryPort.save(user);
+        emailPort.sendVerificationEmail(email, newToken);
+    }
+
     // -------------------------------------------------------------------------
     // Login
     // -------------------------------------------------------------------------
@@ -130,16 +150,36 @@ public class AuthService implements AuthUseCase, ApplicationService {
                 .orElseThrow(() -> new InvalidCredentialsException(
                         "Email o contraseña incorrectos"));
 
-        // Verificamos que el usuario pueda autenticarse
-        if (!user.canLogin()) {
-            throw new InvalidCredentialsException(
-                    "La cuenta no está activa. Estado actual: " + user.getStatus());
-        }
-
         // Verificamos la contraseña
         if (!passwordEncoder.matches(command.getRawPassword(),
                 user.getPassword().getValue())) {
             throw new InvalidCredentialsException("Email o contraseña incorrectos");
+        }
+
+        // Si está en PENDING_CLINIC_SETUP devolvemos JWT de onboarding, no definitivo
+        if (user.getStatus() == UserStatus.PENDING_CLINIC_SETUP) {
+            String onboardingToken = jwtUtil.generateOnboardingToken(
+                    user.getId(),
+                    user.getClinicId(),
+                    user.getEmail().getValue(),
+                    user.getRole()
+            );
+
+            TokenResponse.UserInfo userInfo = new TokenResponse.UserInfo(
+                    user.getId(),
+                    user.getEmployeeId(),
+                    user.getClinicId(),
+                    user.getEmail().getValue(),
+                    user.getRole()
+            );
+
+            return TokenResponse.of(onboardingToken, null, 3600L, userInfo, "COMPLETE_SETUP");
+        }
+
+        // Verificamos que el usuario pueda autenticarse
+        if (!user.canLogin()) {
+            throw new InvalidCredentialsException(
+                    "La cuenta no está activa. Estado actual: " + user.getStatus());
         }
 
         return generateTokenResponse(user);
@@ -248,6 +288,40 @@ public class AuthService implements AuthUseCase, ApplicationService {
         return userRepositoryPort.save(user);
     }
 
+    @Override
+    @Transactional
+    public String createPendingEmployeeUser(String clinicId, String employeeId,
+                                            String email, UserRole role) {
+
+        if (userRepositoryPort.existsByEmail(email)) {
+            throw new UserAlreadyExistsException("email", email);
+        }
+
+        String verificationToken = UUID.randomUUID().toString();
+
+        User user = User.createPendingEmployee(
+                clinicId, employeeId, new Email(email), role, verificationToken);
+
+        userRepositoryPort.save(user);
+        emailPort.sendEmployeeActivationEmail(email, verificationToken);
+        return user.getId();
+    }
+
+    @Override
+    @Transactional
+    public void activateAccount(String token, String rawPassword) {
+        User user = userRepositoryPort.findByEmailVerificationToken(token)
+                .orElseThrow(EmailTokenExpiredException::new);
+
+        HashedPassword.validateRawPassword(rawPassword);
+        HashedPassword hashedPassword = HashedPassword.ofHash(
+                passwordEncoder.encode(rawPassword));
+
+        user.activateWithPassword(token, hashedPassword);
+
+        userRepositoryPort.save(user);
+    }
+
     // -------------------------------------------------------------------------
     // Desactivación
     // -------------------------------------------------------------------------
@@ -308,12 +382,8 @@ public class AuthService implements AuthUseCase, ApplicationService {
                 user.getRole()
         );
 
-        return TokenResponse.of(
-                accessToken,
-                rawRefreshToken,
-                jwtUtil.getAccessTokenExpirationSeconds(),
-                userInfo
-        );
+        return TokenResponse.of(accessToken, rawRefreshToken,
+                jwtUtil.getAccessTokenExpirationSeconds(), userInfo, null);
     }
 
     /**
@@ -332,12 +402,6 @@ public class AuthService implements AuthUseCase, ApplicationService {
         } catch (java.security.NoSuchAlgorithmException e) {
             throw new RuntimeException("SHA-256 no disponible", e);
         }
-    }
-
-    private void publishDomainEvents(User user) {
-        List<DomainEvent> events = user.getDomainEvents();
-        events.forEach(domainEventPublisher::publish);
-        user.clearDomainEvents();
     }
 
     /**
@@ -360,23 +424,23 @@ public class AuthService implements AuthUseCase, ApplicationService {
         // 2. Completamos los datos de la clínica
         clinicUseCase.completeClinicSetup(command);
 
-        // 3. Creamos el Employee del CLINIC_OWNER con los datos disponibles
-        Employee employee = employeeUseCase.createEmployee(
-                CreateEmployeeCommand.builder()
-                        .userId(user.getId())
-                        .clinicId(command.getClinicId())
-                        .firstName(user.getFirstName())
-                        .lastName(user.getLastName())
-                        .documentNumber(command.getOwnerDocumentNumber())
-                        .phone(command.getPhone())
-                        .address(command.getOwnerAddress())
-                        .avatarUrl(command.getOwnerAvatarUrl())
-                        .speciality(command.getOwnerSpeciality())
-                        .licenseNumber(null)
-                        .hireDate(command.getOwnerHireDate())
-                        .role(UserRole.CLINIC_OWNER.name())
-                        .build()
+        // 3. Creamos el Employee del CLINIC_OWNER directamente
+        Employee employee = Employee.create(
+                user.getId(),                       // userId ya existe
+                command.getClinicId(),
+                user.getFirstName(),
+                user.getLastName(),
+                command.getOwnerDocumentNumber(),
+                command.getPhone(),
+                command.getOwnerAddress(),
+                command.getOwnerAvatarUrl(),
+                command.getOwnerSpeciality(),
+                null,                               // licenseNumber — no aplica para CLINIC_OWNER
+                command.getOwnerHireDate(),
+                UserRole.CLINIC_OWNER.name()
         );
+
+        Employee savedEmployee = employeeRepositoryPort.save(employee);
 
         // 4. Activamos el User con el employeeId recién creado
         user.activate(employee.getId());
@@ -391,5 +455,11 @@ public class AuthService implements AuthUseCase, ApplicationService {
 
         // 6. Generamos JWT definitivo
         return generateTokenResponse(user);
+    }
+
+    private void publishDomainEvents(User user) {
+        List<DomainEvent> events = user.getDomainEvents();
+        events.forEach(domainEventPublisher::publish);
+        user.clearDomainEvents();
     }
 }

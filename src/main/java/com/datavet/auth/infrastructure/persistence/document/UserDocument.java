@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 
 @Document(collection = "users")
 @CompoundIndexes({
-        @CompoundIndex(name = "email_idx",    def = "{'email.value': 1}", unique = true),
+        @CompoundIndex(name = "email_idx",    def = "{'email': 1}", unique = true),
         @CompoundIndex(name = "clinic_idx",   def = "{'clinic_id': 1}"),
         @CompoundIndex(name = "employee_idx", def = "{'employee_id': 1}"),
         @CompoundIndex(name = "status_idx",   def = "{'status': 1}"),

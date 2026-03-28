@@ -31,4 +31,14 @@ public class LogEmailAdapter implements EmailPort {
         log.info("Clínica: {}", clinicName);
         log.info("====================================================");
     }
+
+    @Override
+    public void sendEmployeeActivationEmail(String toEmail, String token) {
+        log.info("====================================================");
+        log.info("📧 EMAIL DE ACTIVACIÓN DE EMPLEADO");
+        log.info("Para:  {}", toEmail);
+        log.info("Token: {}", token);
+        log.info("Link:  http://localhost:3000/activate-account?token={}", token);
+        log.info("====================================================");
+    }
 }

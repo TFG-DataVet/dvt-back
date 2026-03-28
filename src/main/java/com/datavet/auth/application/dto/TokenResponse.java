@@ -18,6 +18,8 @@ public class TokenResponse {
     private String   tokenType;      // siempre "Bearer"
     private long     expiresIn;      // segundos hasta que expira el access token
     private UserInfo user;
+    private String nextStep;
+
 
     @Getter
     @AllArgsConstructor
@@ -30,7 +32,7 @@ public class TokenResponse {
     }
 
     public static TokenResponse of(String accessToken, String refreshToken,
-                                   long expiresIn, UserInfo user) {
-        return new TokenResponse(accessToken, refreshToken, "Bearer", expiresIn, user);
+                                   long expiresIn, UserInfo user, String nextStep) {
+        return new TokenResponse(accessToken, refreshToken, "Bearer", expiresIn, user, nextStep);
     }
 }

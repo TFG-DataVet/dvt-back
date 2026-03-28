@@ -71,10 +71,6 @@ public class Employee extends AggregateRoot<String> implements Document<String> 
             result.addError("Clinic ID", "El ID de la clínica no puede ser nulo o vacío");
         }
 
-        if (userId == null || userId.isBlank()) {
-            result.addError("User Id", "El ID del usuario no puede ser nulo o vacío");
-        }
-
         if (firstName == null || firstName.isBlank()) {
             result.addError("Primer nombre", "El nombre no puede ser nulo o vacío");
         }
@@ -177,6 +173,14 @@ public class Employee extends AggregateRoot<String> implements Document<String> 
                 documentNumber, phone, address, avatarUrl, speciality,
                 licenseNumber, hireDate, salary, vacationPolicy,
                 workSchedule, active, createdAt, updatedAt);
+    }
+
+    public void assignUserId(String userId) {
+        if (userId == null || userId.isBlank()) {
+            throw new EmployeeValidationException("Employee", "El userId no puede ser nulo");
+        }
+        this.userId    = userId;
+        this.updatedAt = LocalDateTime.now();
     }
 
     // -------------------------------------------------------------------------
