@@ -116,7 +116,8 @@ public class JwtUtil {
     // -------------------------------------------------------------------------
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(
-                jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
+        String claveReal = jwtProperties.getSecret();
+
+        return Keys.hmacShaKeyFor(claveReal.getBytes(StandardCharsets.UTF_8));
     }
 }
