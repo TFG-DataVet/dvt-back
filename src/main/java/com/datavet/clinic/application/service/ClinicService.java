@@ -26,7 +26,7 @@ public class ClinicService implements ClinicUseCase, ApplicationService {
 
     @Override
     public Clinic createClinic(CreateClinicCommand command) {
-        if (clinicRepositoryPort.existsByEmail(command.getEmail())) {
+        if (clinicRepositoryPort.existsByEmail(command.getEmail().getValue())) {
             throw new ClinicAlreadyExistsException("email", command.getEmail().getValue());
         }
 
@@ -53,7 +53,7 @@ public class ClinicService implements ClinicUseCase, ApplicationService {
     @Override
     public Clinic createPendingClinic(CreatePendingClinicCommand command) {
         // Verificamos que el email no esté ya registrado
-        if (clinicRepositoryPort.existsByEmail(command.getEmail())) {
+        if (clinicRepositoryPort.existsByEmail(command.getEmail().getValue())) {
             throw new ClinicAlreadyExistsException("email", command.getEmail().getValue());
         }
 
@@ -97,7 +97,7 @@ public class ClinicService implements ClinicUseCase, ApplicationService {
         Clinic existing = clinicRepositoryPort.findById(command.getClinicId())
                 .orElseThrow(() -> new ClinicNotFoundException("Clinic", command.getClinicId()));
 
-        if (clinicRepositoryPort.existsByEmailAndIdNot(command.getEmail(), command.getClinicId())) {
+        if (clinicRepositoryPort.existsByEmailAndIdNot(command.getEmail().getValue(), command.getClinicId())) {
             throw new ClinicAlreadyExistsException("email", command.getEmail().getValue());
         }
 

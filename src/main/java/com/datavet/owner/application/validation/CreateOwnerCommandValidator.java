@@ -27,13 +27,6 @@ public class CreateOwnerCommandValidator implements Validator<CreateOwnerCommand
             result.addError("ownerLastName", "Owner last name cannot be longer than 100 characters");
         }
 
-        // Validate owner dni
-        if (!StringUtils.hasText(command.getOwnerDni())) {
-            result.addError("ownerDni", "Owner dni cannot be empty");
-        } else if (command.getOwnerDni().length() > 100) {
-            result.addError("ownerDni", "Owner dni cannot be longer than 100 characters");
-        }
-
         if (command.getOwnerPhone() == null) {
             result.addError("ownerPhone", "Owner phone cannot be empty");
         }

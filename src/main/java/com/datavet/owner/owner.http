@@ -1,0 +1,21 @@
+###
+POST http://localhost:8080/owner
+Content-Type: application/json
+
+{
+  "clinicId": "clinid_id",
+  "name": "Moise",
+  "lastName": "velez",
+  "documentId": "DNI",
+  "documentNumber": "23402587H",
+  "phone": "123456987",
+  "email": "moisesvelez@gmail.com",
+  "address": "Av. imaginación",
+  "city": "narnia",
+  "postalCode": "12456",
+  "url": "hola.com",
+  "acceptTermsAndCond": true
+}
+
+
+###

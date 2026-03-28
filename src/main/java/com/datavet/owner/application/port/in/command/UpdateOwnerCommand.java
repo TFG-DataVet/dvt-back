@@ -1,9 +1,11 @@
 package com.datavet.owner.application.port.in.command;
 
 import com.datavet.shared.domain.valueobject.Address;
+import com.datavet.shared.domain.valueobject.DocumentId;
 import com.datavet.shared.domain.valueobject.Email;
 import com.datavet.shared.domain.valueobject.Phone;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Value;
@@ -22,9 +24,8 @@ public class UpdateOwnerCommand {
     @Size(max = 50, message = "Owner lastname is required")
     private String ownerLastName;
 
-    @NotBlank
-    @Size(max = 10, message = "Owner dni is required")
-    private String ownerDni;
+    @NotNull(message = "Dni is required")
+    private DocumentId ownerDni;
 
     @NotBlank
     @Size(max= 15, message = "Owner phone is required")
