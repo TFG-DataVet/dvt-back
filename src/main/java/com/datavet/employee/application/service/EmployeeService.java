@@ -59,6 +59,7 @@ public class EmployeeService implements EmployeeUseCase, ApplicationService {
                 command.getClinicId(),
                 employee.getId(),
                 command.getEmail(),
+                employee.getFirstName(),
                 UserRole.valueOf(command.getRole())
         );
         employee.assignUserId(userId);

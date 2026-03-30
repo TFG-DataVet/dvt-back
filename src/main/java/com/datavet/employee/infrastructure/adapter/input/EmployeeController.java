@@ -6,6 +6,7 @@ import com.datavet.employee.application.mapper.EmployeeMapper;
 import com.datavet.employee.application.port.in.EmployeeUseCase;
 import com.datavet.employee.application.port.in.command.*;
 import com.datavet.employee.domain.model.Employee;
+import com.datavet.employee.domain.valueobject.WorkSchedule;
 import com.datavet.employee.infrastructure.adapter.input.dto.*;
 import com.datavet.shared.domain.valueobject.Address;
 import com.datavet.shared.domain.valueobject.DocumentId;
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
