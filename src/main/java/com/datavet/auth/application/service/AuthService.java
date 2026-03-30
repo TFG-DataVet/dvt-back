@@ -22,10 +22,14 @@ import com.datavet.auth.infrastructure.util.JwtUtil;
 import com.datavet.clinic.application.port.in.ClinicUseCase;
 import com.datavet.clinic.application.port.in.command.CompleteClinicSetupCommand;
 import com.datavet.clinic.application.port.in.command.CreatePendingClinicCommand;
+import com.datavet.clinic.application.port.out.ClinicRepositoryPort;
+import com.datavet.clinic.domain.exception.ClinicNotFoundException;
+import com.datavet.clinic.domain.model.Clinic;
 import com.datavet.employee.application.port.in.EmployeeUseCase;
 import com.datavet.employee.application.port.in.command.CreateEmployeeCommand;
 import com.datavet.employee.application.port.out.EmployeeRepositoryPort;
 import com.datavet.employee.application.port.out.UserCreationPort;
+import com.datavet.employee.domain.exception.EmployeeNotFoundException;
 import com.datavet.employee.domain.model.Employee;
 import com.datavet.shared.application.service.ApplicationService;
 import com.datavet.shared.domain.event.DomainEvent;
@@ -55,6 +59,7 @@ public class AuthService implements AuthUseCase, UserCreationPort, ApplicationSe
     private final DomainEventPublisher       domainEventPublisher;
     // Añadir al constructor de AuthService
     private final EmployeeRepositoryPort employeeRepositoryPort;
+    private final ClinicRepositoryPort clinicRepositoryPort;
     // -------------------------------------------------------------------------
     // Onboarding — Paso 1
     // -------------------------------------------------------------------------
@@ -96,7 +101,7 @@ public class AuthService implements AuthUseCase, UserCreationPort, ApplicationSe
         publishDomainEvents(user);
         User savedUser = userRepositoryPort.save(user);
 
-        emailPort.sendVerificationEmail(command.getEmail(), verificationToken);
+        emailPort.sendVerificationEmail(command.getClinicName(), command.getFirstName(), command.getEmail(), verificationToken);
 
         return savedUser;
     }
@@ -134,7 +139,7 @@ public class AuthService implements AuthUseCase, UserCreationPort, ApplicationSe
         user.renewVerificationToken(newToken);
 
         userRepositoryPort.save(user);
-        emailPort.sendVerificationEmail(email, newToken);
+        emailPort.sendVerificationEmail("", user.getFirstName(), email, newToken);
     }
 
     // -------------------------------------------------------------------------
@@ -291,7 +296,7 @@ public class AuthService implements AuthUseCase, UserCreationPort, ApplicationSe
     @Override
     @Transactional
     public String createPendingEmployeeUser(String clinicId, String employeeId,
-                                            String email, UserRole role) {
+                                            String email, String nameEmployee, UserRole role) {
 
         if (userRepositoryPort.existsByEmail(email)) {
             throw new UserAlreadyExistsException("email", email);
@@ -302,8 +307,11 @@ public class AuthService implements AuthUseCase, UserCreationPort, ApplicationSe
         User user = User.createPendingEmployee(
                 clinicId, employeeId, new Email(email), role, verificationToken);
 
+        Clinic clinic = clinicRepositoryPort.findById(clinicId)
+                .orElseThrow(() -> new ClinicNotFoundException("Clinic", clinicId));
+
         userRepositoryPort.save(user);
-        emailPort.sendEmployeeActivationEmail(email, verificationToken);
+        emailPort.sendEmployeeActivationEmail(email, verificationToken, clinic.getClinicName(), nameEmployee);
         return user.getId();
     }
 
@@ -318,6 +326,14 @@ public class AuthService implements AuthUseCase, UserCreationPort, ApplicationSe
                 passwordEncoder.encode(rawPassword));
 
         user.activateWithPassword(token, hashedPassword);
+
+        Employee employee = employeeRepositoryPort.findById(user.getEmployeeId())
+                .orElseThrow(() -> new EmployeeNotFoundException("No hemos encontrado el empleado con id: " + user.getId()));
+
+        Clinic clinic = clinicRepositoryPort.findById(employee.getClinicId())
+                        .orElseThrow(() -> new ClinicNotFoundException("No hemos encontrado la clinica con id: " + employee.getClinicId()));
+
+        emailPort.sendWelcomeEmailToEmployee(user.getEmail().getValue(), clinic.getClinicName(), employee.getFirstName());
 
         userRepositoryPort.save(user);
     }
@@ -450,7 +466,8 @@ public class AuthService implements AuthUseCase, UserCreationPort, ApplicationSe
         // 5. Enviamos email de bienvenida
         emailPort.sendWelcomeEmail(
                 user.getEmail().getValue(),
-                command.getLegalName()
+                command.getLegalName(),
+                user.getFirstName()
         );
 
         // 6. Generamos JWT definitivo
