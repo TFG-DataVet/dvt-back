@@ -1,5 +1,6 @@
 package com.datavet.employee.application.port.in.command;
 
+import com.datavet.employee.domain.valueobject.WorkSchedule;
 import com.datavet.shared.domain.valueobject.Address;
 import com.datavet.shared.domain.valueobject.DocumentId;
 import com.datavet.shared.domain.valueobject.Phone;
@@ -17,16 +18,17 @@ import java.time.LocalDate;
 @Value
 @Builder
 public class CreateEmployeeCommand {
-    String    userId;
-    String    clinicId;
-    String    firstName;
-    String    lastName;
-    DocumentId documentNumber;
-    Phone     phone;
-    Address   address;
-    String    avatarUrl;
-    String    speciality;
-    String    licenseNumber;   // obligatorio si role == CLINIC_VETERINARIAN
-    LocalDate hireDate;
-    String    role;            // usado solo para validación de licenseNumber
+    String          userId;
+    String          clinicId;
+    String          firstName;
+    String          lastName;
+    DocumentId      documentNumber;
+    Phone           phone;
+    String          email;
+    Address         address;
+    String          avatarUrl;
+    String          speciality;
+    String          licenseNumber;   // obligatorio si role == CLINIC_VETERINARIAN
+    LocalDate       hireDate;
+    String          role;            // usado solo para validación de licenseNumber
 }

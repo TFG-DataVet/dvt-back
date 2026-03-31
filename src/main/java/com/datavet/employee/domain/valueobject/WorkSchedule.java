@@ -19,17 +19,15 @@ public class WorkSchedule {
     private final LocalTime      exitTime;
     private final String         notes;
 
-    private WorkSchedule(Integer weeklyHours, List<DayOfWeek> workDays,
-                         LocalTime entryTime, LocalTime exitTime, String notes) {
+    private WorkSchedule(Integer weeklyHours, List<DayOfWeek> workDays, LocalTime entryTime, LocalTime exitTime, String notes) {
         this.weeklyHours = weeklyHours;
-        this.workDays    = workDays;
-        this.entryTime   = entryTime;
-        this.exitTime    = exitTime;
-        this.notes       = notes;
+        this.workDays = workDays != null ? List.copyOf(workDays) : null;
+        this.entryTime = entryTime;
+        this.exitTime = exitTime;
+        this.notes = notes;
     }
 
-    public static WorkSchedule of(Integer weeklyHours, List<DayOfWeek> workDays,
-                                  LocalTime entryTime, LocalTime exitTime, String notes) {
+    private void validate(){
         ValidationResult result = new ValidationResult();
 
         if (weeklyHours == null || weeklyHours <= 0) {
@@ -59,8 +57,15 @@ public class WorkSchedule {
         if (result.hasErrors()) {
             throw new EmployeeValidationException(result);
         }
+    }
 
-        return new WorkSchedule(weeklyHours, List.copyOf(workDays), entryTime, exitTime, notes);
+
+    public static WorkSchedule of(Integer weeklyHours, List<DayOfWeek> workDays,
+                                  LocalTime entryTime, LocalTime exitTime, String notes) {
+
+       WorkSchedule schedule =  new WorkSchedule(weeklyHours, List.copyOf(workDays), entryTime, exitTime, notes);
+        schedule.validate();
+        return schedule;
     }
 
     @Override

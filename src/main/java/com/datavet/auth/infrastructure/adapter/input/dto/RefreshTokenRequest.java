@@ -1,0 +1,13 @@
+package com.datavet.auth.infrastructure.adapter.input.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class RefreshTokenRequest {
+
+    @NotBlank(message = "El refresh token es obligatorio")
+    private String refreshToken;
+}
