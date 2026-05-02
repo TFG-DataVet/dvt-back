@@ -15,9 +15,9 @@ Content-Type: application/json
 
 {
   "clinicName": "MisMascotas",
-  "firstName": "Jesús",
-  "lastName": "Santiago",
-  "email": "mismascotas@gmail.com",
+  "firstName": "Moises",
+  "lastName": "Velez",
+  "email": "moisesvelezfernandez@gmail.com",
   "phone": "+34-123456789",
   "password": "Mi_super_contraseña_1"
 }
@@ -56,7 +56,7 @@ Content-Type: application/json
 #       }
 #   Con esta respuesta debemos de copiar el token de accessToken, que lo usaremos en el paso 3.
 
-GET http://localhost:8080/auth/verify-email?token={token}
+GET http://localhost:8080/auth/verify-email?token=4c75420a-6561-4155-9c88-a35189cb2cfb
 
 ###
 
@@ -103,9 +103,9 @@ Content-Type: application/json
 #       ownerAvatarUrl          : String
 #       ownerSpeciality         : String
 
-PATCH http://localhost:8080/clinic/{clinicId}/complete-setup
+PATCH http://localhost:8080/clinic/2393ff87-3959-4096-9b31-0d8b6d718f10/complete-setup
 Content-Type: application/json
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI4NzkxYWQwMC0zODE1LTRhOTAtODBmNC1mNDY3MTE1OGY1MjkiLCJjbGluaWNJZCI6IjIzOTNmZjg3LTM5NTktNDA5Ni05YjMxLTBkOGI2ZDcxOGYxMCIsImVtYWlsIjoibW9pc2VzdmVsZXpmZXJuYW5kZXpAZ21haWwuY29tIiwicm9sZSI6IkNMSU5JQ19PV05FUiIsInNjb3BlIjoiT05CT0FSRElOR19PTkxZIiwiaWF0IjoxNzc0OTgyODY4LCJleHAiOjE3NzQ5ODY0Njh9.ZPPeWkE8X9jdoC6yXkdxU99s04mFymm_eV86XeniFrU
 
 {
   "legalName": "MisMascotas SL",
@@ -115,7 +115,7 @@ Authorization: Bearer
   "city": "Narnia",
   "codePostal": "28285",
   "phone": "1234656789",
-  "email": "emailDelaClinica@gmail.com",
+  "email": "moisesvelezfernandez@gmail.com",
   "logoUrl": "esto_es_un_link_de_foto",
   "scheduleOpenDays": "Lunes, Martes, Miercoles, Jueves, Viernes, Sabado",
   "scheduleOpenTime": "09:00",
@@ -134,25 +134,25 @@ Authorization: Bearer
 ###
 
 #   Paso 4 Registrar un empleado:
-#       Para poder registrar un empleado nosotros ddebemos de enviar los datos del empleados
+#       Para poder registrar un empleado nosotros debemos de enviar los datos del empleados
 
 ###
 POST http://localhost:8080/employees
 Content-Type: application/json
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI4NzkxYWQwMC0zODE1LTRhOTAtODBmNC1mNDY3MTE1OGY1MjkiLCJjbGluaWNJZCI6IjIzOTNmZjg3LTM5NTktNDA5Ni05YjMxLTBkOGI2ZDcxOGYxMCIsImVtYWlsIjoibW9pc2VzdmVsZXpmZXJuYW5kZXpAZ21haWwuY29tIiwicm9sZSI6IkNMSU5JQ19PV05FUiIsInNjb3BlIjoiT05CT0FSRElOR19PTkxZIiwiaWF0IjoxNzc0OTgyODY4LCJleHAiOjE3NzQ5ODY0Njh9.ZPPeWkE8X9jdoC6yXkdxU99s04mFymm_eV86XeniFrU
 
 {
-  "firstName": "Jesús",
-  "lastName": "Contreras",
+  "firstName": "Moises",
+  "lastName": "Velez",
   "documentType": "NIE",
   "documentNumber": "Z1699417K",
   "phone": "1234567898",
-  "email": "gmia@gmail.com",
-  "address": "Av.Creacion.",
-  "city": "Ciudad gotica.",
+  "email": "velezmoises72@gmail.com",
+  "address": "Av.Arkham Asylum.",
+  "city": "Ciudad Gotham.",
   "postalCode": "123789",
   "avatarUrl": "esto_es_un_link",
-  "speciality": "",
+  "speciality": "Peluquero",
   "licenseNumber": "123456897",
   "hireDate": "2024-01-01",
   "role": "CLINIC_VETERINARIAN"
@@ -166,7 +166,7 @@ POST http://localhost:8080/auth/activate-account
 Content-Type: application/json
 
 {
-  "token": "",
+  "token": "0872b8e1-2d6a-4d25-9354-407a564e00d1",
   "password": "Mi_super_contraseña_2"
 }
 
@@ -188,20 +188,49 @@ Content-Type: application/json
 
 POST http://localhost:8080/owner
 Content-Type: application/json
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI4NzkxYWQwMC0zODE1LTRhOTAtODBmNC1mNDY3MTE1OGY1MjkiLCJjbGluaWNJZCI6IjIzOTNmZjg3LTM5NTktNDA5Ni05YjMxLTBkOGI2ZDcxOGYxMCIsImVtYWlsIjoibW9pc2VzdmVsZXpmZXJuYW5kZXpAZ21haWwuY29tIiwicm9sZSI6IkNMSU5JQ19PV05FUiIsInNjb3BlIjoiT05CT0FSRElOR19PTkxZIiwiaWF0IjoxNzc0OTgyODY4LCJleHAiOjE3NzQ5ODY0Njh9.ZPPeWkE8X9jdoC6yXkdxU99s04mFymm_eV86XeniFrU
 
 {
+  "clinicId": "2393ff87-3959-4096-9b31-0d8b6d718f10",
   "name": "Moises",
   "lastName": "Velez",
-  "dni": "123456789",
+  "documentId": "dni",
+  "documentNumber": "22222222J",
   "phone": "987654321",
   "email": "moi@ghmailc.com",
   "address": "Av. Carcelaria",
   "city": "Fondo de Bikini",
   "postalCode": "65412",
-  "url": "Esta es una url"
+  "url": "Esta es una url",
+  "acceptTermsAndCond": true
 }
 
 
 ###
 
+POST http://localhost:8080/pet
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI4NzkxYWQwMC0zODE1LTRhOTAtODBmNC1mNDY3MTE1OGY1MjkiLCJjbGluaWNJZCI6IjIzOTNmZjg3LTM5NTktNDA5Ni05YjMxLTBkOGI2ZDcxOGYxMCIsImVtYWlsIjoibW9pc2VzdmVsZXpmZXJuYW5kZXpAZ21haWwuY29tIiwicm9sZSI6IkNMSU5JQ19PV05FUiIsInNjb3BlIjoiT05CT0FSRElOR19PTkxZIiwiaWF0IjoxNzc0OTgyODY4LCJleHAiOjE3NzQ5ODY0Njh9.ZPPeWkE8X9jdoC6yXkdxU99s04mFymm_eV86XeniFrU
+
+{
+  "clinicId": "2393ff87-3959-4096-9b31-0d8b6d718f10",
+  "name": "Maullido",
+  "species": "Gato",
+  "breed": "Siames",
+  "sex": "MALE",
+  "dateOfBirth": "2018-02-01",
+  "owner": {
+    "ownerId": "d8f40df9-a475-4413-8fc6-7b6e8242e9ad",
+    "ownerName": "Moises",
+    "ownerLastName": "Velez",
+    "ownerPhone": "987654321"
+  }
+
+
+}
+
+###
+
+GET http://localhost:8080/pet/clinic/2393ff87-3959-4096-9b31-0d8b6d718f10
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI4NzkxYWQwMC0zODE1LTRhOTAtODBmNC1mNDY3MTE1OGY1MjkiLCJjbGluaWNJZCI6IjIzOTNmZjg3LTM5NTktNDA5Ni05YjMxLTBkOGI2ZDcxOGYxMCIsImVtYWlsIjoibW9pc2VzdmVsZXpmZXJuYW5kZXpAZ21haWwuY29tIiwicm9sZSI6IkNMSU5JQ19PV05FUiIsInNjb3BlIjoiT05CT0FSRElOR19PTkxZIiwiaWF0IjoxNzc0OTgyODY4LCJleHAiOjE3NzQ5ODY0Njh9.ZPPeWkE8X9jdoC6yXkdxU99s04mFymm_eV86XeniFrU
