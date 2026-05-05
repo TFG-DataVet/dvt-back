@@ -123,6 +123,11 @@ public class PetRepositoryAdapter implements PetRepositoryPort {
     }
 
     @Override
+    public void delete(String id) {
+
+    }
+
+    @Override
     public void deleteById(String id) {
         repository.deleteById(id);
     }
@@ -131,4 +136,6 @@ public class PetRepositoryAdapter implements PetRepositoryPort {
     public boolean existsById(String id) {
         return repository.existsById(id);
     }
+
+
 }

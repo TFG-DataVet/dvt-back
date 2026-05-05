@@ -30,6 +30,13 @@ public class PetController {
      * POST /pet
      * Crea una nueva mascota con su dueño embebido.
      */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        petUseCase.deletePet(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
     @PostMapping
     public ResponseEntity<PetResponse> create(@Valid @RequestBody CreatePetRequest request) {
 
@@ -216,6 +223,12 @@ public class PetController {
     @GetMapping("/owner/{ownerId}")
     public ResponseEntity<List<PetResponse>> getByOwner(@PathVariable String ownerId) {
         List<Pet> pets = petUseCase.getPetsByOwner(ownerId);
+        return ResponseEntity.ok(PetMapper.toResponseList(pets));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<PetResponse>> getAll() {
+        List<Pet> pets = petUseCase.getAllPets();
         return ResponseEntity.ok(PetMapper.toResponseList(pets));
     }
 }

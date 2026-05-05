@@ -26,6 +26,8 @@ public interface PetRepositoryPort extends Repository<Pet, String> {
 
     boolean existsByNumberAndIdNot(String chipNumber, String petId);
 
+    List<Pet> findAll();
 
 
+    void delete(String id);
 }

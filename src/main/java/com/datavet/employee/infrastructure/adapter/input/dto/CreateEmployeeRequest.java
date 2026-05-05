@@ -63,4 +63,7 @@ public class CreateEmployeeRequest {
 
     @NotBlank(message = "El rol es obligatorio")
     private String role;
+
+    // Añade este campo — opcional, solo se usa cuando no hay token
+    private String clinicId;
 }

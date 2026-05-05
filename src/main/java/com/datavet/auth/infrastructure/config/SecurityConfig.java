@@ -14,6 +14,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource; // ✅ servlet
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -26,39 +31,29 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ conectar CORS
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-
-                        // Endpoints públicos — sin autenticación
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.GET,  "/auth/verify-email").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/resend-verification").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/activate-account").permitAll()
-
-                        // Onboarding — requiere JWT temporal (validado en el controller)
+                        .requestMatchers("/owner", "/owner/**").permitAll()
+                        .requestMatchers("/pet", "/pet/**").permitAll()
+                        .requestMatchers("/employees", "/employees/**").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/clinic/*/complete-setup").authenticated()
-
-                        // Employees — solo CLINIC_OWNER y CLINIC_ADMIN
-                        .requestMatchers("/employees/**").hasAnyRole(
-                                "CLINIC_OWNER", "CLINIC_ADMIN")
-
-                        // Clinic — solo SUPER_ADMIN puede crear directamente
+                        .requestMatchers("/employees/**").hasAnyRole("CLINIC_OWNER", "CLINIC_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/clinic").hasRole("SUPER_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/clinic/**").hasAnyRole(
-                                "SUPER_ADMIN", "CLINIC_OWNER")
-                        .requestMatchers(HttpMethod.PUT, "/clinic/**").hasAnyRole(
-                                "SUPER_ADMIN", "CLINIC_OWNER")
+                        .requestMatchers(HttpMethod.DELETE, "/clinic/**").hasAnyRole("SUPER_ADMIN", "CLINIC_OWNER")
+                        .requestMatchers(HttpMethod.PUT, "/clinic/**").hasAnyRole("SUPER_ADMIN", "CLINIC_OWNER")
                         .requestMatchers(HttpMethod.GET, "/clinic/**").authenticated()
-
-                        // Resto de endpoints — autenticación requerida
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -66,5 +61,18 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:5258"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(); // ✅
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }

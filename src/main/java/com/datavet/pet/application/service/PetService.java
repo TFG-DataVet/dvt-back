@@ -110,6 +110,11 @@ public class PetService implements PetUseCase, ApplicationService {
     // -------------------------------------------------------------------------
     // Correcciones clínicas
     // -------------------------------------------------------------------------
+    @Override
+    public List<Pet> getAllPets() {
+        return petRepositoryPort.findAll();
+    }
+
 
     @Override
     @Transactional
@@ -204,4 +209,12 @@ public class PetService implements PetUseCase, ApplicationService {
         events.forEach(domainEventPublisher::publish);
         pet.clearDomainEvents();
     }
+    @Override
+    @Transactional
+    public void deletePet(String id) {
+        Pet pet = petRepositoryPort.findById(id)
+                .orElseThrow(() -> new PetNotFoundException(id));
+        petRepositoryPort.delete(id);
+    }
+
 }

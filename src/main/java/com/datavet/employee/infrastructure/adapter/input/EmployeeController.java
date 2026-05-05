@@ -36,8 +36,13 @@ public class EmployeeController {
             @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody CreateEmployeeRequest request) {
 
+        // ✅ Usa clinicId del token si existe, si no del body
+        String clinicId = currentUser != null
+                ? currentUser.getClinicId()
+                : request.getClinicId();
+
         CreateEmployeeCommand command = CreateEmployeeCommand.builder()
-                .clinicId(currentUser.getClinicId())
+                .clinicId(clinicId)
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .documentNumber(DocumentId.of(request.getDocumentType(), request.getDocumentNumber()))
@@ -54,7 +59,6 @@ public class EmployeeController {
         Employee employee = employeeUseCase.createEmployee(command);
         return ResponseEntity.status(201).body(EmployeeMapper.toResponse(employee));
     }
-
     /**
      * Actualiza los datos personales y laborales de un empleado.
      * CLINIC_OWNER y CLINIC_ADMIN.
@@ -169,11 +173,18 @@ public class EmployeeController {
 
     @GetMapping
     public ResponseEntity<List<EmployeeResponse>> getByClinic(
+            @RequestParam(required = false) String clinicId,
             @AuthenticationPrincipal AuthenticatedUser currentUser) {
 
-        // SUPER_ADMIN podría ver todas las clínicas — por ahora solo ve la suya
+        // Prioridad: query param > token JWT
+        String id = clinicId != null ? clinicId
+                : currentUser != null ? currentUser.getClinicId()
+                : null;
+
+        if (id == null) return ResponseEntity.ok(List.of());
+
         List<EmployeeResponse> responses = employeeUseCase
-                .getEmployeesByClinic(currentUser.getClinicId())
+                .getEmployeesByClinic(id)
                 .stream()
                 .map(EmployeeMapper::toResponse)
                 .toList();

@@ -32,4 +32,7 @@ public interface PetUseCase extends UseCase {
     List<Pet>   getPetsByClinic (String clinicId);
     List<Pet>   getPetsByOwner  (String ownerId);
 
+    List<Pet> getAllPets();
+
+    void deletePet(String id);
 }
