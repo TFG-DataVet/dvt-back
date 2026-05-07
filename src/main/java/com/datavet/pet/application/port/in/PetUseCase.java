@@ -30,6 +30,6 @@ public interface PetUseCase extends UseCase {
 
     Pet         getPetById      (String petId, String clinicId);
     List<Pet>   getPetsByClinic (String clinicId);
-    List<Pet>   getPetsByOwner  (String ownerId);
+    List<Pet>   getPetsByOwner  (String ownerId, String clinicId);
 
 }
