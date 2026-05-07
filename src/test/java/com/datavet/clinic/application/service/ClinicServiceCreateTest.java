@@ -22,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -51,7 +52,7 @@ class ClinicServiceCreateTest {
         email    = "clinica@test.com";
         phone    = new Phone("+34912345678");
         address  = new Address("Calle Test 1", "Madrid", "28001");
-        schedule = ClinicSchedule.of("Lunes - Viernes", LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra fines de semana");
+        schedule = ClinicSchedule.of(List.of("Lunes - Viernes"), LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra fines de semana");
     }
 
     // =========================================================================

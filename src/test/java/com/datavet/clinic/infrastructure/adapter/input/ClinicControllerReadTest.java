@@ -52,7 +52,7 @@ class ClinicControllerReadTest {
         Phone   phone    = new Phone("+34912345678");
         Email   email    = new Email("clinica@test.com");
         ClinicSchedule schedule = ClinicSchedule.of(
-                "Lunes - Viernes", LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra fines de semana");
+                List.of("Lunes - Viernes"), LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra fines de semana");
 
         activeClinic = Clinic.create(
                 "Clínica Test", "Clínica Test S.L.", "12345678A",
@@ -60,7 +60,7 @@ class ClinicControllerReadTest {
                 "https://example.com/logo.png", schedule);
         activeClinic.clearDomainEvents();
 
-        pendingClinic = Clinic.createPending("Clínica Test");
+        pendingClinic = Clinic.createPending("Clínica Test", email, phone);
         pendingClinic.clearDomainEvents();
     }
 
@@ -177,7 +177,7 @@ class ClinicControllerReadTest {
                 .andExpect(jsonPath("$.address.fullAddress").exists())
                 .andExpect(jsonPath("$.phone").value("+34912345678"))
                 .andExpect(jsonPath("$.email").value("clinica@test.com"))
-                .andExpect(jsonPath("$.schedule.openDays").value("Lunes - Viernes"))
+                .andExpect(jsonPath("$.schedule.openDays[0]").value("Lunes - Viernes"))
                 .andExpect(jsonPath("$.schedule.openTime").value("09:00:00"))
                 .andExpect(jsonPath("$.schedule.closeTime").value("18:00:00"));
     }
@@ -355,7 +355,7 @@ class ClinicControllerReadTest {
                 .andExpect(jsonPath("$.address.fullAddress").value("Calle Test 1, Madrid 28001"))
                 .andExpect(jsonPath("$.phone").value("+34912345678"))
                 .andExpect(jsonPath("$.email").value("clinica@test.com"))
-                .andExpect(jsonPath("$.schedule.openDays").value("Lunes - Viernes"));
+                .andExpect(jsonPath("$.schedule.openDays[0]").value("Lunes - Viernes"));
     }
 
     @Test
