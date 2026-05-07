@@ -9,6 +9,7 @@ import com.datavet.pet.application.port.out.PetRepositoryPort;
 import com.datavet.pet.domain.exception.MedicalRecordNotFoundException;
 import com.datavet.pet.domain.exception.PetNotFoundException;
 import com.datavet.pet.domain.model.MedicalRecord;
+import com.datavet.pet.domain.model.Pet;
 import com.datavet.pet.domain.model.details.MedicalRecordDetails;
 import com.datavet.pet.domain.valueobject.MedicalRecordType;
 import com.datavet.pet.application.port.out.MedicalRecordPort;
@@ -16,6 +17,7 @@ import com.datavet.shared.application.service.ApplicationService;
 import com.datavet.shared.domain.event.DomainEvent;
 import com.datavet.shared.domain.event.DomainEventPublisher;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,6 +64,9 @@ public class MedicalRecordService implements MedicalRecordUseCase, ApplicationSe
         MedicalRecord original = medicalRecordPort
                 .findById(command.getOriginalRecordId())
                 .orElseThrow(() -> new MedicalRecordNotFoundException(command.getOriginalRecordId()));
+        if (!original.getClinicId().equals(command.getClinicId())) {
+            throw new AccessDeniedException("El registro médico no pertenece a tu clínica");
+        }
 
         // El service construye los details corregidos también a través de la factory
         MedicalRecordDetails correctedDetails = detailsFactory.create(command.getDetailsRequest());
@@ -85,6 +90,9 @@ public class MedicalRecordService implements MedicalRecordUseCase, ApplicationSe
         MedicalRecord record = medicalRecordPort
                 .findById(command.getMedicalRecordId())
                 .orElseThrow(() -> new MedicalRecordNotFoundException(command.getMedicalRecordId()));
+        if (!record.getClinicId().equals(command.getClinicId())) {
+            throw new AccessDeniedException("El registro médico no pertenece a tu clínica");
+        }
 
         // El dominio lanza UnsupportedOperationException si el tipo no soporta estados
         // El dominio lanza IllegalStateException si la acción no es válida para el estado actual
@@ -100,23 +108,31 @@ public class MedicalRecordService implements MedicalRecordUseCase, ApplicationSe
     // -------------------------------------------------------------------------
 
     @Override
-    public MedicalRecord getMedicalRecordById(String medicalRecordId) {
-        return medicalRecordPort.findById(medicalRecordId)
+    public MedicalRecord getMedicalRecordById(String medicalRecordId, String clinicId) {
+        MedicalRecord record = medicalRecordPort.findById(medicalRecordId)
                 .orElseThrow(() -> new MedicalRecordNotFoundException(medicalRecordId));
+        if (!record.getClinicId().equals(clinicId)) {
+            throw new AccessDeniedException("El registro médico no pertenece a tu clínica");
+        }
+        return record;
     }
 
     @Override
-    public List<MedicalRecord> getMedicalRecordsByPet(String petId) {
-        if (!petRepositoryPort.existsById(petId)) {
-            throw new PetNotFoundException(petId);
+    public List<MedicalRecord> getMedicalRecordsByPet(String petId, String clinicId) {
+        Pet pet = petRepositoryPort.findById(petId)
+                .orElseThrow(() -> new PetNotFoundException(petId));
+        if (!pet.getClinicId().equals(clinicId)) {
+            throw new AccessDeniedException("La mascota no pertenece a tu clínica");
         }
         return medicalRecordPort.findByPetId(petId);
     }
 
     @Override
-    public List<MedicalRecord> getMedicalRecordsByType(String petId, MedicalRecordType type) {
-        if (!petRepositoryPort.existsById(petId)) {
-            throw new PetNotFoundException(petId);
+    public List<MedicalRecord> getMedicalRecordsByType(String petId, MedicalRecordType type, String clinicId) {
+        Pet pet = petRepositoryPort.findById(petId)
+                .orElseThrow(() -> new PetNotFoundException(petId));
+        if (!pet.getClinicId().equals(clinicId)) {
+            throw new AccessDeniedException("La mascota no pertenece a tu clínica");
         }
         return medicalRecordPort.findByPetIdAndType(petId, type);
     }

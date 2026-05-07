@@ -10,6 +10,7 @@ import lombok.Value;
 @Builder
 public class UpdateEmployeeCommand {
     String  employeeId;
+    String  clinicId;
     String  firstName;
     String  lastName;
     DocumentId documentNumber;

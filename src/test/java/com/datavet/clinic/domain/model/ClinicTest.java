@@ -36,7 +36,6 @@ class ClinicTest {
     void setUp() {
         address  = new Address("Calle Test 1", "Madrid", "28001");
         phone    = new Phone("+34912345678");
-        email    = new Email("clinica@test.com");
         schedule = ClinicSchedule.of("Lunes - Viernes", LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra fines de semana");
     }
 
@@ -65,7 +64,7 @@ class ClinicTest {
     void create_ShouldGenerateUUID() {
         Clinic clinic = buildActiveClinic();
 
-        assertThat(clinic.getClinicID()).isNotNull().isNotBlank();
+        assertThat(clinic.getClinicId()).isNotNull().isNotBlank();
     }
 
     @Test
@@ -96,7 +95,7 @@ class ClinicTest {
 
         assertThat(clinic).isInstanceOf(Document.class);
         assertThat(clinic).isInstanceOf(AggregateRoot.class);
-        assertThat(clinic.getId()).isEqualTo(clinic.getClinicID());
+        assertThat(clinic.getId()).isEqualTo(clinic.getClinicId());
     }
 
     @Test
@@ -109,7 +108,7 @@ class ClinicTest {
         assertThat(events.get(0)).isInstanceOf(ClinicCreatedEvent.class);
 
         ClinicCreatedEvent event = (ClinicCreatedEvent) events.get(0);
-        assertThat(event.getClinicId()).isEqualTo(clinic.getClinicID());
+        assertThat(event.getClinicId()).isEqualTo(clinic.getClinicId());
         assertThat(event.getClinicName()).isEqualTo("Clínica Test");
         assertThat(event.getLegalName()).isEqualTo("Clínica Test S.L.");
         assertThat(event.getOccurredOn()).isNotNull();
@@ -235,7 +234,7 @@ class ClinicTest {
     void createPending_ShouldGenerateUUID() {
         Clinic clinic = buildPendingClinic();
 
-        assertThat(clinic.getClinicID()).isNotNull().isNotBlank();
+        assertThat(clinic.getClinicId()).isNotNull().isNotBlank();
     }
 
     @Test
@@ -257,7 +256,7 @@ class ClinicTest {
         assertThat(events.get(0)).isInstanceOf(ClinicPendingCreatedEvent.class);
 
         ClinicPendingCreatedEvent event = (ClinicPendingCreatedEvent) events.get(0);
-        assertThat(event.getClinicId()).isEqualTo(clinic.getClinicID());
+        assertThat(event.getClinicId()).isEqualTo(clinic.getClinicId());
         assertThat(event.getClinicName()).isEqualTo("Clínica Test");
         assertThat(event.getOccurredOn()).isNotNull();
     }
@@ -265,7 +264,7 @@ class ClinicTest {
     @Test
     @DisplayName("createPending: should throw ClinicValidationException when clinicName is blank")
     void createPending_WhenClinicNameIsBlank_ShouldThrow() {
-        assertThatThrownBy(() -> Clinic.createPending("", email, phone))
+        assertThatThrownBy(() -> Clinic.createPending(""))
                 .isInstanceOf(ClinicValidationException.class)
                 .hasMessageContaining("Nombre");
     }
@@ -273,7 +272,7 @@ class ClinicTest {
     @Test
     @DisplayName("createPending: should throw ClinicValidationException when email is null")
     void createPending_WhenEmailIsNull_ShouldThrow() {
-        assertThatThrownBy(() -> Clinic.createPending("Clínica Test", null, phone))
+        assertThatThrownBy(() -> Clinic.createPending("Clínica Test"))
                 .isInstanceOf(ClinicValidationException.class)
                 .hasMessageContaining("Email");
     }
@@ -281,7 +280,7 @@ class ClinicTest {
     @Test
     @DisplayName("createPending: should throw ClinicValidationException when phone is null")
     void createPending_WhenPhoneIsNull_ShouldThrow() {
-        assertThatThrownBy(() -> Clinic.createPending("Clínica Test", email, null))
+        assertThatThrownBy(() -> Clinic.createPending("Clínica Test"))
                 .isInstanceOf(ClinicValidationException.class)
                 .hasMessageContaining("Telefono");
     }
@@ -399,7 +398,7 @@ class ClinicTest {
         assertThat(events.get(0)).isInstanceOf(ClinicUpdatedEvent.class);
 
         ClinicUpdatedEvent event = (ClinicUpdatedEvent) events.get(0);
-        assertThat(event.getClinicId()).isEqualTo(clinic.getClinicID());
+        assertThat(event.getClinicId()).isEqualTo(clinic.getClinicId());
         assertThat(event.getClinicName()).isEqualTo("Clínica Nueva");
     }
 
@@ -452,7 +451,7 @@ class ClinicTest {
         assertThat(events.get(0)).isInstanceOf(ClinicDeactivatedEvent.class);
 
         ClinicDeactivatedEvent event = (ClinicDeactivatedEvent) events.get(0);
-        assertThat(event.getClinicId()).isEqualTo(clinic.getClinicID());
+        assertThat(event.getClinicId()).isEqualTo(clinic.getClinicId());
         assertThat(event.getClinicName()).isEqualTo("Clínica Test");
         assertThat(event.getReason()).isEqualTo("Cierre temporal");
     }
@@ -522,6 +521,6 @@ class ClinicTest {
     }
 
     private Clinic buildPendingClinic() {
-        return Clinic.createPending("Clínica Test", email, phone);
+        return Clinic.createPending("Clínica Test");
     }
 }

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -50,7 +51,7 @@ public class CreateClinicRequest {
     private String logoUrl;
 
     @NotBlank(message = "Los días de apertura son obligatorios")
-    private String scheduleOpenDays;
+    private List<String> scheduleOpenDays;
 
     @NotNull(message = "La hora de apertura es obligatoria")
     private LocalTime scheduleOpenTime;

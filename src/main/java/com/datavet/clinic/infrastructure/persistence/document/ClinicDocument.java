@@ -16,6 +16,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 @Document(collection = "clinic")
 @CompoundIndexes({
@@ -54,7 +55,7 @@ public class ClinicDocument {
 
     // Campos del schedule aplanados — evita subdocumento innecesario en Mongo
     @Field("schedule_open_days")
-    private String    scheduleOpenDays;
+    private List<String> scheduleOpenDays;
 
     @Field("schedule_open_time")
     private LocalTime scheduleOpenTime;

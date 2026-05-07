@@ -26,7 +26,7 @@ import java.util.UUID;
 
 public class Clinic extends AggregateRoot<String> implements Document<String> {
 
-    private String clinicID;
+    private String clinicId;
     private String clinicName;
     private String legalName;
     private String legalNumber;
@@ -42,7 +42,7 @@ public class Clinic extends AggregateRoot<String> implements Document<String> {
 
     @Override
     public String getId() {
-        return this.clinicID;
+        return this.clinicId;
     }
 
     private void validateComplete(){
@@ -78,14 +78,6 @@ public class Clinic extends AggregateRoot<String> implements Document<String> {
             if (address.getPostalCode().isBlank() || address.getPostalCode() == null) {
                 result.addError("Código postal", "El codigo postal en la dirección no puede estar vacio o ser nulo");
             }
-        }
-
-        if (phone == null) {
-            result.addError("Telefono", "El numero de telefono de la clinica no puede estar vacio o ser nulo");
-        }
-
-        if (email == null) {
-            result.addError("Email","El email de la clinica no puede estar vacio o ser nulo");
         }
 
         if (schedule == null) {
@@ -155,7 +147,7 @@ public class Clinic extends AggregateRoot<String> implements Document<String> {
      * Crea una clínica en estado PENDING_SETUP.
      * Usado por el flujo de onboarding cuando el dueño se registra.
      */
-    public static Clinic createPending(String clinicName, Email ownerEmail, Phone ownerPhone) {
+    public static Clinic createPending(String clinicName, Email email, Phone phone) {
         String uuid = UUID.randomUUID().toString();
 
         Clinic clinic = new Clinic(
@@ -165,8 +157,8 @@ public class Clinic extends AggregateRoot<String> implements Document<String> {
                 null,
                 null,
                 null,
-                ownerPhone,
-                ownerEmail,
+                phone,
+                email,
                 null,
                 null,
                 ClinicStatus.PENDING_SETUP,
@@ -188,8 +180,8 @@ public class Clinic extends AggregateRoot<String> implements Document<String> {
      * Usado en el paso 3 del onboarding.
      */
     public void completeSetup(String legalName, String legalNumber, LegalType legalType,
-                              Address address, Phone phone, Email email,
-                              String logoUrl, ClinicSchedule schedule) {
+                              Address address, String logoUrl, ClinicSchedule schedule) {
+
         if (this.status != ClinicStatus.PENDING_SETUP) {
             ValidationResult result = new ValidationResult();
             result.addError("ClinicStatus",
@@ -201,15 +193,13 @@ public class Clinic extends AggregateRoot<String> implements Document<String> {
         this.legalNumber      = legalNumber;
         this.legalType        = legalType;
         this.address          = address;
-        this.phone            = phone;
-        this.email            = email;
         this.logoUrl          = logoUrl;
         this.schedule         = schedule;
         this.status           = ClinicStatus.ACTIVE;
         this.updatedAt        = LocalDateTime.now();
 
         this.validateComplete();
-        addDomainEvent(ClinicCreatedEvent.of(this.clinicID, this.clinicName, this.legalName));
+        addDomainEvent(ClinicCreatedEvent.of(this.clinicId, this.clinicName, this.legalName));
     }
 
     /**
@@ -274,7 +264,7 @@ public class Clinic extends AggregateRoot<String> implements Document<String> {
         this.updatedAt        = LocalDateTime.now();
 
         this.validateComplete();
-        addDomainEvent(ClinicUpdatedEvent.of(this.clinicID, this.clinicName));
+        addDomainEvent(ClinicUpdatedEvent.of(this.clinicId, this.clinicName));
     }
 
     /**
@@ -291,6 +281,6 @@ public class Clinic extends AggregateRoot<String> implements Document<String> {
         this.status    = ClinicStatus.DEACTIVATED;
         this.updatedAt = LocalDateTime.now();
 
-        addDomainEvent(ClinicDeactivatedEvent.of(this.clinicID, this.clinicName, reason));
+        addDomainEvent(ClinicDeactivatedEvent.of(this.clinicId, this.clinicName, reason));
     }
 }

@@ -25,7 +25,7 @@ public class ClinicMapper {
                 : null;
 
         return new ClinicResponse(
-                clinic.getClinicID(),
+                clinic.getClinicId(),
                 clinic.getClinicName(),
                 clinic.getLegalName(),
                 clinic.getLegalNumber(),

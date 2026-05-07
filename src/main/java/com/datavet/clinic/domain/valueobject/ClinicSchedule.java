@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * Value object que representa el horario de atención de una clínica.
@@ -16,12 +17,12 @@ import java.time.LocalTime;
 @EqualsAndHashCode
 public class ClinicSchedule {
 
-    private final String    openDays;
-    private final LocalTime openTime;
-    private final LocalTime closeTime;
-    private final String    notes;
+    private final List<String>  openDays;
+    private final LocalTime     openTime;
+    private final LocalTime     closeTime;
+    private final String        notes;
 
-    private ClinicSchedule(String openDays, LocalTime openTime,
+    private ClinicSchedule(List<String> openDays, LocalTime openTime,
                            LocalTime closeTime, String notes) {
         this.openDays  = openDays;
         this.openTime  = openTime;
@@ -29,11 +30,11 @@ public class ClinicSchedule {
         this.notes     = notes;
     }
 
-    public static ClinicSchedule of(String openDays, LocalTime openTime,
+    public static ClinicSchedule of(List<String> openDays, LocalTime openTime,
                                     LocalTime closeTime, String notes) {
         ValidationResult result = new ValidationResult();
 
-        if (openDays == null || openDays.isBlank()) {
+        if (openDays == null || openDays.isEmpty()) {
             result.addError("ClinicSchedule", "Los días de apertura no pueden estar vacíos");
         }
 

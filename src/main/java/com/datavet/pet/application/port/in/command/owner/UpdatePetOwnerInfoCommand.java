@@ -14,6 +14,8 @@ public class UpdatePetOwnerInfoCommand {
     @NotBlank(message = "El ID de la mascota es obligatorio")
     String petId;
 
+    String clinicId;
+
     @NotBlank(message = "El ID del dueño es obligatorio")
     String ownerId;
 

@@ -13,6 +13,8 @@ public class CorrectPetBreedCommand {
     @NotBlank(message = "El ID de la mascota es obligatorio")
     String petId;
 
+    String clinicId;
+
     @NotBlank(message = "La nueva raza no puede estar vacía")
     String newBreed;
 

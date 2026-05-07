@@ -31,4 +31,8 @@ public interface AuthUseCase extends UseCase {
     void resendVerificationEmail(String email);
 
     void activateAccount(String token, String rawPassword);
+
+    // Recuperación de contraseña
+    void requestPasswordReset(String email);
+    void resetPassword(String token, String newRawPassword);
 }

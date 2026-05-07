@@ -15,6 +15,7 @@ import lombok.Value;
 public class UpdateOwnerCommand {
 
     private String ownerID;
+    private String clinicId;
 
     @NotBlank
     @Size(max = 50, message = "Owner name is required")

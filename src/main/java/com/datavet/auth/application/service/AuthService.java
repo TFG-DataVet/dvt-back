@@ -25,8 +25,6 @@ import com.datavet.clinic.application.port.in.command.CreatePendingClinicCommand
 import com.datavet.clinic.application.port.out.ClinicRepositoryPort;
 import com.datavet.clinic.domain.exception.ClinicNotFoundException;
 import com.datavet.clinic.domain.model.Clinic;
-import com.datavet.employee.application.port.in.EmployeeUseCase;
-import com.datavet.employee.application.port.in.command.CreateEmployeeCommand;
 import com.datavet.employee.application.port.out.EmployeeRepositoryPort;
 import com.datavet.employee.application.port.out.UserCreationPort;
 import com.datavet.employee.domain.exception.EmployeeNotFoundException;
@@ -78,7 +76,7 @@ public class AuthService implements AuthUseCase, UserCreationPort, ApplicationSe
         HashedPassword password = HashedPassword.ofHash(
                 passwordEncoder.encode(command.getRawPassword()));
 
-        var clinic = clinicUseCase.createPendingClinic(
+        Clinic clinic = clinicUseCase.createPendingClinic(
                 CreatePendingClinicCommand.builder()
                         .clinicName(command.getClinicName())
                         .email(email)
@@ -90,7 +88,7 @@ public class AuthService implements AuthUseCase, UserCreationPort, ApplicationSe
 
         // ✅ Ahora pasamos firstName y lastName
         User user = User.createClinicOwner(
-                clinic.getClinicID(),
+                clinic.getClinicId(),
                 email,
                 password,
                 command.getFirstName(),
@@ -121,6 +119,62 @@ public class AuthService implements AuthUseCase, UserCreationPort, ApplicationSe
 
         publishDomainEvents(user);
         return userRepositoryPort.save(user);
+    }
+
+    /**
+     *
+     * Onboarding - Paso 3
+     * Paso 3 del onboarding — completa los datos de la clínica,
+     * crea el Employee del CLINIC_OWNER y activa el User.
+     * Requiere JWT temporal con scope ONBOARDING_ONLY.
+     * Devuelve JWT definitivo.
+     */
+    @Transactional
+    public TokenResponse completeOnboarding(CompleteClinicSetupCommand command) {
+        // 1. Recuperamos el User — debe estar en PENDING_CLINIC_SETUP
+        User user = userRepositoryPort.findById(command.getUserId())
+                .orElseThrow(() -> new UserNotFoundException(command.getUserId()));
+
+        if (user.getStatus() != UserStatus.PENDING_CLINIC_SETUP) {
+            throw new InvalidCredentialsException(
+                    "El usuario no está en estado PENDING_CLINIC_SETUP");
+        }
+
+        // 2. Completamos los datos de la clínica
+        clinicUseCase.completeClinicSetup(command);
+
+        // 3. Creamos el Employee del CLINIC_OWNER directamente
+        Employee employee = Employee.create(
+                user.getId(),                       // userId ya existe
+                command.getClinicId(),
+                user.getFirstName(),
+                user.getLastName(),
+                command.getOwnerDocumentNumber(),
+                command.getPhone(),
+                command.getOwnerAddress(),
+                command.getOwnerAvatarUrl(),
+                null,
+                null,                               // licenseNumber — no aplica para CLINIC_OWNER
+                null,
+                UserRole.CLINIC_OWNER.name()
+        );
+
+        Employee savedEmployee = employeeRepositoryPort.save(employee);
+
+        // 4. Activamos el User con el employeeId recién creado
+        user.activate(employee.getId());
+        publishDomainEvents(user);
+        userRepositoryPort.save(user);
+
+        // 5. Enviamos email de bienvenida
+        emailPort.sendWelcomeEmail(
+                user.getEmail().getValue(),
+                command.getLegalName(),
+                user.getFirstName()
+        );
+
+        // 6. Generamos JWT definitivo
+        return generateTokenResponse(user);
     }
 
     @Override
@@ -339,6 +393,38 @@ public class AuthService implements AuthUseCase, UserCreationPort, ApplicationSe
     }
 
     // -------------------------------------------------------------------------
+    // Recuperación de contraseña
+    // -------------------------------------------------------------------------
+
+    @Override
+    @Transactional
+    public void requestPasswordReset(String email) {
+        userRepositoryPort.findByEmail(email).ifPresent(user -> {
+            String token = UUID.randomUUID().toString();
+            user.requestPasswordReset(token);
+            userRepositoryPort.save(user);
+
+            String resetUrl = "http://localhost:5258/reset-password?token=" + token;
+            String name = user.getFirstName() != null ? user.getFirstName() : user.getEmail().getValue();
+            emailPort.sendPasswordResetEmail(email, name, resetUrl);
+        });
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(String token, String newRawPassword) {
+        User user = userRepositoryPort.findByPasswordResetToken(token)
+                .orElseThrow(EmailTokenExpiredException::new);
+
+        HashedPassword.validateRawPassword(newRawPassword);
+        HashedPassword newPassword = HashedPassword.ofHash(passwordEncoder.encode(newRawPassword));
+
+        user.resetPassword(token, newPassword);
+        refreshTokenRepositoryPort.deleteByUserId(user.getId());
+        userRepositoryPort.save(user);
+    }
+
+    // -------------------------------------------------------------------------
     // Desactivación
     // -------------------------------------------------------------------------
 
@@ -420,59 +506,7 @@ public class AuthService implements AuthUseCase, UserCreationPort, ApplicationSe
         }
     }
 
-    /**
-     * Paso 3 del onboarding — completa los datos de la clínica,
-     * crea el Employee del CLINIC_OWNER y activa el User.
-     * Requiere JWT temporal con scope ONBOARDING_ONLY.
-     * Devuelve JWT definitivo.
-     */
-    @Transactional
-    public TokenResponse completeOnboarding(CompleteClinicSetupCommand command) {
-        // 1. Recuperamos el User — debe estar en PENDING_CLINIC_SETUP
-        User user = userRepositoryPort.findById(command.getUserId())
-                .orElseThrow(() -> new UserNotFoundException(command.getUserId()));
 
-        if (user.getStatus() != UserStatus.PENDING_CLINIC_SETUP) {
-            throw new InvalidCredentialsException(
-                    "El usuario no está en estado PENDING_CLINIC_SETUP");
-        }
-
-        // 2. Completamos los datos de la clínica
-        clinicUseCase.completeClinicSetup(command);
-
-        // 3. Creamos el Employee del CLINIC_OWNER directamente
-        Employee employee = Employee.create(
-                user.getId(),                       // userId ya existe
-                command.getClinicId(),
-                user.getFirstName(),
-                user.getLastName(),
-                command.getOwnerDocumentNumber(),
-                command.getPhone(),
-                command.getOwnerAddress(),
-                command.getOwnerAvatarUrl(),
-                command.getOwnerSpeciality(),
-                null,                               // licenseNumber — no aplica para CLINIC_OWNER
-                command.getOwnerHireDate(),
-                UserRole.CLINIC_OWNER.name()
-        );
-
-        Employee savedEmployee = employeeRepositoryPort.save(employee);
-
-        // 4. Activamos el User con el employeeId recién creado
-        user.activate(employee.getId());
-        publishDomainEvents(user);
-        userRepositoryPort.save(user);
-
-        // 5. Enviamos email de bienvenida
-        emailPort.sendWelcomeEmail(
-                user.getEmail().getValue(),
-                command.getLegalName(),
-                user.getFirstName()
-        );
-
-        // 6. Generamos JWT definitivo
-        return generateTokenResponse(user);
-    }
 
     private void publishDomainEvents(User user) {
         List<DomainEvent> events = user.getDomainEvents();

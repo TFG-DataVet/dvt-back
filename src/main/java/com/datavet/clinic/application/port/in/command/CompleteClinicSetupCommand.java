@@ -37,7 +37,5 @@ public class CompleteClinicSetupCommand {
 
     DocumentId ownerDocumentNumber;
     Address        ownerAddress;
-    LocalDate      ownerHireDate;
     String         ownerAvatarUrl;
-    String         ownerSpeciality;
 }

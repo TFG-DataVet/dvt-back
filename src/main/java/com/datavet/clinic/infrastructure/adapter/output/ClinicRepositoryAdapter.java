@@ -20,7 +20,7 @@ public class ClinicRepositoryAdapter implements ClinicRepositoryPort {
 
     private ClinicDocument toDocument(Clinic clinic) {
         return ClinicDocument.builder()
-                .id(clinic.getClinicID())
+                .id(clinic.getClinicId())
                 .name(clinic.getClinicName())
                 .legalName(clinic.getLegalName())
                 .legalNumber(clinic.getLegalNumber())

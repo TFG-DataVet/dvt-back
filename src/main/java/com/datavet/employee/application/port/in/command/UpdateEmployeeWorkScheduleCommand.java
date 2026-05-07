@@ -11,6 +11,7 @@ import java.util.List;
 @Builder
 public class UpdateEmployeeWorkScheduleCommand {
     String         employeeId;
+    String         clinicId;
     Integer        weeklyHours;
     List<DayOfWeek> workDays;
     LocalTime      entryTime;

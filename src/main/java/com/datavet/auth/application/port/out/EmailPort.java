@@ -29,4 +29,6 @@ public interface EmailPort {
     void sendEmployeeActivationEmail(String toEmail, String token, String clinicName, String nameEmployee);
 
     void sendWelcomeEmailToEmployee(String toEmail, String clinicName, String employeeName);
+
+    void sendPasswordResetEmail(String toEmail, String name, String resetUrl);
 }

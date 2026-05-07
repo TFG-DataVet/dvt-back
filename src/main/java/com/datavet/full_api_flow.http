@@ -14,11 +14,11 @@ POST http://localhost:8080/auth/register
 Content-Type: application/json
 
 {
-  "clinicName": "MisMascotas",
+  "clinicName": "Las mascotas de Jesús",
   "firstName": "Jesús",
-  "lastName": "Santiago",
-  "email": "mismascotas@gmail.com",
-  "phone": "+34-123456789",
+  "lastName": "Contreras Carrero",
+  "email": "jesuscsantiago27@gmail.com",
+  "phone": "+34-651245465",
   "password": "Mi_super_contraseña_1"
 }
 
@@ -33,7 +33,7 @@ POST http://localhost:8080/auth/resend-verification
 Content-Type: application/json
 
 {
-  "email": "mismascotas@gmail.com"
+  "email": "jesuscsantiago27@gmail.com"
 }
 
 ###
@@ -56,7 +56,7 @@ Content-Type: application/json
 #       }
 #   Con esta respuesta debemos de copiar el token de accessToken, que lo usaremos en el paso 3.
 
-GET http://localhost:8080/auth/verify-email?token={token}
+GET http://localhost:8080/auth/verify-email?token=77736f87-7e3f-4595-8035-d83355f8fc58
 
 ###
 
@@ -72,7 +72,7 @@ POST http://localhost:8080/auth/login
 Content-Type: application/json
 
 {
-  "email": "mismascotas@gmail.com",
+  "email": "jesuscsantiago27@gmail.com",
   "password": "Mi_super_contraseña_1"
 }
 
@@ -103,9 +103,9 @@ Content-Type: application/json
 #       ownerAvatarUrl          : String
 #       ownerSpeciality         : String
 
-PATCH http://localhost:8080/clinic/{clinicId}/complete-setup
+PATCH http://localhost:8080/clinic/abb5acc2-f3f1-491a-a185-b9dd65624125/complete-setup
 Content-Type: application/json
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0YTRjMzQ0Yi0zOWNjLTQ5OTctYjM1Yi05YTY0Mjk4MGZhMTEiLCJjbGluaWNJZCI6ImFiYjVhY2MyLWYzZjEtNDkxYS1hMTg1LWI5ZGQ2NTYyNDEyNSIsImVtYWlsIjoiamVzdXNjc2FudGlhZ28yN0BnbWFpbC5jb20iLCJyb2xlIjoiQ0xJTklDX09XTkVSIiwic2NvcGUiOiJPTkJPQVJESU5HX09OTFkiLCJpYXQiOjE3NzUzOTQ0NDUsImV4cCI6MTc3NTM5ODA0NX0.Q3HKQvmKzDpF7OhBs-trDwPMMPhHpM2Ub4zUBTO8GiU
 
 {
   "legalName": "MisMascotas SL",
@@ -139,7 +139,7 @@ Authorization: Bearer
 ###
 POST http://localhost:8080/employees
 Content-Type: application/json
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2MjMwMzcwZS02NzJjLTQ4MzgtYmI5NS1hNDBhYmQ0NGY1YTAiLCJjbGluaWNJZCI6ImMxYTE3YTczLTU2YjMtNGQ1YS05NmI1LTY1MmQyMjhlNTgzNyIsImVtYWlsIjoiamVzdXNhbnRpYWdvNDIwQGdtYWlsLmNvbSIsInJvbGUiOiJDTElOSUNfT1dORVIiLCJzY29wZSI6Ik9OQk9BUkRJTkdfT05MWSIsImlhdCI6MTc3NDg5MjkxMiwiZXhwIjoxNzc0ODk2NTEyfQ.w-vnG723XLeuzyZrCSADNFqHXUfVe2V853faFv_tv90
 
 {
   "firstName": "Jesús",
@@ -147,7 +147,7 @@ Authorization: Bearer
   "documentType": "NIE",
   "documentNumber": "Z1699417K",
   "phone": "1234567898",
-  "email": "gmia@gmail.com",
+  "email": "jesuscsantiago27@gmail.com",
   "address": "Av.Creacion.",
   "city": "Ciudad gotica.",
   "postalCode": "123789",
@@ -166,7 +166,7 @@ POST http://localhost:8080/auth/activate-account
 Content-Type: application/json
 
 {
-  "token": "",
+  "token": "6f503f5e-6d2a-4b21-bce4-2d5945aa7de8",
   "password": "Mi_super_contraseña_2"
 }
 

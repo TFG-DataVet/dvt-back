@@ -62,10 +62,12 @@ public class EmployeeController {
     @PutMapping("/{id}")
     public ResponseEntity<EmployeeResponse> update(
             @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody UpdateEmployeeRequest request) {
 
         UpdateEmployeeCommand command = UpdateEmployeeCommand.builder()
                 .employeeId(id)
+                .clinicId(currentUser.getClinicId())
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .documentNumber(request.getDocumentNumber())
@@ -88,11 +90,13 @@ public class EmployeeController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deactivate(
             @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody DeactivateEmployeeRequest request) {
 
         employeeUseCase.deactivateEmployee(
                 DeactivateEmployeeCommand.builder()
                         .employeeId(id)
+                        .clinicId(currentUser.getClinicId())
                         .reason(request.getReason())
                         .build());
 
@@ -106,10 +110,12 @@ public class EmployeeController {
     @PatchMapping("/{id}/salary")
     public ResponseEntity<EmployeeResponse> updateSalary(
             @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody UpdateSalaryRequest request) {
 
         UpdateEmployeeSalaryCommand command = UpdateEmployeeSalaryCommand.builder()
                 .employeeId(id)
+                .clinicId(currentUser.getClinicId())
                 .amount(request.getAmount())
                 .currency(request.getCurrency())
                 .paymentsPerYear(request.getPaymentsPerYear())
@@ -127,10 +133,12 @@ public class EmployeeController {
     @PatchMapping("/{id}/vacation-policy")
     public ResponseEntity<EmployeeResponse> updateVacationPolicy(
             @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody UpdateVacationPolicyRequest request) {
 
         UpdateEmployeeVacationPolicyCommand command = UpdateEmployeeVacationPolicyCommand.builder()
                 .employeeId(id)
+                .clinicId(currentUser.getClinicId())
                 .annualDays(request.getAnnualDays())
                 .effectiveFrom(request.getEffectiveFrom())
                 .build();
@@ -146,10 +154,12 @@ public class EmployeeController {
     @PatchMapping("/{id}/work-schedule")
     public ResponseEntity<EmployeeResponse> updateWorkSchedule(
             @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody UpdateWorkScheduleRequest request) {
 
         UpdateEmployeeWorkScheduleCommand command = UpdateEmployeeWorkScheduleCommand.builder()
                 .employeeId(id)
+                .clinicId(currentUser.getClinicId())
                 .weeklyHours(request.getWeeklyHours())
                 .workDays(request.getWorkDays())
                 .entryTime(request.getEntryTime())
@@ -162,9 +172,14 @@ public class EmployeeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EmployeeResponse> getById(@PathVariable String id) {
-        return ResponseEntity.ok(
-                EmployeeMapper.toResponse(employeeUseCase.getEmployeeById(id)));
+    public ResponseEntity<EmployeeResponse> getById(
+            @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        Employee employee = employeeUseCase.getEmployeeById(id);
+        if (!currentUser.isSuperAdmin() && !employee.getClinicId().equals(currentUser.getClinicId())) {
+            return ResponseEntity.status(403).build();
+        }
+        return ResponseEntity.ok(EmployeeMapper.toResponse(employee));
     }
 
     @GetMapping

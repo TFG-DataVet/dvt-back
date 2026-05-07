@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
+
 @Component
 @RequiredArgsConstructor
 public class OwnerRepositoryAdapter implements OwnerRepositoryPort {
@@ -109,6 +110,11 @@ public class OwnerRepositoryAdapter implements OwnerRepositoryPort {
     @Override
     public Optional<Owner> findByEmail(String email) {
         return repository.findByEmail(email).map(this::toDomain);
+    }
+
+    @Override
+    public List<Owner> findByClinicId(String clinicId) {
+        return repository.findByClinicId(clinicId).stream().map(this::toDomain).toList();
     }
 
 }

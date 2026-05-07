@@ -10,6 +10,7 @@ import java.time.LocalDate;
 @Builder
 public class UpdateEmployeeSalaryCommand {
     String     employeeId;
+    String     clinicId;
     BigDecimal amount;
     String     currency;
     Integer    paymentsPerYear;

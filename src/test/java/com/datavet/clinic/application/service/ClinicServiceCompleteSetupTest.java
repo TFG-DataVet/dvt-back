@@ -227,7 +227,7 @@ class ClinicServiceCompleteSetupTest {
     // =========================================================================
 
     private Clinic buildPendingClinic() {
-        return Clinic.createPending("Clínica Test", email, phone);
+        return Clinic.createPending("Clínica Test");
     }
 
     private CompleteClinicSetupCommand buildCommand(String clinicId) {

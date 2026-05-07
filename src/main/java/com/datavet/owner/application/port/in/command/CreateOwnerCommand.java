@@ -17,9 +17,7 @@ import lombok.Value;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class CreateOwnerCommand {
     
-    @NotBlank(message = "Clinic id is required")
-    @Size(max = 50, message = "Clinic id can't be mayor a 50  ")
-    private String clinidId;
+    private String clinicId;
 
     @NotBlank(message = "Owner name is required")
     @Size(max = 50, message = "Owner name is required")

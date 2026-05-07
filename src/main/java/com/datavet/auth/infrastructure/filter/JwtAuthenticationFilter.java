@@ -6,6 +6,7 @@ import com.datavet.auth.infrastructure.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return request.getMethod().equalsIgnoreCase("OPTIONS");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
@@ -37,18 +43,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 Claims claims = jwtUtil.parseToken(token);
 
-                String   userId     = claims.getSubject();
-                String   employeeId = claims.get("employeeId",  String.class);
-                String   clinicId   = claims.get("clinicId",    String.class);
-                String   scope      = claims.get("scope",       String.class);
-                String   email      = claims.get("email",       String.class);
-                String   roleStr    = claims.get("role",        String.class);
+                String userId     = claims.getSubject();
+                String employeeId = claims.get("employeeId", String.class);
+                String clinicId   = claims.get("clinicId",   String.class);
+                String scope      = claims.get("scope",      String.class);
+                String email      = claims.get("email",      String.class);
+                String roleStr    = claims.get("role",       String.class);
 
                 if (roleStr == null) {
                     throw new IllegalArgumentException("Token sin rol — petición rechazada");
                 }
-                UserRole role = UserRole.valueOf(roleStr);
-                String   emailFinal = (email   != null) ? email : userId;
+
+                UserRole role       = UserRole.valueOf(roleStr);
+                String   emailFinal = (email != null) ? email : userId;
 
                 AuthenticatedUser authenticatedUser = new AuthenticatedUser(
                         userId, employeeId, clinicId, emailFinal, role, scope);
@@ -71,10 +78,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String extractToken(HttpServletRequest request) {
+        // 1. Primero busca en la cookie HttpOnly
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("accessToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+
+        // 2. Fallback al header Authorization: Bearer (para Swagger y el .http de pruebas)
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
+
         return null;
     }
 }

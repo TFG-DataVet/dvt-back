@@ -15,6 +15,8 @@ public class ApplyMedicalRecordActionCommand {
     @NotBlank(message = "El ID del registro médico es obligatorio")
     String medicalRecordId;
 
+    String clinicId;
+
     @NotNull(message = "La acción a aplicar es obligatoria")
     RecordAction action;
 

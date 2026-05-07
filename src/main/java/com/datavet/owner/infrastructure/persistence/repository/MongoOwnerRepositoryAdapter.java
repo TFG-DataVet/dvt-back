@@ -5,6 +5,7 @@ import com.datavet.shared.domain.valueobject.Email;
 import com.datavet.shared.domain.valueobject.Phone;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -57,4 +58,6 @@ public interface MongoOwnerRepositoryAdapter extends MongoRepository<OwnerDocume
     boolean existsByDocumentNumberAndIdNot(String dni, String id);
 
     Optional<OwnerDocument> findByEmail(String email);
+
+    List<OwnerDocument> findByClinicId(String clinicId);
 }
