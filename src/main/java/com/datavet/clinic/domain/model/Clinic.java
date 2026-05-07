@@ -233,8 +233,8 @@ public class Clinic extends AggregateRoot<String> implements Document<String> {
                 logoUrl,
                 schedule,
                 status,
-                LocalDateTime.now(),
-                LocalDateTime.now());
+                createdAt,
+                updatedAt);
     }
 
 

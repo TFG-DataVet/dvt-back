@@ -20,6 +20,7 @@ import com.datavet.shared.domain.valueobject.Phone;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletResponse;
@@ -65,10 +66,10 @@ public class ClinicController {
             HttpServletResponse httpResponse) {
 
         if (!currentUser.hasOnboardingAccess()) {
-            return ResponseEntity.status(403).build();
+            throw new AccessDeniedException("Access denied");
         }
         if (!id.equals(currentUser.getClinicId())) {
-            return ResponseEntity.status(403).build();
+            throw new AccessDeniedException("Access denied");
         }
 
         CompleteClinicSetupCommand command = CompleteClinicSetupCommand.builder()
@@ -148,7 +149,7 @@ public class ClinicController {
             @Valid @RequestBody UpdateClinicRequest request) {
 
         if (!currentUser.isSuperAdmin() && !id.equals(currentUser.getClinicId())) {
-            return ResponseEntity.status(403).build();
+            throw new AccessDeniedException("Access denied");
         }
 
         UpdateClinicCommand command = UpdateClinicCommand.builder()
@@ -197,7 +198,7 @@ public class ClinicController {
             @Valid @RequestBody DeactivateClinicRequest request) {
 
         if (!currentUser.isSuperAdmin() && !id.equals(currentUser.getClinicId())) {
-            return ResponseEntity.status(403).build();
+            throw new AccessDeniedException("Access denied");
         }
         clinicUseCase.deactivateClinic(id, request.getReason());
         return ResponseEntity.noContent().build();
