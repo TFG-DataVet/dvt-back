@@ -112,7 +112,7 @@ class ClinicRepositoryIntegrationTest {
 
         ClinicDocument found = repository.findById(saved.getId()).orElseThrow();
 
-        assertThat(found.getScheduleOpenDays()).isEqualTo("Lunes - Viernes");
+        assertThat(found.getScheduleOpenDays()).isEqualTo(List.of("Lunes - Viernes"));
         assertThat(found.getScheduleOpenTime()).isEqualTo(LocalTime.of(9, 0));
         assertThat(found.getScheduleCloseTime()).isEqualTo(LocalTime.of(18, 0));
         assertThat(found.getScheduleNotes()).isEqualTo("Cierra fines de semana");
@@ -289,7 +289,7 @@ class ClinicRepositoryIntegrationTest {
                 .phone(phone)
                 .email(emailValue)
                 .logoUrl("https://example.com/logo.png")
-                .scheduleOpenDays("Lunes - Viernes")
+                .scheduleOpenDays(List.of("Lunes - Viernes"))
                 .scheduleOpenTime(LocalTime.of(9, 0))
                 .scheduleCloseTime(LocalTime.of(18, 0))
                 .scheduleNotes("Cierra fines de semana")

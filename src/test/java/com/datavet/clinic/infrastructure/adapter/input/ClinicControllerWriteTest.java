@@ -23,6 +23,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalTime;
+import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -53,7 +54,7 @@ class ClinicControllerWriteTest {
         Phone   phone    = new Phone("+34912345678");
         Email   email    = new Email("clinica@test.com");
         ClinicSchedule schedule = ClinicSchedule.of(
-                "Lunes - Viernes", LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra fines de semana");
+                List.of("Lunes - Viernes"), LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra fines de semana");
 
         activeClinic = Clinic.create(
                 "Clínica Test", "Clínica Test S.L.", "12345678A",

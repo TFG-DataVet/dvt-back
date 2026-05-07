@@ -36,7 +36,8 @@ class ClinicTest {
     void setUp() {
         address  = new Address("Calle Test 1", "Madrid", "28001");
         phone    = new Phone("+34912345678");
-        schedule = ClinicSchedule.of("Lunes - Viernes", LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra fines de semana");
+        email    = new Email("clinica@test.com");
+        schedule = ClinicSchedule.of(List.of("Lunes - Viernes"), LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra fines de semana");
     }
 
     // =========================================================================
@@ -264,7 +265,7 @@ class ClinicTest {
     @Test
     @DisplayName("createPending: should throw ClinicValidationException when clinicName is blank")
     void createPending_WhenClinicNameIsBlank_ShouldThrow() {
-        assertThatThrownBy(() -> Clinic.createPending(""))
+        assertThatThrownBy(() -> Clinic.createPending("", email, phone))
                 .isInstanceOf(ClinicValidationException.class)
                 .hasMessageContaining("Nombre");
     }
@@ -272,7 +273,7 @@ class ClinicTest {
     @Test
     @DisplayName("createPending: should throw ClinicValidationException when email is null")
     void createPending_WhenEmailIsNull_ShouldThrow() {
-        assertThatThrownBy(() -> Clinic.createPending("Clínica Test"))
+        assertThatThrownBy(() -> Clinic.createPending("Clínica Test", null, phone))
                 .isInstanceOf(ClinicValidationException.class)
                 .hasMessageContaining("Email");
     }
@@ -280,7 +281,7 @@ class ClinicTest {
     @Test
     @DisplayName("createPending: should throw ClinicValidationException when phone is null")
     void createPending_WhenPhoneIsNull_ShouldThrow() {
-        assertThatThrownBy(() -> Clinic.createPending("Clínica Test"))
+        assertThatThrownBy(() -> Clinic.createPending("Clínica Test", email, null))
                 .isInstanceOf(ClinicValidationException.class)
                 .hasMessageContaining("Telefono");
     }
@@ -296,7 +297,7 @@ class ClinicTest {
         clinic.clearDomainEvents();
 
         clinic.completeSetup("Clínica Test S.L.", "12345678A", LegalType.AUTONOMO,
-                address, phone, email, "https://example.com/logo.png", schedule);
+                address, "https://example.com/logo.png", schedule);
 
         assertThat(clinic.getStatus()).isEqualTo(ClinicStatus.ACTIVE);
     }
@@ -307,7 +308,7 @@ class ClinicTest {
         Clinic clinic = buildPendingClinic();
 
         clinic.completeSetup("Clínica Test S.L.", "12345678A", LegalType.AUTONOMO,
-                address, phone, email, "https://example.com/logo.png", schedule);
+                address, "https://example.com/logo.png", schedule);
 
         assertThat(clinic.getLegalName()).isEqualTo("Clínica Test S.L.");
         assertThat(clinic.getLegalNumber()).isEqualTo("12345678A");
@@ -324,7 +325,7 @@ class ClinicTest {
         clinic.clearDomainEvents();
 
         clinic.completeSetup("Clínica Test S.L.", "12345678A", LegalType.AUTONOMO,
-                address, phone, email, "https://example.com/logo.png", schedule);
+                address, "https://example.com/logo.png", schedule);
 
         List<DomainEvent> events = clinic.getDomainEvents();
         assertThat(events).hasSize(1);
@@ -338,7 +339,7 @@ class ClinicTest {
 
         assertThatThrownBy(() -> active.completeSetup(
                 "Clínica Test S.L.", "12345678A", LegalType.AUTONOMO,
-                address, phone, email, "https://example.com/logo.png", schedule))
+                address, "https://example.com/logo.png", schedule))
                 .isInstanceOf(ClinicValidationException.class)
                 .hasMessageContaining("PENDING_SETUP");
     }
@@ -521,6 +522,6 @@ class ClinicTest {
     }
 
     private Clinic buildPendingClinic() {
-        return Clinic.createPending("Clínica Test");
+        return Clinic.createPending("Clínica Test", email, phone);
     }
 }
