@@ -175,10 +175,7 @@ public class EmployeeController {
     public ResponseEntity<EmployeeResponse> getById(
             @PathVariable String id,
             @AuthenticationPrincipal AuthenticatedUser currentUser) {
-        Employee employee = employeeUseCase.getEmployeeById(id);
-        if (!currentUser.isSuperAdmin() && !employee.getClinicId().equals(currentUser.getClinicId())) {
-            return ResponseEntity.status(403).build();
-        }
+        Employee employee = employeeUseCase.getEmployeeById(id, currentUser.getClinicId());
         return ResponseEntity.ok(EmployeeMapper.toResponse(employee));
     }
 
