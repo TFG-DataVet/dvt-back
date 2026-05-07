@@ -30,16 +30,10 @@ public class CreateOwnerCommand {
     @NotNull(message = "Dni is required")
     private DocumentId ownerDni;
     
-    @NotBlank(message = "Phone is required")
-    @Size(max= 9, message = "Owner phone is required")
     private Phone ownerPhone;
-    
-    @NotBlank(message = "Email is required")
-    @Size(max = 70, message = "Owner email is required")
+
     private Email ownerEmail;
 
-    @NotBlank
-    @Size(max = 50, message = "Owner password is required")
     private Address ownerAddress;
 
     private String url;
