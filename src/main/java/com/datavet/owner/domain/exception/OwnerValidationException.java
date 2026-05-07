@@ -1,9 +1,8 @@
 package com.datavet.owner.domain.exception;
 
-import com.datavet.shared.domain.exception.DomainException;
 import com.datavet.shared.domain.validation.ValidationResult;
 
-public class OwnerValidationException extends DomainException {
+public class OwnerValidationException extends OwnerDomainException {
 
     private final ValidationResult validationResult;
 

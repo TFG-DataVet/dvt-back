@@ -28,16 +28,10 @@ public class UpdateOwnerCommand {
     @NotNull(message = "Dni is required")
     private DocumentId ownerDni;
 
-    @NotBlank
-    @Size(max= 15, message = "Owner phone is required")
     private Phone ownerPhone;
 
-    @NotBlank
-    @Size(max = 70, message = "Owner email is required")
     private Email ownerEmail;
 
-    @NotBlank
-    @Size(max = 50, message = "Owner password is required")
     private Address ownerAddress;
 
     private String url;
