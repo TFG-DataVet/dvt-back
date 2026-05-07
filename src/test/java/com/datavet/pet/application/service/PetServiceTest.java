@@ -203,7 +203,7 @@ class PetServiceTest {
             existing.deactivate(existing.getId(), "El perrito se desactivo");
 
             // When
-            Pet result = petService.activatePet(existing.getId());
+            Pet result = petService.activatePet(existing.getId(), DEFAULT_CLINIC_ID);
 
             // Then
             assertThat(result).isNotNull();
@@ -269,7 +269,7 @@ class PetServiceTest {
             when(petRepositoryPort.findById(expected.getId())).thenReturn(Optional.of(expected));
 
             // When
-            Pet result = petService.getPetById(expected.getId());
+            Pet result = petService.getPetById(expected.getId(), DEFAULT_CLINIC_ID);
 
             // Then
             assertThat(result).isNotNull();
@@ -284,7 +284,7 @@ class PetServiceTest {
             when(petRepositoryPort.findById(DEFAULT_PET_ID)).thenReturn(Optional.empty());
 
             // When / Then
-            assertThatThrownBy(() -> petService.getPetById(DEFAULT_PET_ID))
+            assertThatThrownBy(() -> petService.getPetById(DEFAULT_PET_ID, DEFAULT_CLINIC_ID))
                     .isInstanceOf(PetNotFoundException.class);
         }
 
