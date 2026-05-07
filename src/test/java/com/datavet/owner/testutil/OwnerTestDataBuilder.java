@@ -116,7 +116,7 @@ public class OwnerTestDataBuilder {
      */
     public static CreateOwnerCommand aValidCreateCommand() {
         return  CreateOwnerCommand.builder()
-                .clinidId(UUID.randomUUID().toString())
+                .clinicId(UUID.randomUUID().toString())
                 .ownerName(DEFAULT_OWNER_NAME)
                 .ownerLastName(DEFAULT_OWNER_LAST_NAME)
                 .ownerDni(aValidDocument())
@@ -134,7 +134,7 @@ public class OwnerTestDataBuilder {
      */
     public static CreateOwnerCommand aCreateCommandWithEmail(String email) {
         return CreateOwnerCommand.builder()
-                .clinidId(UUID.randomUUID().toString())
+                .clinicId(UUID.randomUUID().toString())
                 .ownerName(DEFAULT_OWNER_NAME)
                 .ownerLastName(DEFAULT_OWNER_LAST_NAME)
                 .ownerDni(aValidDocument())
@@ -152,7 +152,7 @@ public class OwnerTestDataBuilder {
      */
     public static CreateOwnerCommand aCreateCommandWithDni(String type, String dni) {
         return CreateOwnerCommand.builder()
-                .clinidId(UUID.randomUUID().toString())
+                .clinicId(UUID.randomUUID().toString())
                 .ownerName(DEFAULT_OWNER_NAME)
                 .ownerLastName(DEFAULT_OWNER_LAST_NAME)
                 .ownerDni(DocumentId.of(type, dni))
@@ -170,7 +170,7 @@ public class OwnerTestDataBuilder {
      */
     public static CreateOwnerCommand aCreateCommandWithPhone(String phone) {
         return CreateOwnerCommand.builder()
-                .clinidId(UUID.randomUUID().toString())
+                .clinicId(UUID.randomUUID().toString())
                 .ownerName(DEFAULT_OWNER_NAME)
                 .ownerLastName(DEFAULT_OWNER_LAST_NAME)
                 .ownerDni(aValidDocument())
@@ -187,7 +187,7 @@ public class OwnerTestDataBuilder {
      */
     public static CreateOwnerCommand aCreateCommandWithOwnerName(String ownerName) {
         return CreateOwnerCommand.builder()
-                .clinidId(UUID.randomUUID().toString())
+                .clinicId(UUID.randomUUID().toString())
                 .ownerName(ownerName)
                 .ownerLastName(DEFAULT_OWNER_LAST_NAME)
                 .ownerDni(aValidDocument())
