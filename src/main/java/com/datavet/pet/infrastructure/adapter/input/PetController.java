@@ -227,8 +227,10 @@ public class PetController {
     }
 
     @GetMapping("/owner/{ownerId}")
-    public ResponseEntity<List<PetResponse>> getByOwner(@PathVariable String ownerId) {
-        List<Pet> pets = petUseCase.getPetsByOwner(ownerId);
+    public ResponseEntity<List<PetResponse>> getByOwner(
+            @PathVariable String ownerId,
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        List<Pet> pets = petUseCase.getPetsByOwner(ownerId, currentUser.getClinicId());
         return ResponseEntity.ok(PetMapper.toResponseList(pets));
     }
 }
