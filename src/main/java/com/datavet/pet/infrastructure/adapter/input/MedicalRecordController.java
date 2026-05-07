@@ -9,9 +9,11 @@ import com.datavet.pet.application.port.in.command.medicalrecord.CreateMedicalRe
 import com.datavet.pet.domain.model.MedicalRecord;
 import com.datavet.pet.domain.valueobject.MedicalRecordType;
 import com.datavet.pet.infrastructure.adapter.input.dto.medicalrecord.*;
+import com.datavet.auth.infrastructure.security.AuthenticatedUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -55,11 +57,12 @@ public class MedicalRecordController {
      */
     @PostMapping
     public ResponseEntity<MedicalRecordResponse> create(
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody CreateMedicalRecordRequest request) {
 
         CreateMedicalRecordCommand command = CreateMedicalRecordCommand.builder()
                 .petId(request.getPetId())
-                .clinicId(request.getClinicId())
+                .clinicId(currentUser.getClinicId())
                 .type(request.getType())
                 .veterinarianId(request.getVeterinarianId())
                 .notes(request.getNotes())
@@ -80,10 +83,12 @@ public class MedicalRecordController {
     @PostMapping("/{id}/correction")
     public ResponseEntity<MedicalRecordResponse> correct(
             @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody CorrectMedicalRecordRequest request) {
 
         CorrectMedicalRecordCommand command = CorrectMedicalRecordCommand.builder()
                 .originalRecordId(id)
+                .clinicId(currentUser.getClinicId())
                 .veterinarianId(request.getVeterinarianId())
                 .reason(request.getReason())
                 .detailsRequest(request.getDetails())
@@ -104,10 +109,12 @@ public class MedicalRecordController {
     @PatchMapping("/{id}/action")
     public ResponseEntity<MedicalRecordResponse> applyAction(
             @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody ApplyMedicalRecordActionRequest request) {
 
         ApplyMedicalRecordActionCommand command = ApplyMedicalRecordActionCommand.builder()
                 .medicalRecordId(id)
+                .clinicId(currentUser.getClinicId())
                 .action(request.getAction())
                 .veterinarianId(request.getVeterinarianId())
                 .build();
@@ -125,32 +132,28 @@ public class MedicalRecordController {
      * Obtiene un registro médico por su id.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<MedicalRecordResponse> getById(@PathVariable String id) {
-        MedicalRecord record = medicalRecordUseCase.getMedicalRecordById(id);
+    public ResponseEntity<MedicalRecordResponse> getById(
+            @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        MedicalRecord record = medicalRecordUseCase.getMedicalRecordById(id, currentUser.getClinicId());
         return ResponseEntity.ok(MedicalRecordMapper.toResponse(record));
     }
 
-    /**
-     * GET /medical-record/pet/{petId}
-     * Obtiene todos los registros médicos de una mascota.
-     */
     @GetMapping("/pet/{petId}")
-    public ResponseEntity<List<MedicalRecordResponse>> getByPet(@PathVariable String petId) {
-        List<MedicalRecord> records = medicalRecordUseCase.getMedicalRecordsByPet(petId);
+    public ResponseEntity<List<MedicalRecordResponse>> getByPet(
+            @PathVariable String petId,
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        List<MedicalRecord> records = medicalRecordUseCase.getMedicalRecordsByPet(petId, currentUser.getClinicId());
         return ResponseEntity.ok(MedicalRecordMapper.toResponseList(records));
     }
 
-    /**
-     * GET /medical-record/pet/{petId}/type/{type}
-     * Obtiene todos los registros médicos de una mascota filtrados por tipo.
-     * Ejemplo: GET /medical-record/pet/abc123/type/VACCINE
-     */
     @GetMapping("/pet/{petId}/type/{type}")
     public ResponseEntity<List<MedicalRecordResponse>> getByPetAndType(
             @PathVariable String petId,
-            @PathVariable MedicalRecordType type) {
+            @PathVariable MedicalRecordType type,
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
 
-        List<MedicalRecord> records = medicalRecordUseCase.getMedicalRecordsByType(petId, type);
+        List<MedicalRecord> records = medicalRecordUseCase.getMedicalRecordsByType(petId, type, currentUser.getClinicId());
         return ResponseEntity.ok(MedicalRecordMapper.toResponseList(records));
     }
 }

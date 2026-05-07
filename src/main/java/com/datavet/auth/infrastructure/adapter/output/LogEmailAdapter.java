@@ -51,4 +51,13 @@ public class LogEmailAdapter implements EmailPort {
         log.info("Para:  {}", toEmail);
         log.info("====================================================");
     }
+
+    @Override
+    public void sendPasswordResetEmail(String toEmail, String name, String resetUrl) {
+        log.info("====================================================");
+        log.info("📧 EMAIL DE RECUPERACIÓN DE CONTRASEÑA");
+        log.info("Para:  {}", toEmail);
+        log.info("Link:  {}", resetUrl);
+        log.info("====================================================");
+    }
 }

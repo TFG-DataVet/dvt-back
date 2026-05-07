@@ -12,4 +12,5 @@ public interface MongoUserRepository extends MongoRepository<UserDocument, Strin
     boolean                existsByEmail                    (String email);
     boolean                existsByEmailAndIdNot            (String email, String id);
     Optional<UserDocument> findByEmailVerificationToken     (String token);
+    Optional<UserDocument> findByPasswordResetToken         (String token);
 }

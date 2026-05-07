@@ -35,6 +35,8 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
                 .lastName(user.getLastName())
                 .emailVerificationToken(user.getEmailVerificationToken())
                 .emailVerificationExpiry(user.getEmailVerificationExpiry())
+                .passwordResetToken(user.getPasswordResetToken())
+                .passwordResetTokenExpiry(user.getPasswordResetTokenExpiry())
                 .build();
     }
 
@@ -51,6 +53,8 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
                 doc.getLastName(),
                 doc.getEmailVerificationToken(),
                 doc.getEmailVerificationExpiry(),
+                doc.getPasswordResetToken(),
+                doc.getPasswordResetTokenExpiry(),
                 doc.getCreatedAt(),
                 doc.getUpdatedAt()
         );
@@ -108,5 +112,10 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     @Override
     public Optional<User> findByEmailVerificationToken(String token) {
         return repository.findByEmailVerificationToken(token).map(this::toDomain);
+    }
+
+    @Override
+    public Optional<User> findByPasswordResetToken(String token) {
+        return repository.findByPasswordResetToken(token).map(this::toDomain);
     }
 }

@@ -120,7 +120,7 @@ class ClinicServiceCreateTest {
 
         clinicService.createClinic(buildCommand());
 
-        assertThat(captor.getValue().getClinicID()).isNotNull().isNotBlank();
+        assertThat(captor.getValue().getClinicId()).isNotNull().isNotBlank();
     }
 
     @Test

@@ -52,12 +52,7 @@ public class ClinicService implements ClinicUseCase, ApplicationService {
 
     @Override
     public Clinic createPendingClinic(CreatePendingClinicCommand command) {
-        // Verificamos que el email no esté ya registrado
-        if (clinicRepositoryPort.existsByEmail(command.getEmail().getValue())) {
-            throw new ClinicAlreadyExistsException("email", command.getEmail().getValue());
-        }
-
-        // El dominio valida nombre, email y teléfono
+        // El dominio valida nombre
         Clinic clinic = Clinic.createPending(
                 command.getClinicName(),
                 command.getEmail(),
@@ -82,8 +77,6 @@ public class ClinicService implements ClinicUseCase, ApplicationService {
                 command.getLegalNumber(),
                 command.getLegalType(),
                 command.getAddress(),
-                command.getPhone(),
-                command.getEmail(),
                 command.getLogoUrl(),
                 command.getSchedule()
         );

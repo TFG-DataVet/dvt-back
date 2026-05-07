@@ -9,6 +9,7 @@ import java.time.LocalDate;
 @Builder
 public class UpdateEmployeeVacationPolicyCommand {
     String    employeeId;
+    String    clinicId;
     Integer   annualDays;
     LocalDate effectiveFrom;
 }

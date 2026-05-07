@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalTime;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -45,7 +46,7 @@ public class ClinicResponse {
     @Getter
     @AllArgsConstructor
     public static class ScheduleDto {
-        private String    openDays;
+        private List<String> openDays;
         private LocalTime openTime;
         private LocalTime closeTime;
         private String    notes;

@@ -115,7 +115,7 @@ class ClinicServiceCreatePendingTest {
 
         clinicService.createPendingClinic(command);
 
-        assertThat(captor.getValue().getClinicID()).isNotNull().isNotBlank();
+        assertThat(captor.getValue().getClinicId()).isNotNull().isNotBlank();
     }
 
     @Test

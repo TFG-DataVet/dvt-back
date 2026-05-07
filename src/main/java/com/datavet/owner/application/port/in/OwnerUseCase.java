@@ -8,9 +8,9 @@ import com.datavet.shared.application.port.UseCase;
 import java.util.List;
 
 public interface OwnerUseCase extends UseCase {
-    Owner       createOwner     (CreateOwnerCommand command);
-    Owner       updateOwner     (UpdateOwnerCommand command);
-    void        deleteOwner     (String id);
-    Owner       getOwnerById   (String id);
-    List<Owner> getAllOwners();
+    Owner       createOwner         (CreateOwnerCommand command);
+    Owner       updateOwner         (UpdateOwnerCommand command);
+    void        deleteOwner         (String id, String clinicId);
+    Owner       getOwnerById        (String id, String clinicId);
+    List<Owner> getOwnersByClinic   (String clinicId);
 }

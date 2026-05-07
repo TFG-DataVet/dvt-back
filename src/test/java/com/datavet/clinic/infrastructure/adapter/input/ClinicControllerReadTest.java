@@ -60,7 +60,7 @@ class ClinicControllerReadTest {
                 "https://example.com/logo.png", schedule);
         activeClinic.clearDomainEvents();
 
-        pendingClinic = Clinic.createPending("Clínica Test", email, phone);
+        pendingClinic = Clinic.createPending("Clínica Test");
         pendingClinic.clearDomainEvents();
     }
 

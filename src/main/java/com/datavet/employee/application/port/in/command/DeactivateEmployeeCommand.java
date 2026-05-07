@@ -7,5 +7,6 @@ import lombok.Value;
 @Builder
 public class DeactivateEmployeeCommand {
     String employeeId;
+    String clinicId;
     String reason;
 }

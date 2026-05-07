@@ -13,6 +13,8 @@ public class DeactivatePetCommand {
     @NotBlank(message = "El ID de la mascota es obligatorio")
     String petId;
 
+    String clinicId;
+
     @NotBlank(message = "El motivo de la desactivación es obligatorio")
     String reason;
 

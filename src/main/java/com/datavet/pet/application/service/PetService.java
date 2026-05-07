@@ -12,6 +12,7 @@ import com.datavet.shared.application.service.ApplicationService;
 import com.datavet.shared.domain.event.DomainEvent;
 import com.datavet.shared.domain.event.DomainEventPublisher;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,7 @@ public class PetService implements PetUseCase, ApplicationService {
     @Transactional
     public Pet createPet(CreatePetCommand command) {
 
-        // 1. VErificamos que no exista una mascota el numero de chip
+        // 1. Verificamos que no exista una mascota con el numero de chip
         if (command.getChipNumber() != null
                 && petRepositoryPort.existsByChipNumber(command.getChipNumber())) {
             throw new PetAlreadyExistsException("chipNumber", command.getChipNumber());
@@ -66,11 +67,12 @@ public class PetService implements PetUseCase, ApplicationService {
     @Transactional
     public Pet updatePet(UpdatePetCommand command) {
 
-        // 1. Verificar existencia
         Pet pet = petRepositoryPort.findById(command.getPetId())
                 .orElseThrow(() -> new PetNotFoundException(command.getPetId()));
+        if (!pet.getClinicId().equals(command.getClinicId())) {
+            throw new AccessDeniedException("La mascota no pertenece a tu clínica");
+        }
 
-        // 2. Delegar al agregado
         pet.update(command.getPetId(), command.getName(), command.getAvatarUrl());
 
         // 3. Publicar eventos y persistir
@@ -86,6 +88,9 @@ public class PetService implements PetUseCase, ApplicationService {
 
         Pet pet = petRepositoryPort.findById(command.getPetId())
                 .orElseThrow(() -> new PetNotFoundException(command.getPetId()));
+        if (!pet.getClinicId().equals(command.getClinicId())) {
+            throw new AccessDeniedException("La mascota no pertenece a tu clínica");
+        }
 
         pet.deactivate(command.getPetId(), command.getReason());
 
@@ -96,9 +101,12 @@ public class PetService implements PetUseCase, ApplicationService {
 
     @Override
     @Transactional
-    public Pet activatePet(String petId) {
+    public Pet activatePet(String petId, String clinicId) {
         Pet pet = petRepositoryPort.findById(petId)
                 .orElseThrow(() -> new PetNotFoundException(petId));
+        if (!pet.getClinicId().equals(clinicId)) {
+            throw new AccessDeniedException("La mascota no pertenece a tu clínica");
+        }
 
         pet.activate(petId);
 
@@ -116,8 +124,10 @@ public class PetService implements PetUseCase, ApplicationService {
     public Pet correctBreed(CorrectPetBreedCommand command) {
         Pet pet = petRepositoryPort.findById(command.getPetId())
                 .orElseThrow(() -> new PetNotFoundException(command.getPetId()));
+        if (!pet.getClinicId().equals(command.getClinicId())) {
+            throw new AccessDeniedException("La mascota no pertenece a tu clínica");
+        }
 
-        // El dominio valida que la nueva raza no sea igual a la actual y que reason no sea nulo
         pet.correctBreed(command.getPetId(), command.getNewBreed(), command.getReason());
 
         publishDomainEvents(pet);
@@ -130,6 +140,9 @@ public class PetService implements PetUseCase, ApplicationService {
     public Pet correctBirthDate(CorrectPetBirthDateCommand command) {
         Pet pet = petRepositoryPort.findById(command.getPetId())
                 .orElseThrow(() -> new PetNotFoundException(command.getPetId()));
+        if (!pet.getClinicId().equals(command.getClinicId())) {
+            throw new AccessDeniedException("La mascota no pertenece a tu clínica");
+        }
 
         pet.correctBirthDate(command.getPetId(), command.getNewBirthDate(), command.getReason());
 
@@ -143,6 +156,9 @@ public class PetService implements PetUseCase, ApplicationService {
     public Pet correctSex(CorrectPetSexCommand command) {
         Pet pet = petRepositoryPort.findById(command.getPetId())
                 .orElseThrow(() -> new PetNotFoundException(command.getPetId()));
+        if (!pet.getClinicId().equals(command.getClinicId())) {
+            throw new AccessDeniedException("La mascota no pertenece a tu clínica");
+        }
 
         pet.correctSex(command.getPetId(), command.getSex(), command.getReason());
 
@@ -160,6 +176,9 @@ public class PetService implements PetUseCase, ApplicationService {
     public Pet updateOwnerInfo(UpdatePetOwnerInfoCommand command) {
         Pet pet = petRepositoryPort.findById(command.getPetId())
                 .orElseThrow(() -> new PetNotFoundException(command.getPetId()));
+        if (!pet.getClinicId().equals(command.getClinicId())) {
+            throw new AccessDeniedException("La mascota no pertenece a tu clínica");
+        }
 
         OwnerInfo newOwnerInfo = OwnerInfo.create(
                 command.getOwnerId(),
@@ -180,9 +199,13 @@ public class PetService implements PetUseCase, ApplicationService {
     // -------------------------------------------------------------------------
 
     @Override
-    public Pet getPetById(String petId) {
-        return petRepositoryPort.findById(petId)
+    public Pet getPetById(String petId, String clinicId) {
+        Pet pet = petRepositoryPort.findById(petId)
                 .orElseThrow(() -> new PetNotFoundException(petId));
+        if (!pet.getClinicId().equals(clinicId)) {
+            throw new AccessDeniedException("La mascota no pertenece a tu clínica");
+        }
+        return pet;
     }
 
     @Override

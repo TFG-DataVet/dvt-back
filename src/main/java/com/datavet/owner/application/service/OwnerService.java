@@ -14,6 +14,7 @@ import com.datavet.shared.domain.event.DomainEvent;
 import com.datavet.shared.domain.event.DomainEventPublisher;
 import com.datavet.shared.domain.exception.email.EmailAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -48,7 +49,7 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
 
         // Use Factory method to create owner with domain events
         Owner owner = Owner.create(
-                command.getClinidId(),
+                command.getClinicId(),
                 command.getOwnerName(),
                 command.getOwnerLastName(),
                 command.getOwnerDni(),
@@ -71,6 +72,9 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
     public Owner updateOwner(UpdateOwnerCommand command) {
         Owner existing = ownerRepositoryPort.findById(command.getOwnerID())
                 .orElseThrow(() -> new OwnerNotFoundException(command.getOwnerID()));
+        if (!existing.getClinicId().equals(command.getClinicId())) {
+            throw new AccessDeniedException("El owner no pertenece a tu clínica");
+        }
 
         ownerRepositoryPort.findByEmail(command.getOwnerEmail().getValue())
                 .ifPresent(ownerWithSameEmail -> {
@@ -97,23 +101,30 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
     }
 
     @Override
-    public void deleteOwner(String id) {
-        Owner owner = getOwnerById(id);
+    public void deleteOwner(String id, String clinicId) {
+        Owner owner = ownerRepositoryPort.findById(id)
+                .orElseThrow(() -> new OwnerNotFoundException(id));
+        if (!owner.getClinicId().equals(clinicId)) {
+            throw new AccessDeniedException("El owner no pertenece a tu clínica");
+        }
         owner.delete();
         publishDomainEvent(owner);
-
         ownerRepositoryPort.deleteById(id);
     }
 
     @Override
-    public Owner getOwnerById(String id) {
-        return ownerRepositoryPort.findById(id)
+    public Owner getOwnerById(String id, String clinicId) {
+        Owner owner = ownerRepositoryPort.findById(id)
                 .orElseThrow(() -> new OwnerNotFoundException(id));
+        if (!owner.getClinicId().equals(clinicId)) {
+            throw new AccessDeniedException("El owner no pertenece a tu clínica");
+        }
+        return owner;
     }
 
     @Override
-    public List<Owner> getAllOwners() {
-        return ownerRepositoryPort.findAll();
+    public List<Owner> getOwnersByClinic(String clinicId) {
+        return ownerRepositoryPort.findByClinicId(clinicId);
     }
 
     private void publishDomainEvent(Owner owner) {

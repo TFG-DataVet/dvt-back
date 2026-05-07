@@ -15,6 +15,7 @@ import com.datavet.shared.application.service.ApplicationService;
 import com.datavet.shared.domain.event.DomainEvent;
 import com.datavet.shared.domain.event.DomainEventPublisher;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,6 +75,9 @@ public class EmployeeService implements EmployeeUseCase, ApplicationService {
     @Transactional
     public Employee updateEmployee(UpdateEmployeeCommand command) {
         Employee employee = getEmployeeById(command.getEmployeeId());
+        if (!employee.getClinicId().equals(command.getClinicId())) {
+            throw new AccessDeniedException("El empleado no pertenece a tu clínica");
+        }
 
         // Unicidad del documentNumber excluyendo el propio empleado
         if (employeeRepositoryPort.existsByDocumentNumberAndClinicIdAndIdNot(
@@ -101,6 +105,9 @@ public class EmployeeService implements EmployeeUseCase, ApplicationService {
     @Transactional
     public void deactivateEmployee(DeactivateEmployeeCommand command) {
         Employee employee = getEmployeeById(command.getEmployeeId());
+        if (!employee.getClinicId().equals(command.getClinicId())) {
+            throw new AccessDeniedException("El empleado no pertenece a tu clínica");
+        }
 
         // El dominio valida que no esté ya inactivo
         employee.deactivate(command.getReason());
@@ -113,6 +120,9 @@ public class EmployeeService implements EmployeeUseCase, ApplicationService {
     @Transactional
     public Employee updateSalary(UpdateEmployeeSalaryCommand command) {
         Employee employee = getEmployeeById(command.getEmployeeId());
+        if (!employee.getClinicId().equals(command.getClinicId())) {
+            throw new AccessDeniedException("El empleado no pertenece a tu clínica");
+        }
 
         // El value object valida los datos internamente
         Salary salary = Salary.of(
@@ -133,6 +143,9 @@ public class EmployeeService implements EmployeeUseCase, ApplicationService {
     @Transactional
     public Employee updateVacationPolicy(UpdateEmployeeVacationPolicyCommand command) {
         Employee employee = getEmployeeById(command.getEmployeeId());
+        if (!employee.getClinicId().equals(command.getClinicId())) {
+            throw new AccessDeniedException("El empleado no pertenece a tu clínica");
+        }
 
         VacationPolicy vacationPolicy = VacationPolicy.of(
                 command.getAnnualDays(),
@@ -149,6 +162,9 @@ public class EmployeeService implements EmployeeUseCase, ApplicationService {
     @Transactional
     public Employee updateWorkSchedule(UpdateEmployeeWorkScheduleCommand command) {
         Employee employee = getEmployeeById(command.getEmployeeId());
+        if (!employee.getClinicId().equals(command.getClinicId())) {
+            throw new AccessDeniedException("El empleado no pertenece a tu clínica");
+        }
 
         WorkSchedule workSchedule = WorkSchedule.of(
                 command.getWeeklyHours(),

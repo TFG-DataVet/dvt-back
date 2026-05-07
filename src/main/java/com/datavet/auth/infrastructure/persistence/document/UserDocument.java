@@ -24,6 +24,11 @@ import java.time.LocalDateTime;
                 name   = "verification_token_idx",
                 def    = "{'email_verification_token': 1}",
                 sparse = true
+        ),
+        @CompoundIndex(
+                name   = "password_reset_token_idx",
+                def    = "{'password_reset_token': 1}",
+                sparse = true
         )
 })
 @Getter
@@ -61,6 +66,12 @@ public class UserDocument {
 
     @Field("email_verification_expiry")
     private LocalDateTime emailVerificationExpiry;
+
+    @Field("password_reset_token")
+    private String passwordResetToken;
+
+    @Field("password_reset_token_expiry")
+    private LocalDateTime passwordResetTokenExpiry;
 
     @CreatedDate
     @Field("created_at")

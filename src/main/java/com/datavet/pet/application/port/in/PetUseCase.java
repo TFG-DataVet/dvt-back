@@ -14,7 +14,7 @@ public interface PetUseCase extends UseCase {
     Pet createPet       (CreatePetCommand command);
     Pet updatePet       (UpdatePetCommand command);
     void deactivatePet  (DeactivatePetCommand command);
-    Pet activatePet     (String petId);
+    Pet activatePet     (String petId, String clinicId);
 
     // --- Correcciones clínicas -----------------------------------------------
 
@@ -28,7 +28,7 @@ public interface PetUseCase extends UseCase {
 
     // --- Consultas -----------------------------------------------------------
 
-    Pet         getPetById      (String petId);
+    Pet         getPetById      (String petId, String clinicId);
     List<Pet>   getPetsByClinic (String clinicId);
     List<Pet>   getPetsByOwner  (String ownerId);
 

@@ -1,5 +1,6 @@
 package com.datavet.pet.infrastructure.adapter.input;
 
+import com.datavet.auth.infrastructure.security.AuthenticatedUser;
 import com.datavet.pet.application.dto.PetResponse;
 import com.datavet.pet.application.mapper.PetMapper;
 import com.datavet.pet.application.port.in.PetUseCase;
@@ -11,6 +12,7 @@ import com.datavet.shared.domain.valueobject.Phone;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,10 +33,12 @@ public class PetController {
      * Crea una nueva mascota con su dueño embebido.
      */
     @PostMapping
-    public ResponseEntity<PetResponse> create(@Valid @RequestBody CreatePetRequest request) {
+    public ResponseEntity<PetResponse> create(
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
+            @Valid @RequestBody CreatePetRequest request) {
 
         CreatePetCommand command = CreatePetCommand.builder()
-                .clinicId(request.getClinicId())
+                .clinicId(currentUser.getClinicId())
                 .name(request.getName())
                 .species(request.getSpecies())
                 .breed(request.getBreed())
@@ -59,10 +63,12 @@ public class PetController {
     @PutMapping("/{id}")
     public ResponseEntity<PetResponse> update(
             @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody UpdatePetRequest request) {
 
         UpdatePetCommand command = UpdatePetCommand.builder()
                 .petId(id)
+                .clinicId(currentUser.getClinicId())
                 .name(request.getName())
                 .avatarUrl(request.getAvatarUrl())
                 .build();
@@ -78,10 +84,12 @@ public class PetController {
     @PatchMapping("/{id}/deactivate")
     public ResponseEntity<Void> deactivate(
             @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody DeactivatePetRequest request) {
 
         DeactivatePetCommand command = DeactivatePetCommand.builder()
                 .petId(id)
+                .clinicId(currentUser.getClinicId())
                 .reason(request.getReason())
                 .build();
 
@@ -94,8 +102,10 @@ public class PetController {
      * Reactiva una mascota previamente desactivada.
      */
     @PatchMapping("/{id}/activate")
-    public ResponseEntity<PetResponse> activate(@PathVariable String id) {
-        Pet pet = petUseCase.activatePet(id);
+    public ResponseEntity<PetResponse> activate(
+            @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        Pet pet = petUseCase.activatePet(id, currentUser.getClinicId());
         return ResponseEntity.ok(PetMapper.toResponse(pet));
     }
 
@@ -110,10 +120,12 @@ public class PetController {
     @PatchMapping("/{id}/correct-breed")
     public ResponseEntity<PetResponse> correctBreed(
             @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody CorrectBreedRequest request) {
 
         CorrectPetBreedCommand command = CorrectPetBreedCommand.builder()
                 .petId(id)
+                .clinicId(currentUser.getClinicId())
                 .newBreed(request.getNewBreed())
                 .reason(request.getReason())
                 .build();
@@ -129,10 +141,12 @@ public class PetController {
     @PatchMapping("/{id}/correct-birthdate")
     public ResponseEntity<PetResponse> correctBirthDate(
             @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody CorrectBirthDateRequest request) {
 
         CorrectPetBirthDateCommand command = CorrectPetBirthDateCommand.builder()
                 .petId(id)
+                .clinicId(currentUser.getClinicId())
                 .newBirthDate(request.getNewBirthDate())
                 .reason(request.getReason())
                 .build();
@@ -148,10 +162,12 @@ public class PetController {
     @PatchMapping("/{id}/correct-sex")
     public ResponseEntity<PetResponse> correctSex(
             @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody CorrectSexRequest request) {
 
         CorrectPetSexCommand command = CorrectPetSexCommand.builder()
                 .petId(id)
+                .clinicId(currentUser.getClinicId())
                 .sex(request.getSex())
                 .reason(request.getReason())
                 .build();
@@ -171,10 +187,12 @@ public class PetController {
     @PatchMapping("/{id}/owner")
     public ResponseEntity<PetResponse> updateOwnerInfo(
             @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody UpdateOwnerInfoRequest request) {
 
         UpdatePetOwnerInfoCommand command = UpdatePetOwnerInfoCommand.builder()
                 .petId(id)
+                .clinicId(currentUser.getClinicId())
                 .ownerId(request.getOwnerId())
                 .ownerName(request.getOwnerName())
                 .ownerLastName(request.getOwnerLastName())
@@ -194,25 +212,20 @@ public class PetController {
      * Obtiene una mascota por su id.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<PetResponse> getById(@PathVariable String id) {
-        Pet pet = petUseCase.getPetById(id);
+    public ResponseEntity<PetResponse> getById(
+            @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        Pet pet = petUseCase.getPetById(id, currentUser.getClinicId());
         return ResponseEntity.ok(PetMapper.toResponse(pet));
     }
 
-    /**
-     * GET /pet/clinic/{clinicId}
-     * Obtiene todas las mascotas asociadas a una clínica.
-     */
-    @GetMapping("/clinic/{clinicId}")
-    public ResponseEntity<List<PetResponse>> getByClinic(@PathVariable String clinicId) {
-        List<Pet> pets = petUseCase.getPetsByClinic(clinicId);
+    @GetMapping("/clinic")
+    public ResponseEntity<List<PetResponse>> getByClinic(
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        List<Pet> pets = petUseCase.getPetsByClinic(currentUser.getClinicId());
         return ResponseEntity.ok(PetMapper.toResponseList(pets));
     }
 
-    /**
-     * GET /pet/owner/{ownerId}
-     * Obtiene todas las mascotas asociadas a un dueño.
-     */
     @GetMapping("/owner/{ownerId}")
     public ResponseEntity<List<PetResponse>> getByOwner(@PathVariable String ownerId) {
         List<Pet> pets = petUseCase.getPetsByOwner(ownerId);

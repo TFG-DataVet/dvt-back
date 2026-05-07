@@ -91,12 +91,14 @@ public class Employee extends AggregateRoot<String> implements Document<String> 
             result.addError("Dirección", "La dirección no puede ser nula");
         }
 
-        if (hireDate == null) {
-            result.addError("Fecha de contratación", "La fecha de contratación no puede ser nula");
-        }
+        if (!"CLINIC_OWNER".equals(role)) {
+            if (hireDate == null) {
+                result.addError("Fecha de contratación", "La fecha de contratación no puede ser nula");
+            }
 
-        if (hireDate != null && hireDate.isAfter(LocalDate.now())) {
-            result.addError("Fecha de contratación", "La fecha de contratación no puede ser futura");
+            if (hireDate != null && hireDate.isAfter(LocalDate.now())) {
+                result.addError("Fecha de contratación", "La fecha de contratación no puede ser futura");
+            }
         }
 
         // licenseNumber obligatorio solo para VETERINARIAN
@@ -110,6 +112,7 @@ public class Employee extends AggregateRoot<String> implements Document<String> 
             throw new EmployeeValidationException(result);
         }
     }
+
 
     // -------------------------------------------------------------------------
     // Factory methods

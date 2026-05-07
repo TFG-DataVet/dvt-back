@@ -13,6 +13,8 @@ public class UpdatePetCommand {
     @NotBlank(message = "El ID de la mascota es obligatorio")
     String petId;
 
+    String clinicId;
+
     @NotBlank(message = "El nuevo nombre no puede ser vacío")
     String name;
 

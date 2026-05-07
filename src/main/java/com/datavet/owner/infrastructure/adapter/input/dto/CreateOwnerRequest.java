@@ -1,16 +1,16 @@
 package com.datavet.owner.infrastructure.adapter.input.dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class CreateOwnerRequest {
-
-    @NotBlank(message = "Clinic id is required")
-    @Size(max = 50, message = "Clinic id must not exceed 50 chararters")
-    private String clinicId;
 
     @NotBlank(message = "Owner name is required")
     @Size(max = 50, message = "Clinic name must not exceed 50 chararters")

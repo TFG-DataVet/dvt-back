@@ -16,6 +16,8 @@ public class CorrectMedicalRecordCommand {
     @NotBlank(message = "El ID del registro original es obligatorio")
     String originalRecordId;
 
+    String clinicId;
+
     @NotBlank(message = "El ID del veterinario que realiza la corrección es obligatorio")
     String veterinarianId;
 

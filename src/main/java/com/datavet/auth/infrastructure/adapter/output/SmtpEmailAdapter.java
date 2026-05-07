@@ -31,7 +31,7 @@ public class SmtpEmailAdapter implements EmailPort {
     public void sendVerificationEmail(String clinicName, String nameOwnerClinic, String toEmail, String token) {
         try{
             Context context = new Context();
-            String urlVerification = "http://localhost:3000/verify-email?token=" + token;
+            String urlVerification = "http://localhost:5258/verify-email?token=" + token;
             context.setVariable("clinicName", clinicName);
             context.setVariable("name", nameOwnerClinic);
             context.setVariable("url", urlVerification);
@@ -79,7 +79,7 @@ public class SmtpEmailAdapter implements EmailPort {
     public void sendEmployeeActivationEmail(String toEmail, String token, String clinicName, String nameEmployee) {
         try{
             Context context = new Context();
-            String url = "http://localhost:3000/activate-account?token=" + token;
+            String url = "http://localhost:5258/activate-account?token=" + token;
             context.setVariable("url", url);
             context.setVariable("nameClinic", clinicName);
             context.setVariable("nameEmployee", nameEmployee);
@@ -101,6 +101,29 @@ public class SmtpEmailAdapter implements EmailPort {
         }
 
 
+    }
+
+    @Override
+    public void sendPasswordResetEmail(String toEmail, String name, String resetUrl) {
+        try {
+            Context context = new Context();
+            context.setVariable("name", name);
+            context.setVariable("url", resetUrl);
+
+            String htmlContent = templateEngine.process("password_reset_email", context);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("Recupera tu contraseña en DataVet");
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("Email de recuperación de contraseña enviado a {}", toEmail);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

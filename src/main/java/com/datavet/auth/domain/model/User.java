@@ -42,6 +42,8 @@ public class User extends AggregateRoot<String> implements Document<String> {
 
     private String        emailVerificationToken;
     private LocalDateTime emailVerificationExpiry;
+    private String        passwordResetToken;
+    private LocalDateTime passwordResetTokenExpiry;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -119,6 +121,8 @@ public class User extends AggregateRoot<String> implements Document<String> {
                 lastName,
                 emailVerificationToken,
                 LocalDateTime.now().plusHours(24),
+                null,
+                null,
                 LocalDateTime.now(),
                 null
         );
@@ -155,6 +159,8 @@ public class User extends AggregateRoot<String> implements Document<String> {
                 null,   // lastName  — no aplica para empleados
                 null,
                 null,
+                null,
+                null,
                 LocalDateTime.now(),
                 null
         );
@@ -188,6 +194,8 @@ public class User extends AggregateRoot<String> implements Document<String> {
                 null,       // lastName
                 emailVerificationToken,
                 LocalDateTime.now().plusHours(24),
+                null,
+                null,
                 LocalDateTime.now(),
                 null
         );
@@ -207,11 +215,14 @@ public class User extends AggregateRoot<String> implements Document<String> {
                                     String firstName, String lastName,
                                     String emailVerificationToken,
                                     LocalDateTime emailVerificationExpiry,
+                                    String passwordResetToken,
+                                    LocalDateTime passwordResetTokenExpiry,
                                     LocalDateTime createdAt,
                                     LocalDateTime updatedAt) {
         return new User(id, employeeId, clinicId, email, password, role, status,
                 firstName, lastName, emailVerificationToken,
-                emailVerificationExpiry, createdAt, updatedAt);
+                emailVerificationExpiry, passwordResetToken,
+                passwordResetTokenExpiry, createdAt, updatedAt);
     }
 
     // -------------------------------------------------------------------------
@@ -309,5 +320,28 @@ public class User extends AggregateRoot<String> implements Document<String> {
 
     public boolean canLogin() {
         return this.status == UserStatus.ACTIVE;
+    }
+
+    public void requestPasswordReset(String token) {
+        if (this.status == UserStatus.INACTIVE) {
+            throw new InvalidCredentialsException(
+                    "No se puede solicitar recuperación de contraseña para una cuenta inactiva");
+        }
+        this.passwordResetToken       = token;
+        this.passwordResetTokenExpiry = LocalDateTime.now().plusMinutes(30);
+        this.updatedAt                = LocalDateTime.now();
+    }
+
+    public void resetPassword(String token, HashedPassword newPassword) {
+        if (this.passwordResetToken == null || !this.passwordResetToken.equals(token)) {
+            throw new EmailTokenExpiredException();
+        }
+        if (LocalDateTime.now().isAfter(this.passwordResetTokenExpiry)) {
+            throw new EmailTokenExpiredException();
+        }
+        this.password                 = newPassword;
+        this.passwordResetToken       = null;
+        this.passwordResetTokenExpiry = null;
+        this.updatedAt                = LocalDateTime.now();
     }
 }

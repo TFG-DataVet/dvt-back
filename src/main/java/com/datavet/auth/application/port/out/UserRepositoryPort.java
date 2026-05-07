@@ -12,4 +12,5 @@ public interface UserRepositoryPort extends Repository<User, String> {
     boolean        existsByEmail            (String email);
     boolean        existsByEmailAndIdNot    (String email, String userId);
     Optional<User> findByEmailVerificationToken (String token);
+    Optional<User> findByPasswordResetToken     (String token);
 }

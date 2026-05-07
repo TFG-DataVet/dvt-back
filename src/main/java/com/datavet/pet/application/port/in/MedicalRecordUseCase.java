@@ -19,9 +19,9 @@ public interface MedicalRecordUseCase extends UseCase {
     @Transactional
     MedicalRecord applyAction(ApplyMedicalRecordActionCommand command);
 
-    MedicalRecord getMedicalRecordById(String medicalRecordId);
+    MedicalRecord getMedicalRecordById(String medicalRecordId, String clinicId);
 
-    List<MedicalRecord> getMedicalRecordsByPet(String petId);
+    List<MedicalRecord> getMedicalRecordsByPet(String petId, String clinicId);
 
-    List<MedicalRecord> getMedicalRecordsByType(String petId, MedicalRecordType type);
+    List<MedicalRecord> getMedicalRecordsByType(String petId, MedicalRecordType type, String clinicId);
 }

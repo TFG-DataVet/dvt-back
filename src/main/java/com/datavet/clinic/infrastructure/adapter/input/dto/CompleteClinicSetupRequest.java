@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -47,8 +48,8 @@ public class CompleteClinicSetupRequest {
     @Size(max = 255)
     private String logoUrl;
 
-    @NotBlank(message = "Los días de apertura son obligatorios")
-    private String scheduleOpenDays;
+    @NotEmpty(message = "Los días de apertura son obligatorios")
+    private List<String> scheduleOpenDays;
 
     @NotNull(message = "La hora de apertura es obligatoria")
     private LocalTime scheduleOpenTime;
@@ -77,9 +78,6 @@ public class CompleteClinicSetupRequest {
 
     @Size(max = 10)
     private String ownerPostalCode;
-
-    @NotNull(message = "La fecha de alta es obligatoria")
-    private LocalDate ownerHireDate;
 
     @Size(max = 255)
     private String ownerAvatarUrl;

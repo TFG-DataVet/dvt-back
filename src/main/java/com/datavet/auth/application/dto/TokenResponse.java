@@ -35,4 +35,8 @@ public class TokenResponse {
                                    long expiresIn, UserInfo user, String nextStep) {
         return new TokenResponse(accessToken, refreshToken, "Bearer", expiresIn, user, nextStep);
     }
+
+    public TokenResponse withoutTokens() {
+        return TokenResponse.of(null, null, this.expiresIn, this.user, this.nextStep);
+    }
 }

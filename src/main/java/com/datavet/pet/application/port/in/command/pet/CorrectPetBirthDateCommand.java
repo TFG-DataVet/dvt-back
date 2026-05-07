@@ -17,6 +17,8 @@ public class CorrectPetBirthDateCommand {
     @NotBlank(message = "El ID de la mascota es obligatorio")
     String petId;
 
+    String clinicId;
+
     @NotNull(message = "La nueva fecha de nacimiento es obligatoria")
     @PastOrPresent(message = "La fecha de nacimiento no puede ser futura")
     LocalDate newBirthDate;

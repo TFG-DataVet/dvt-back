@@ -22,6 +22,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 
 import java.util.List;
 
@@ -43,18 +46,12 @@ public class ClinicController {
 
         CreatePendingClinicCommand command = CreatePendingClinicCommand.builder()
                 .clinicName(request.getClinicName())
-                .email(new Email(request.getEmail()))
-                .phone(new Phone(request.getPhone()))
                 .build();
 
         Clinic clinic = clinicUseCase.createPendingClinic(command);
         return ResponseEntity.status(201).body(ClinicMapper.toResponse(clinic));
     }
 
-    /**
-     * Paso 3 del onboarding — completa los datos de la clínica.
-     * Requiere JWT temporal con scope ONBOARDING_ONLY.
-     */
     /**
      * Paso 3 del onboarding — completa los datos de la clínica,
      * crea el Employee del CLINIC_OWNER y devuelve JWT definitivo.
@@ -64,10 +61,13 @@ public class ClinicController {
     public ResponseEntity<TokenResponse> completeSetup(
             @PathVariable String id,
             @AuthenticationPrincipal AuthenticatedUser currentUser,
-            @Valid @RequestBody CompleteClinicSetupRequest request) {
+            @Valid @RequestBody CompleteClinicSetupRequest request,
+            HttpServletResponse httpResponse) {
 
-        // Validamos que el JWT sea de onboarding
         if (!currentUser.hasOnboardingAccess()) {
+            return ResponseEntity.status(403).build();
+        }
+        if (!id.equals(currentUser.getClinicId())) {
             return ResponseEntity.status(403).build();
         }
 
@@ -90,19 +90,23 @@ public class ClinicController {
                         request.getScheduleCloseTime(),
                         request.getScheduleNotes()))
                 .ownerDocumentNumber(DocumentId.of(
-                        request.getOwnerDocumentType(), request.getOwnerDocumentNumber()))
+                        request.getOwnerDocumentType(),
+                        request.getOwnerDocumentNumber()))
                 .ownerAddress(new Address(
                         request.getOwnerAddress(),
                         request.getOwnerCity(),
                         request.getOwnerPostalCode()))
-                .ownerHireDate(request.getOwnerHireDate())
                 .ownerAvatarUrl(request.getOwnerAvatarUrl())
-                .ownerSpeciality(request.getOwnerSpeciality())
                 .build();
 
-        // AuthService orquesta: completa clínica + crea Employee + activa User
         TokenResponse tokenResponse = authUseCase.completeOnboarding(command);
-        return ResponseEntity.ok(tokenResponse);
+
+        // Escribimos el JWT definitivo como cookie HttpOnly
+        // A partir de aquí el usuario tiene sesión completa
+        writeAuthCookies(httpResponse, tokenResponse);
+
+        // Devolvemos solo el userInfo en el body, sin tokens
+        return ResponseEntity.ok(tokenResponse.withoutTokens());
     }
 
     /**
@@ -140,7 +144,12 @@ public class ClinicController {
     @PutMapping("/{id}")
     public ResponseEntity<ClinicResponse> update(
             @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody UpdateClinicRequest request) {
+
+        if (!currentUser.isSuperAdmin() && !id.equals(currentUser.getClinicId())) {
+            return ResponseEntity.status(403).build();
+        }
 
         UpdateClinicCommand command = UpdateClinicCommand.builder()
                 .clinicId(id)
@@ -184,8 +193,43 @@ public class ClinicController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deactivate(
             @PathVariable String id,
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody DeactivateClinicRequest request) {
+
+        if (!currentUser.isSuperAdmin() && !id.equals(currentUser.getClinicId())) {
+            return ResponseEntity.status(403).build();
+        }
         clinicUseCase.deactivateClinic(id, request.getReason());
         return ResponseEntity.noContent().build();
+    }
+
+    // -------------------------------------------------------------------------
+// Helpers privados — exactamente los mismos que en AuthController
+// -------------------------------------------------------------------------
+
+    private void writeAuthCookies(HttpServletResponse response, TokenResponse tokenResponse) {
+        ResponseCookie accessCookie = ResponseCookie
+                .from("accessToken", tokenResponse.getAccessToken())
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(tokenResponse.getExpiresIn())
+                .build();
+
+        ResponseCookie refreshCookie = ResponseCookie
+                .from("refreshToken", tokenResponse.getRefreshToken())
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/auth/refresh")
+                .maxAge(30L * 24 * 60 * 60)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+        System.out.println("Cookie acessToken escrito: " + accessCookie);
+        System.out.println("Cookie refreshToken escrita: {}" + refreshCookie);
     }
 }
