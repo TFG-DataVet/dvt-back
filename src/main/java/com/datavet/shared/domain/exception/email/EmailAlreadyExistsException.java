@@ -1,6 +1,8 @@
 package com.datavet.shared.domain.exception.email;
 
-public class EmailAlreadyExistsException extends EmailException {
+import com.datavet.shared.domain.exception.EntityAlreadyExistsException;
+
+public class EmailAlreadyExistsException extends EntityAlreadyExistsException {
 
     public EmailAlreadyExistsException(String email) {
         super("A record already exists with email: " + email);
