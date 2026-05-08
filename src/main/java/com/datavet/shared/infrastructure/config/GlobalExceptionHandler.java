@@ -1,5 +1,6 @@
 package com.datavet.shared.infrastructure.config;
 
+import com.datavet.auth.domain.exception.InvalidCredentialsException;
 import com.datavet.shared.domain.exception.BusinessRuleException;
 import com.datavet.shared.domain.exception.DomainException;
 import com.datavet.shared.domain.exception.EntityAlreadyExistsException;
@@ -222,6 +223,24 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentialsException(
+            InvalidCredentialsException ex, WebRequest request) {
+
+        log.warn("Invalid credentials: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .error("Unauthorized")
+                .message(ex.getMessage())
+                .details(new ArrayList<>())
+                .path(getPath(request))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
     @ExceptionHandler(AccessDeniedException.class)

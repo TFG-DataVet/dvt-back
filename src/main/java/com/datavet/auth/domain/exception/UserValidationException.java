@@ -1,9 +1,8 @@
 package com.datavet.auth.domain.exception;
 
-import com.datavet.shared.domain.exception.DomainException;
 import com.datavet.shared.domain.validation.ValidationResult;
 
-public class UserValidationException extends DomainException {
+public class UserValidationException extends AuthDomainException {
 
     private final ValidationResult validationResult;
 
