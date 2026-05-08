@@ -50,7 +50,7 @@ public class UpdateClinicRequest {
     @Size(max = 255)
     private String logoUrl;
 
-    @NotBlank(message = "Los días de apertura son obligatorios")
+    @NotEmpty(message = "Los días de apertura son obligatorios")
     private List<String> scheduleOpenDays;
 
     @NotNull(message = "La hora de apertura es obligatoria")

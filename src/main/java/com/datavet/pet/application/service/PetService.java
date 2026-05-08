@@ -214,8 +214,10 @@ public class PetService implements PetUseCase, ApplicationService {
     }
 
     @Override
-    public List<Pet> getPetsByOwner(String ownerId) {
-        return petRepositoryPort.findByOwnerId(ownerId);
+    public List<Pet> getPetsByOwner(String ownerId, String clinicId) {
+        return petRepositoryPort.findByOwnerId(ownerId).stream()
+                .filter(pet -> pet.getClinicId().equals(clinicId))
+                .toList();
     }
 
     // -------------------------------------------------------------------------

@@ -14,16 +14,19 @@ import com.datavet.shared.domain.event.DomainEvent;
 import com.datavet.shared.domain.event.DomainEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ClinicService implements ClinicUseCase, ApplicationService {
 
     private final ClinicRepositoryPort clinicRepositoryPort;
     private final DomainEventPublisher domainEventPublisher;
 
+    @Transactional
     @Override
     public Clinic createClinic(CreateClinicCommand command) {
         if (clinicRepositoryPort.existsByEmail(command.getEmail().getValue())) {
@@ -50,9 +53,13 @@ public class ClinicService implements ClinicUseCase, ApplicationService {
         return clinicRepositoryPort.save(clinic);
     }
 
+    @Transactional
     @Override
     public Clinic createPendingClinic(CreatePendingClinicCommand command) {
-        // El dominio valida nombre
+        if (clinicRepositoryPort.existsByEmail(command.getEmail().getValue())) {
+            throw new ClinicAlreadyExistsException("email", command.getEmail().getValue());
+        }
+
         Clinic clinic = Clinic.createPending(
                 command.getClinicName(),
                 command.getEmail(),
@@ -63,6 +70,7 @@ public class ClinicService implements ClinicUseCase, ApplicationService {
         return clinicRepositoryPort.save(clinic);
     }
 
+    @Transactional
     @Override
     public Clinic completeClinicSetup(CompleteClinicSetupCommand command) {
         Clinic clinic = clinicRepositoryPort.findById(command.getClinicId())
@@ -85,6 +93,7 @@ public class ClinicService implements ClinicUseCase, ApplicationService {
         return clinicRepositoryPort.save(clinic);
     }
 
+    @Transactional
     @Override
     public Clinic updateClinic(UpdateClinicCommand command) {
         Clinic existing = clinicRepositoryPort.findById(command.getClinicId())
@@ -114,6 +123,7 @@ public class ClinicService implements ClinicUseCase, ApplicationService {
         return clinicRepositoryPort.save(existing);
     }
 
+    @Transactional
     @Override
     public void deactivateClinic(String id, String reason) {
         Clinic clinic = getClinicById(id);

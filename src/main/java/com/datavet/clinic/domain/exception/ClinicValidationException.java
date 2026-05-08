@@ -1,13 +1,12 @@
 package com.datavet.clinic.domain.exception;
 
-import com.datavet.shared.domain.exception.DomainException;
 import com.datavet.shared.domain.validation.ValidationResult;
 
 /**
  * Exception thrown when clinic validation fails.
  * Contains validation errors from the shared validation framework.
  */
-public class ClinicValidationException extends DomainException {
+public class ClinicValidationException extends ClinicDomainException {
     
     private final ValidationResult validationResult;
     

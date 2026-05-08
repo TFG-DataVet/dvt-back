@@ -1,6 +1,8 @@
 package com.datavet.shared.domain.exception.email;
 
-public class EmailNotFoundException extends EmailException {
+import com.datavet.shared.domain.exception.EntityNotFoundException;
+
+public class EmailNotFoundException extends EntityNotFoundException {
 
     public EmailNotFoundException(String email) {
         super("No record found with email: " + email);

@@ -47,6 +47,7 @@ class OwnerServiceTest {
     private OwnerService ownerService;
 
     private String testOwnerId;
+    private String testClinicId;
     private Owner testOwner;
 
     private static final String DEFAULT_OWNER_NAME = "Juan";
@@ -60,7 +61,8 @@ class OwnerServiceTest {
     @BeforeEach
     void setUp() {
         testOwnerId = new ObjectId().toString();
-        testOwner = OwnerTestDataBuilder.aValidOwner();
+        testClinicId = UUID.randomUUID().toString();
+        testOwner = OwnerTestDataBuilder.buildValidOwnerWithId(testClinicId);
     }
 
     @Test
@@ -69,7 +71,7 @@ class OwnerServiceTest {
 
         CreateOwnerCommand command =
                 CreateOwnerCommand.builder()
-                .clinidId(UUID.randomUUID().toString())
+                .clinicId(UUID.randomUUID().toString())
                 .ownerName(DEFAULT_OWNER_NAME)
                 .ownerLastName(DEFAULT_OWNER_LAST_NAME)
                 .ownerDni(aValidDocument())
@@ -98,7 +100,7 @@ class OwnerServiceTest {
     void createOwner_WithDuplicateEmail_ShouldThrowException() {
         // Given
         CreateOwnerCommand command = CreateOwnerCommand.builder()
-                .clinidId(UUID.randomUUID().toString())
+                .clinicId(UUID.randomUUID().toString())
                 .ownerName(DEFAULT_OWNER_NAME)
                 .ownerLastName(DEFAULT_OWNER_LAST_NAME)
                 .ownerDni(aValidDocument())
@@ -122,7 +124,7 @@ class OwnerServiceTest {
         when(ownerRepositoryPort.findById(testOwnerId)).thenReturn(Optional.of(testOwner));
 
         // When
-        Owner result = ownerService.getOwnerById(testOwnerId);
+        Owner result = ownerService.getOwnerById(testOwnerId, testClinicId);
 
         // Then
         assertThat(result).isNotNull();
@@ -137,7 +139,7 @@ class OwnerServiceTest {
         when(ownerRepositoryPort.findById(nonExistentId)).thenReturn(Optional.empty());
 
         // When/Then
-        assertThatThrownBy(() -> ownerService.getOwnerById(nonExistentId))
+        assertThatThrownBy(() -> ownerService.getOwnerById(nonExistentId, testClinicId))
                 .isInstanceOf(OwnerNotFoundException.class);
         verify(ownerRepositoryPort).findById(nonExistentId);
     }
@@ -148,7 +150,7 @@ class OwnerServiceTest {
         when(ownerRepositoryPort.findById(testOwnerId)).thenReturn(Optional.of(testOwner));
 
         // When
-        ownerService.deleteOwner(testOwnerId);
+        ownerService.deleteOwner(testOwnerId, testClinicId);
 
         // Then
         verify(ownerRepositoryPort).findById(testOwnerId);
@@ -163,24 +165,24 @@ class OwnerServiceTest {
         when(ownerRepositoryPort.findById(nonExistentId)).thenReturn(Optional.empty());
 
         // When/Then
-        assertThatThrownBy(() -> ownerService.deleteOwner(nonExistentId))
+        assertThatThrownBy(() -> ownerService.deleteOwner(nonExistentId, testClinicId))
                 .isInstanceOf(OwnerNotFoundException.class);
         verify(ownerRepositoryPort).findById(nonExistentId);
         verify(ownerRepositoryPort, never()).deleteById(anyString());
     }
 
     @Test
-    void getAllOwners_ShouldReturnAllOwners() {
+    void getOwnersByClinic_ShouldReturnAllOwners() {
         // Given
-        List<Owner> owners = List.of(testOwner, OwnerTestDataBuilder.aValidOwner());
-        when(ownerRepositoryPort.findAll()).thenReturn(owners);
+        List<Owner> owners = List.of(testOwner, OwnerTestDataBuilder.buildValidOwnerWithId(testClinicId));
+        when(ownerRepositoryPort.findByClinicId(testClinicId)).thenReturn(owners);
 
         // When
-        List<Owner> result = ownerService.getAllOwners();
+        List<Owner> result = ownerService.getOwnersByClinic(testClinicId);
 
         // Then
         assertThat(result).hasSize(2);
-        verify(ownerRepositoryPort).findAll();
+        verify(ownerRepositoryPort).findByClinicId(testClinicId);
     }
 
     /**

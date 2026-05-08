@@ -13,6 +13,7 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -38,9 +39,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex, WebRequest request) {
-        
+
         log.warn("Validation error occurred: {}", ex.getMessage());
-        
+
         List<ErrorResponse.ValidationErrorDetail> details = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
@@ -65,9 +66,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleConstraintViolationException(
             ConstraintViolationException ex, WebRequest request) {
-        
+
         log.warn("Constraint violation occurred: {}", ex.getMessage());
-        
+
         List<ErrorResponse.ValidationErrorDetail> details = ex.getConstraintViolations()
                 .stream()
                 .map(this::mapConstraintViolation)
@@ -91,9 +92,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleEntityNotFoundException(
             EntityNotFoundException ex, WebRequest request) {
-        
+
         log.warn("Document not found: {}", ex.getMessage());
-        
+
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.NOT_FOUND.value())
@@ -112,9 +113,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EntityAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleEntityAlreadyExistsException(
             EntityAlreadyExistsException ex, WebRequest request) {
-        
+
         log.warn("Document already exists: {}", ex.getMessage());
-        
+
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.CONFLICT.value())
@@ -133,9 +134,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessRuleException.class)
     public ResponseEntity<ErrorResponse> handleBusinessRuleException(
             BusinessRuleException ex, WebRequest request) {
-        
+
         log.warn("Business rule violation: {}", ex.getMessage());
-        
+
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -154,9 +155,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
             IllegalArgumentException ex, WebRequest request) {
-        
+
         log.warn("Illegal argument: {}", ex.getMessage());
-        
+
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -167,27 +168,6 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.badRequest().body(errorResponse);
-    }
-
-    /**
-     * Handle all other unexpected exceptions.
-     */
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(
-            Exception ex, WebRequest request) {
-        
-        log.error("Unexpected error occurred", ex);
-        
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .error("Internal Server Error")
-                .message("An unexpected error occurred")
-                .details(new ArrayList<>())
-                .path(getPath(request))
-                .build();
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
@@ -244,6 +224,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+            AccessDeniedException ex, WebRequest request) {
+
+        log.warn("Access denied: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.FORBIDDEN.value())
+                .error("Forbidden")
+                .message(ex.getMessage())
+                .details(new ArrayList<>())
+                .path(getPath(request))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+
     /**
      * Handle all domain validation exceptions across all bounded contexts.
      * Catches any DomainException not handled by a more specific handler.
@@ -264,6 +262,27 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    /**
+     * Handle all other unexpected exceptions.
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenericException(
+            Exception ex, WebRequest request) {
+
+        log.error("Unexpected error occurred", ex);
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error("Internal Server Error")
+                .message("An unexpected error occurred")
+                .details(new ArrayList<>())
+                .path(getPath(request))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
     private ErrorResponse.ValidationErrorDetail mapFieldError(FieldError fieldError) {

@@ -80,6 +80,14 @@ public class Clinic extends AggregateRoot<String> implements Document<String> {
             }
         }
 
+        if (phone == null) {
+            result.addError("Telefono", "El numero de telefono de la clinica no puede ser nulo");
+        }
+
+        if (email == null) {
+            result.addError("Email", "El email del responsable de la clinica veterinaria no puede ser nulo");
+        }
+
         if (schedule == null) {
             result.addError("Horario", "El horario de atención de la clinica no puede ser nulo");
         }
@@ -233,8 +241,8 @@ public class Clinic extends AggregateRoot<String> implements Document<String> {
                 logoUrl,
                 schedule,
                 status,
-                LocalDateTime.now(),
-                LocalDateTime.now());
+                createdAt,
+                updatedAt);
     }
 
 

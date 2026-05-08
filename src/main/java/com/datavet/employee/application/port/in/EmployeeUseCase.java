@@ -24,6 +24,6 @@ public interface EmployeeUseCase extends UseCase {
     Employee    updateWorkSchedule  (UpdateEmployeeWorkScheduleCommand command);
 
     // Consultas
-    Employee        getEmployeeById     (String employeeId);
+    Employee        getEmployeeById     (String employeeId, String clinicId);
     List<Employee>  getEmployeesByClinic(String clinicId);
 }

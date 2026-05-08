@@ -57,6 +57,7 @@ public class MedicalRecordServiceTestDataBuilder {
     public static CorrectMedicalRecordCommand aValidCorrectMedicalRecordCommand(String originalId) {
         return CorrectMedicalRecordCommand.builder()
                 .originalRecordId(originalId)
+                .clinicId(DEFAULT_CLINIC_ID)
                 .veterinarianId(DEFAULT_VET_ID)
                 .reason("Error en el número de lote")
                 .detailsRequest(aValidVaccineDetailsRequest())

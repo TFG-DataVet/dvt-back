@@ -18,9 +18,9 @@ public class CreatePendingClinicCommand {
     @NotNull(message = "El identificador único de la clinica es requerido.")
     String clinicName;
 
-    @NotNull(message = "El email de la clinica es requerido")
+    @NotNull(message = "El email es requerido")
     Email email;
 
-    @NotNull(message = "El numero de telefono de la clinica es requerido")
+    @NotNull(message = "El telefono es requerido")
     Phone phone;
 }

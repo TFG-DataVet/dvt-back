@@ -152,6 +152,8 @@ public class SurgeryDetails implements MedicalRecordDetails {
 
         if (prev.status != SurgeryStatus.SCHEDULED) {
             if (!Objects.equals(this.surgeryDate, prev.surgeryDate)) return false;
+        } else {
+            if (Objects.equals(this.surgeryDate, prev.surgeryDate)) return false;
         }
 
         if (!this.postOpMedications.containsAll(prev.postOpMedications)) return false;
@@ -207,7 +209,14 @@ public class SurgeryDetails implements MedicalRecordDetails {
                 }
 
             }
-            this.completedAt = LocalDateTime.now();
+            if (next == SurgeryStatus.ADMITTED) {
+                this.surgeryDate = LocalDateTime.now();
+            }
+            if (next == SurgeryStatus.COMPLETED ||
+                next == SurgeryStatus.DECEASED ||
+                next == SurgeryStatus.CANCELLED) {
+                this.completedAt = LocalDateTime.now();
+            }
 
             this.status = next;
             this.validate();
@@ -230,8 +239,6 @@ public class SurgeryDetails implements MedicalRecordDetails {
         }
 
         this.outcome = newOutcome;
-
-        validate();
     }
 
     public void addPostOpMedication(SurgeryMedication medication){
@@ -244,8 +251,6 @@ public class SurgeryDetails implements MedicalRecordDetails {
         }
 
         this.postOpMedications.add(medication);
-
-        validate();
     }
 
     public void rescheduled(LocalDateTime newDate){

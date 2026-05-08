@@ -24,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,7 +55,7 @@ class ClinicServiceCompleteSetupTest {
         email    = new Email("clinica@test.com");
         phone    = new Phone("+34912345678");
         address  = new Address("Calle Test 1", "Madrid", "28001");
-        schedule = ClinicSchedule.of("Lunes - Viernes", LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra fines de semana");
+        schedule = ClinicSchedule.of(List.of("Lunes - Viernes"), LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra fines de semana");
     }
 
     // =========================================================================
@@ -227,7 +228,7 @@ class ClinicServiceCompleteSetupTest {
     // =========================================================================
 
     private Clinic buildPendingClinic() {
-        return Clinic.createPending("Clínica Test");
+        return Clinic.createPending("Clínica Test", email, phone);
     }
 
     private CompleteClinicSetupCommand buildCommand(String clinicId) {

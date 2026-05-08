@@ -16,11 +16,13 @@ import com.datavet.shared.domain.exception.email.EmailAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class OwnerService implements OwnerUseCase, ApplicationService {
 
     private final OwnerRepositoryPort ownerRepositoryPort;
@@ -30,6 +32,7 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
 
 
     @Override
+    @Transactional
     public Owner createOwner(CreateOwnerCommand command) {
 
         // Check for duplicate email (value object is already created in command)
@@ -69,6 +72,7 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
     }
 
     @Override
+    @Transactional
     public Owner updateOwner(UpdateOwnerCommand command) {
         Owner existing = ownerRepositoryPort.findById(command.getOwnerID())
                 .orElseThrow(() -> new OwnerNotFoundException(command.getOwnerID()));
@@ -101,6 +105,7 @@ public class OwnerService implements OwnerUseCase, ApplicationService {
     }
 
     @Override
+    @Transactional
     public void deleteOwner(String id, String clinicId) {
         Owner owner = ownerRepositoryPort.findById(id)
                 .orElseThrow(() -> new OwnerNotFoundException(id));

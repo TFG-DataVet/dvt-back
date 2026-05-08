@@ -16,6 +16,7 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -332,7 +333,7 @@ class CompleteClinicSetupCommandTest {
         Phone phone = new Phone("+1234567890");
         Email email = new Email("test@example.com");
         ClinicSchedule schedule = ClinicSchedule.of(
-                "Lunes - Viernes", LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra los fines de semana");
+                List.of("Lunes - Viernes"), LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra los fines de semana");
 
         CompleteClinicSetupCommand.CompleteClinicSetupCommandBuilder builder = CompleteClinicSetupCommand.builder()
                 .clinicId("clinic-123")

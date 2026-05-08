@@ -1,9 +1,8 @@
 package com.datavet.employee.domain.exception;
 
-import com.datavet.shared.domain.exception.DomainException;
 import com.datavet.shared.domain.validation.ValidationResult;
 
-public class EmployeeValidationException extends DomainException {
+public class EmployeeValidationException extends EmployeeDomainException {
 
     private final ValidationResult validationResult;
 

@@ -8,11 +8,13 @@ import com.datavet.pet.application.port.out.PetRepositoryPort;
 import com.datavet.pet.domain.exception.MedicalRecordNotFoundException;
 import com.datavet.pet.domain.exception.PetNotFoundException;
 import com.datavet.pet.domain.model.MedicalRecord;
+import com.datavet.pet.domain.model.Pet;
 import com.datavet.pet.domain.model.details.MedicalRecordDetails;
 import com.datavet.pet.domain.model.details.vaccine.VaccineDetails;
 import com.datavet.pet.domain.valueobject.MedicalRecordType;
 import com.datavet.pet.infrastructure.adapter.output.MedicalRecordRepositoryAdapter;
 import com.datavet.pet.testutil.MedicalRecordServiceTestDataBuilder;
+import com.datavet.pet.testutil.PetTestDataBuilder;
 import com.datavet.shared.domain.event.DomainEventPublisher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -209,7 +211,8 @@ class MedicalRecordServiceTest {
                     .thenReturn(Optional.of(expected));
 
             // When
-            MedicalRecord result = medicalRecordService.getMedicalRecordById(expected.getId());
+            MedicalRecord result = medicalRecordService.getMedicalRecordById(
+                    expected.getId(), MedicalRecordServiceTestDataBuilder.DEFAULT_CLINIC_ID);
 
             // Then
             assertThat(result).isNotNull();
@@ -225,7 +228,8 @@ class MedicalRecordServiceTest {
                     .thenReturn(Optional.empty());
 
             // When / Then
-            assertThatThrownBy(() -> medicalRecordService.getMedicalRecordById("medical_record_001"))
+            assertThatThrownBy(() -> medicalRecordService.getMedicalRecordById(
+                            "medical_record_001", MedicalRecordServiceTestDataBuilder.DEFAULT_CLINIC_ID))
                     .isInstanceOf(MedicalRecordNotFoundException.class);
         }
 
@@ -233,10 +237,11 @@ class MedicalRecordServiceTest {
         @DisplayName("getMedicalRecordsByPet debe lanzar PetNotFoundException si la mascota no existe")
         void shouldThrowWhenPetNotFoundInGetByPet() {
             // Given
-            when(petRepositoryPort.existsById("pet_001")).thenReturn(false);
+            when(petRepositoryPort.findById("pet_001")).thenReturn(Optional.empty());
 
             // When / Then
-            assertThatThrownBy(() -> medicalRecordService.getMedicalRecordsByPet("pet_001"))
+            assertThatThrownBy(() -> medicalRecordService.getMedicalRecordsByPet(
+                            "pet_001", MedicalRecordServiceTestDataBuilder.DEFAULT_CLINIC_ID))
                     .isInstanceOf(PetNotFoundException.class);
 
             verify(medicalRecordRepositoryAdapter, never()).findByPetId(any());
@@ -252,11 +257,13 @@ class MedicalRecordServiceTest {
             );
 
             String petId = records.getFirst().getPetId();
-            when(petRepositoryPort.existsById(petId)).thenReturn(true);
+            Pet pet = PetTestDataBuilder.aPetWithClinicId(MedicalRecordServiceTestDataBuilder.DEFAULT_CLINIC_ID);
+            when(petRepositoryPort.findById(petId)).thenReturn(Optional.of(pet));
             when(medicalRecordRepositoryAdapter.findByPetId(petId)).thenReturn(records);
 
             // When
-            List<MedicalRecord> result = medicalRecordService.getMedicalRecordsByPet(petId);
+            List<MedicalRecord> result = medicalRecordService.getMedicalRecordsByPet(
+                    petId, MedicalRecordServiceTestDataBuilder.DEFAULT_CLINIC_ID);
 
             // Then
             assertThat(result).hasSize(2);
@@ -270,13 +277,14 @@ class MedicalRecordServiceTest {
             List<MedicalRecord> records = List.of(MedicalRecordServiceTestDataBuilder.aValidVaccineMedicalRecord());
 
             String petId = records.getFirst().getPetId();
-            when(petRepositoryPort.existsById(petId)).thenReturn(true);
+            Pet pet = PetTestDataBuilder.aPetWithClinicId(MedicalRecordServiceTestDataBuilder.DEFAULT_CLINIC_ID);
+            when(petRepositoryPort.findById(petId)).thenReturn(Optional.of(pet));
             when(medicalRecordRepositoryAdapter.findByPetIdAndType(petId, MedicalRecordType.VACCINE))
                     .thenReturn(records);
 
             // When
             List<MedicalRecord> result = medicalRecordService.getMedicalRecordsByType(
-                    petId, MedicalRecordType.VACCINE);
+                    petId, MedicalRecordType.VACCINE, MedicalRecordServiceTestDataBuilder.DEFAULT_CLINIC_ID);
 
             // Then
             assertThat(result).hasSize(1);

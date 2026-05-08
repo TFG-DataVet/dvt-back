@@ -16,6 +16,7 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,7 +43,7 @@ class CreateClinicCommandTest {
         Phone phone = new Phone("+1234567890");
         Email email = new Email("test@example.com");
         ClinicSchedule schedule = ClinicSchedule.of(
-                "Lunes - Viernes", LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra los fines de semana");
+                List.of("Lunes - Viernes"), LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra los fines de semana");
 
         CreateClinicCommand command = new CreateClinicCommand(
                 "Test Clinic", "Test Legal Name", "12345678",
@@ -62,7 +63,7 @@ class CreateClinicCommandTest {
         Phone phone = new Phone("+1234567890");
         Email email = new Email("test@example.com");
         ClinicSchedule schedule = ClinicSchedule.of(
-                "Lunes - Viernes", LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra los fines de semana");
+                List.of("Lunes - Viernes"), LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra los fines de semana");
 
         CreateClinicCommand command = new CreateClinicCommand(
                 "Test Clinic", "Test Legal Name", "12345678",
@@ -367,7 +368,7 @@ class CreateClinicCommandTest {
         Phone phone = new Phone("+1234567890");
         Email email = new Email("test@example.com");
         ClinicSchedule schedule = ClinicSchedule.of(
-                "Lunes - Viernes", LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra los fines de semana");
+                List.of("Lunes - Viernes"), LocalTime.of(9, 0), LocalTime.of(18, 0), "Cierra los fines de semana");
 
         CreateClinicCommand.CreateClinicCommandBuilder builder = CreateClinicCommand.builder()
                 .clinicName("Test Clinic")

@@ -65,19 +65,14 @@ public class EmployeeService implements EmployeeUseCase, ApplicationService {
         );
         employee.assignUserId(userId);
 
-        Employee savedEmployee = employeeRepositoryPort.save(employee);
-
-        publishDomainEvents(savedEmployee);
-        return employeeRepositoryPort.save(savedEmployee);
+        publishDomainEvents(employee);
+        return employeeRepositoryPort.save(employee);
     }
 
     @Override
     @Transactional
     public Employee updateEmployee(UpdateEmployeeCommand command) {
-        Employee employee = getEmployeeById(command.getEmployeeId());
-        if (!employee.getClinicId().equals(command.getClinicId())) {
-            throw new AccessDeniedException("El empleado no pertenece a tu clínica");
-        }
+        Employee employee = getEmployeeById(command.getEmployeeId(), command.getClinicId());
 
         // Unicidad del documentNumber excluyendo el propio empleado
         if (employeeRepositoryPort.existsByDocumentNumberAndClinicIdAndIdNot(
@@ -104,10 +99,7 @@ public class EmployeeService implements EmployeeUseCase, ApplicationService {
     @Override
     @Transactional
     public void deactivateEmployee(DeactivateEmployeeCommand command) {
-        Employee employee = getEmployeeById(command.getEmployeeId());
-        if (!employee.getClinicId().equals(command.getClinicId())) {
-            throw new AccessDeniedException("El empleado no pertenece a tu clínica");
-        }
+        Employee employee = getEmployeeById(command.getEmployeeId(), command.getClinicId());
 
         // El dominio valida que no esté ya inactivo
         employee.deactivate(command.getReason());
@@ -119,10 +111,7 @@ public class EmployeeService implements EmployeeUseCase, ApplicationService {
     @Override
     @Transactional
     public Employee updateSalary(UpdateEmployeeSalaryCommand command) {
-        Employee employee = getEmployeeById(command.getEmployeeId());
-        if (!employee.getClinicId().equals(command.getClinicId())) {
-            throw new AccessDeniedException("El empleado no pertenece a tu clínica");
-        }
+        Employee employee = getEmployeeById(command.getEmployeeId(), command.getClinicId());
 
         // El value object valida los datos internamente
         Salary salary = Salary.of(
@@ -142,10 +131,7 @@ public class EmployeeService implements EmployeeUseCase, ApplicationService {
     @Override
     @Transactional
     public Employee updateVacationPolicy(UpdateEmployeeVacationPolicyCommand command) {
-        Employee employee = getEmployeeById(command.getEmployeeId());
-        if (!employee.getClinicId().equals(command.getClinicId())) {
-            throw new AccessDeniedException("El empleado no pertenece a tu clínica");
-        }
+        Employee employee = getEmployeeById(command.getEmployeeId(), command.getClinicId());
 
         VacationPolicy vacationPolicy = VacationPolicy.of(
                 command.getAnnualDays(),
@@ -161,10 +147,7 @@ public class EmployeeService implements EmployeeUseCase, ApplicationService {
     @Override
     @Transactional
     public Employee updateWorkSchedule(UpdateEmployeeWorkScheduleCommand command) {
-        Employee employee = getEmployeeById(command.getEmployeeId());
-        if (!employee.getClinicId().equals(command.getClinicId())) {
-            throw new AccessDeniedException("El empleado no pertenece a tu clínica");
-        }
+        Employee employee = getEmployeeById(command.getEmployeeId(), command.getClinicId());
 
         WorkSchedule workSchedule = WorkSchedule.of(
                 command.getWeeklyHours(),
@@ -181,9 +164,13 @@ public class EmployeeService implements EmployeeUseCase, ApplicationService {
     }
 
     @Override
-    public Employee getEmployeeById(String employeeId) {
-        return employeeRepositoryPort.findById(employeeId)
+    public Employee getEmployeeById(String employeeId, String clinicId) {
+        Employee employee = employeeRepositoryPort.findById(employeeId)
                 .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
+        if (!employee.getClinicId().equals(clinicId)) {
+            throw new AccessDeniedException("El empleado no pertenece a tu clínica");
+        }
+        return employee;
     }
 
     @Override
