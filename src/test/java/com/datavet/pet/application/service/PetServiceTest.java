@@ -311,7 +311,7 @@ class PetServiceTest {
             when(petRepositoryPort.findByOwnerId(DEFAULT_OWNER_ID)).thenReturn(pets);
 
             // When
-            List<Pet> result = petService.getPetsByOwner(DEFAULT_OWNER_ID);
+            List<Pet> result = petService.getPetsByOwner(DEFAULT_OWNER_ID, DEFAULT_CLINIC_ID);
 
             // Then
             assertThat(result).hasSize(1);

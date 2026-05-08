@@ -1,5 +1,10 @@
 package com.datavet.clinic.infrastructure.adapter.input;
 
+import com.datavet.auth.application.dto.TokenResponse;
+import com.datavet.auth.application.port.in.AuthUseCase;
+import com.datavet.auth.domain.model.UserRole;
+import com.datavet.auth.infrastructure.security.AuthenticatedUser;
+import com.datavet.auth.infrastructure.util.JwtUtil;
 import com.datavet.clinic.application.port.in.ClinicUseCase;
 import com.datavet.clinic.domain.exception.ClinicAlreadyExistsException;
 import com.datavet.clinic.domain.exception.ClinicNotFoundException;
@@ -17,8 +22,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -26,6 +34,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -38,6 +47,12 @@ class ClinicControllerReadTest {
 
     @MockitoBean
     private ClinicUseCase clinicUseCase;
+
+    @MockitoBean
+    private AuthUseCase authUseCase;
+
+    @MockitoBean
+    private JwtUtil jwtUtil;
 
     private ObjectMapper objectMapper;
     private Clinic activeClinic;
@@ -64,6 +79,20 @@ class ClinicControllerReadTest {
         pendingClinic.clearDomainEvents();
     }
 
+    private RequestPostProcessor superAdminAuth() {
+        AuthenticatedUser user = new AuthenticatedUser(
+                "super-admin", null, null, "admin@test.com", UserRole.SUPER_ADMIN, "FULL_ACCESS");
+        return SecurityMockMvcRequestPostProcessors.authentication(
+                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()));
+    }
+
+    private RequestPostProcessor onboardingAuth(String clinicId) {
+        AuthenticatedUser user = new AuthenticatedUser(
+                "user-1", null, clinicId, "owner@test.com", UserRole.CLINIC_OWNER, "ONBOARDING_ONLY");
+        return SecurityMockMvcRequestPostProcessors.authentication(
+                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()));
+    }
+
     // =========================================================================
     // POST /clinic/register
     // =========================================================================
@@ -74,6 +103,8 @@ class ClinicControllerReadTest {
         when(clinicUseCase.createPendingClinic(any())).thenReturn(pendingClinic);
 
         mockMvc.perform(post("/clinic/register")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validRegisterJson()))
                 .andExpect(status().isCreated())
@@ -94,6 +125,8 @@ class ClinicControllerReadTest {
                 """;
 
         mockMvc.perform(post("/clinic/register")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest())
@@ -114,6 +147,8 @@ class ClinicControllerReadTest {
                 """;
 
         mockMvc.perform(post("/clinic/register")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest())
@@ -132,6 +167,8 @@ class ClinicControllerReadTest {
                 """;
 
         mockMvc.perform(post("/clinic/register")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest())
@@ -145,6 +182,8 @@ class ClinicControllerReadTest {
                 .thenThrow(new ClinicAlreadyExistsException("email", "clinica@test.com"));
 
         mockMvc.perform(post("/clinic/register")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validRegisterJson()))
                 .andExpect(status().isConflict())
@@ -162,6 +201,8 @@ class ClinicControllerReadTest {
         when(clinicUseCase.createClinic(any())).thenReturn(activeClinic);
 
         mockMvc.perform(post("/clinic")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validCreateJson()))
                 .andExpect(status().isCreated())
@@ -188,6 +229,8 @@ class ClinicControllerReadTest {
         String json = validCreateJson().replace("\"Clínica Test\"", "\"\"");
 
         mockMvc.perform(post("/clinic")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest())
@@ -209,13 +252,15 @@ class ClinicControllerReadTest {
                     "codePostal": "28001",
                     "phone": "+34912345678",
                     "email": "clinica@test.com",
-                    "scheduleOpenDays": "Lunes - Viernes",
+                    "scheduleOpenDays": ["Lunes - Viernes"],
                     "scheduleOpenTime": "09:00:00",
                     "scheduleCloseTime": "18:00:00"
                 }
                 """;
 
         mockMvc.perform(post("/clinic")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest())
@@ -239,6 +284,8 @@ class ClinicControllerReadTest {
                 """;
 
         mockMvc.perform(post("/clinic")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest())
@@ -252,6 +299,8 @@ class ClinicControllerReadTest {
                 .thenThrow(new ClinicAlreadyExistsException("email", "clinica@test.com"));
 
         mockMvc.perform(post("/clinic")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validCreateJson()))
                 .andExpect(status().isConflict())
@@ -266,6 +315,8 @@ class ClinicControllerReadTest {
                 .thenThrow(new ClinicAlreadyExistsException("legalNumber", "12345678A"));
 
         mockMvc.perform(post("/clinic")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validCreateJson()))
                 .andExpect(status().isConflict())
@@ -278,18 +329,22 @@ class ClinicControllerReadTest {
     // =========================================================================
 
     @Test
-    @DisplayName("PATCH /clinic/{id}/complete-setup: should return 200 with active clinic")
+    @DisplayName("PATCH /clinic/{id}/complete-setup: should return 200 with token response")
     void completeSetup_WithValidData_ShouldReturn200() throws Exception {
-        when(clinicUseCase.completeClinicSetup(any())).thenReturn(activeClinic);
+        TokenResponse tokenResponse = new TokenResponse(
+                "access-token", "refresh-token", "Bearer", 3600,
+                new TokenResponse.UserInfo("user-1", "emp-1", "clinic-1", "owner@test.com", UserRole.CLINIC_OWNER),
+                null);
+        when(authUseCase.completeOnboarding(any())).thenReturn(tokenResponse);
 
         mockMvc.perform(patch("/clinic/clinic-1/complete-setup")
+                        .with(csrf())
+                        .with(onboardingAuth("clinic-1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validCompleteSetupJson()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.clinicId").exists())
-                .andExpect(jsonPath("$.status").value("ACTIVE"))
-                .andExpect(jsonPath("$.legalName").value("Clínica Test S.L."))
-                .andExpect(jsonPath("$.legalNumber").value("12345678A"));
+                .andExpect(jsonPath("$.user.clinicId").value("clinic-1"))
+                .andExpect(jsonPath("$.user.role").value("CLINIC_OWNER"));
     }
 
     @Test
@@ -298,6 +353,8 @@ class ClinicControllerReadTest {
         String json = validCompleteSetupJson().replace("\"Clínica Test S.L.\"", "\"\"");
 
         mockMvc.perform(patch("/clinic/clinic-1/complete-setup")
+                        .with(csrf())
+                        .with(onboardingAuth("clinic-1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest())
@@ -307,10 +364,12 @@ class ClinicControllerReadTest {
     @Test
     @DisplayName("PATCH /clinic/{id}/complete-setup: should return 404 when clinic not found")
     void completeSetup_WhenClinicNotFound_ShouldReturn404() throws Exception {
-        when(clinicUseCase.completeClinicSetup(any()))
+        when(authUseCase.completeOnboarding(any()))
                 .thenThrow(new ClinicNotFoundException("Clinic", "no-existe"));
 
         mockMvc.perform(patch("/clinic/no-existe/complete-setup")
+                        .with(csrf())
+                        .with(onboardingAuth("no-existe"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validCompleteSetupJson()))
                 .andExpect(status().isNotFound())
@@ -321,10 +380,12 @@ class ClinicControllerReadTest {
     @Test
     @DisplayName("PATCH /clinic/{id}/complete-setup: should return 409 when legalNumber already exists")
     void completeSetup_WhenLegalNumberAlreadyExists_ShouldReturn409() throws Exception {
-        when(clinicUseCase.completeClinicSetup(any()))
+        when(authUseCase.completeOnboarding(any()))
                 .thenThrow(new ClinicAlreadyExistsException("legalNumber", "12345678A"));
 
         mockMvc.perform(patch("/clinic/clinic-1/complete-setup")
+                        .with(csrf())
+                        .with(onboardingAuth("clinic-1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validCompleteSetupJson()))
                 .andExpect(status().isConflict())
@@ -341,7 +402,8 @@ class ClinicControllerReadTest {
     void getById_WhenClinicExists_ShouldReturn200() throws Exception {
         when(clinicUseCase.getClinicById("clinic-1")).thenReturn(activeClinic);
 
-        mockMvc.perform(get("/clinic/clinic-1"))
+        mockMvc.perform(get("/clinic/clinic-1")
+                        .with(superAdminAuth()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clinicId").exists())
                 .andExpect(jsonPath("$.clinicName").value("Clínica Test"))
@@ -364,7 +426,8 @@ class ClinicControllerReadTest {
         when(clinicUseCase.getClinicById("no-existe"))
                 .thenThrow(new ClinicNotFoundException("Clinic", "no-existe"));
 
-        mockMvc.perform(get("/clinic/no-existe"))
+        mockMvc.perform(get("/clinic/no-existe")
+                        .with(superAdminAuth()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.error").value("Not Found"))
@@ -381,7 +444,8 @@ class ClinicControllerReadTest {
     void getAll_ShouldReturn200WithList() throws Exception {
         when(clinicUseCase.getAllClinics()).thenReturn(List.of(activeClinic, activeClinic));
 
-        mockMvc.perform(get("/clinic"))
+        mockMvc.perform(get("/clinic")
+                        .with(superAdminAuth()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$", hasSize(2)))
@@ -394,7 +458,8 @@ class ClinicControllerReadTest {
     void getAll_WhenNoClinics_ShouldReturn200WithEmptyList() throws Exception {
         when(clinicUseCase.getAllClinics()).thenReturn(List.of());
 
-        mockMvc.perform(get("/clinic"))
+        mockMvc.perform(get("/clinic")
+                        .with(superAdminAuth()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$", hasSize(0)));
@@ -410,6 +475,8 @@ class ClinicControllerReadTest {
         when(clinicUseCase.createPendingClinic(any())).thenReturn(pendingClinic);
 
         mockMvc.perform(post("/clinic/register")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validRegisterJson()))
                 .andExpect(status().isCreated())
@@ -446,7 +513,7 @@ class ClinicControllerReadTest {
                     "phone": "+34912345678",
                     "email": "clinica@test.com",
                     "logoUrl": "https://example.com/logo.png",
-                    "scheduleOpenDays": "Lunes - Viernes",
+                    "scheduleOpenDays": ["Lunes - Viernes"],
                     "scheduleOpenTime": "09:00:00",
                     "scheduleCloseTime": "18:00:00",
                     "scheduleNotes": "Cierra fines de semana"
@@ -465,9 +532,14 @@ class ClinicControllerReadTest {
                     "codePostal": "28001",
                     "phone": "+34912345678",
                     "email": "clinica@test.com",
-                    "scheduleOpenDays": "Lunes - Viernes",
+                    "scheduleOpenDays": ["Lunes - Viernes"],
                     "scheduleOpenTime": "09:00:00",
-                    "scheduleCloseTime": "18:00:00"
+                    "scheduleCloseTime": "18:00:00",
+                    "ownerDocumentType": "DNI",
+                    "ownerDocumentNumber": "12345678Z",
+                    "ownerAddress": "Calle Test 1",
+                    "ownerCity": "Madrid",
+                    "ownerPostalCode": "28001"
                 }
                 """;
     }

@@ -58,6 +58,7 @@ public class PetCommandTestDataBuild {
     public static UpdatePetCommand aValidUpdatePetCommand() {
         return UpdatePetCommand.builder()
                 .petId(DEFAULT_PET_ID)
+                .clinicId(DEFAULT_CLINIC_ID)
                 .name("Firulais Actualizado")
                 .avatarUrl("https://example.com/new.jpg")
                 .build();
@@ -66,6 +67,7 @@ public class PetCommandTestDataBuild {
     public static DeactivatePetCommand aValidDeactivatePetCommand() {
         return DeactivatePetCommand.builder()
                 .petId(DEFAULT_PET_ID)
+                .clinicId(DEFAULT_CLINIC_ID)
                 .reason("Mascota fallecida")
                 .build();
     }
@@ -73,6 +75,7 @@ public class PetCommandTestDataBuild {
     public static CorrectPetBreedCommand aValidCorrectBreedCommand() {
         return CorrectPetBreedCommand.builder()
                 .petId(DEFAULT_PET_ID)
+                .clinicId(DEFAULT_CLINIC_ID)
                 .newBreed("Golden Retriever")
                 .reason("Error en el registro inicial")
                 .build();
@@ -81,6 +84,7 @@ public class PetCommandTestDataBuild {
     public static CorrectPetBirthDateCommand aValidCorrectBirthDateCommand() {
         return CorrectPetBirthDateCommand.builder()
                 .petId(DEFAULT_PET_ID)
+                .clinicId(DEFAULT_CLINIC_ID)
                 .newBirthDate(LocalDate.of(2019, 6, 10))
                 .reason("Fecha incorrecta en historia clínica")
                 .build();
@@ -89,6 +93,7 @@ public class PetCommandTestDataBuild {
     public static CorrectPetSexCommand aValidCorrectSexCommand() {
         return CorrectPetSexCommand.builder()
                 .petId(DEFAULT_PET_ID)
+                .clinicId(DEFAULT_CLINIC_ID)
                 .sex(Sex.FEMALE)
                 .reason("Error administrativo")
                 .build();
@@ -97,6 +102,7 @@ public class PetCommandTestDataBuild {
     public static UpdatePetOwnerInfoCommand aValidUpdateOwnerInfoCommand() {
         return UpdatePetOwnerInfoCommand.builder()
                 .petId(DEFAULT_PET_ID)
+                .clinicId(DEFAULT_CLINIC_ID)
                 .ownerId("owner-002")
                 .ownerName("María")
                 .ownerLastName("González")

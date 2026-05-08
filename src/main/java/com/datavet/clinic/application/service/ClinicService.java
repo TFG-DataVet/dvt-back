@@ -56,7 +56,10 @@ public class ClinicService implements ClinicUseCase, ApplicationService {
     @Transactional
     @Override
     public Clinic createPendingClinic(CreatePendingClinicCommand command) {
-        // El dominio valida nombre
+        if (clinicRepositoryPort.existsByEmail(command.getEmail().getValue())) {
+            throw new ClinicAlreadyExistsException("email", command.getEmail().getValue());
+        }
+
         Clinic clinic = Clinic.createPending(
                 command.getClinicName(),
                 command.getEmail(),

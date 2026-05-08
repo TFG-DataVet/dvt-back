@@ -1,5 +1,9 @@
 package com.datavet.clinic.infrastructure.adapter.input;
 
+import com.datavet.auth.application.port.in.AuthUseCase;
+import com.datavet.auth.domain.model.UserRole;
+import com.datavet.auth.infrastructure.security.AuthenticatedUser;
+import com.datavet.auth.infrastructure.util.JwtUtil;
 import com.datavet.clinic.application.port.in.ClinicUseCase;
 import com.datavet.clinic.domain.exception.ClinicAlreadyExistsException;
 import com.datavet.clinic.domain.exception.ClinicNotFoundException;
@@ -19,8 +23,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -29,6 +36,7 @@ import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -41,6 +49,12 @@ class ClinicControllerWriteTest {
 
     @MockitoBean
     private ClinicUseCase clinicUseCase;
+
+    @MockitoBean
+    private AuthUseCase authUseCase;
+
+    @MockitoBean
+    private JwtUtil jwtUtil;
 
     private ObjectMapper objectMapper;
     private Clinic activeClinic;
@@ -63,6 +77,13 @@ class ClinicControllerWriteTest {
         activeClinic.clearDomainEvents();
     }
 
+    private RequestPostProcessor superAdminAuth() {
+        AuthenticatedUser user = new AuthenticatedUser(
+                "super-admin", null, null, "admin@test.com", UserRole.SUPER_ADMIN, "FULL_ACCESS");
+        return SecurityMockMvcRequestPostProcessors.authentication(
+                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()));
+    }
+
     // =========================================================================
     // PUT /clinic/{id}
     // =========================================================================
@@ -73,6 +94,8 @@ class ClinicControllerWriteTest {
         when(clinicUseCase.updateClinic(any())).thenReturn(activeClinic);
 
         mockMvc.perform(put("/clinic/clinic-1")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validUpdateJson()))
                 .andExpect(status().isOk())
@@ -99,13 +122,15 @@ class ClinicControllerWriteTest {
                     "city": "Madrid",
                     "phone": "+34912345678",
                     "email": "clinica@test.com",
-                    "scheduleOpenDays": "Lunes - Viernes",
+                    "scheduleOpenDays": ["Lunes - Viernes"],
                     "scheduleOpenTime": "09:00:00",
                     "scheduleCloseTime": "18:00:00"
                 }
                 """;
 
         mockMvc.perform(put("/clinic/clinic-1")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest())
@@ -126,13 +151,15 @@ class ClinicControllerWriteTest {
                     "city": "Madrid",
                     "phone": "+34912345678",
                     "email": "clinica@test.com",
-                    "scheduleOpenDays": "Lunes - Viernes",
+                    "scheduleOpenDays": ["Lunes - Viernes"],
                     "scheduleOpenTime": "09:00:00",
                     "scheduleCloseTime": "18:00:00"
                 }
                 """;
 
         mockMvc.perform(put("/clinic/clinic-1")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest())
@@ -145,6 +172,8 @@ class ClinicControllerWriteTest {
         String json = validUpdateJson().replace("clinica@test.com", "no-es-un-email");
 
         mockMvc.perform(put("/clinic/clinic-1")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest())
@@ -157,6 +186,8 @@ class ClinicControllerWriteTest {
         String json = validUpdateJson().replace("+34912345678", "no-es-un-telefono");
 
         mockMvc.perform(put("/clinic/clinic-1")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest())
@@ -170,6 +201,8 @@ class ClinicControllerWriteTest {
                 .thenThrow(new ClinicNotFoundException("Clinic", "no-existe"));
 
         mockMvc.perform(put("/clinic/no-existe")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validUpdateJson()))
                 .andExpect(status().isNotFound())
@@ -186,6 +219,8 @@ class ClinicControllerWriteTest {
                 .thenThrow(new ClinicAlreadyExistsException("email", "clinica@test.com"));
 
         mockMvc.perform(put("/clinic/clinic-1")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validUpdateJson()))
                 .andExpect(status().isConflict())
@@ -202,6 +237,8 @@ class ClinicControllerWriteTest {
                 .thenThrow(new ClinicAlreadyExistsException("legalNumber", "12345678A"));
 
         mockMvc.perform(put("/clinic/clinic-1")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validUpdateJson()))
                 .andExpect(status().isConflict())
@@ -218,6 +255,8 @@ class ClinicControllerWriteTest {
                 .thenThrow(new ClinicValidationException(result));
 
         mockMvc.perform(put("/clinic/clinic-1")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validUpdateJson()))
                 .andExpect(status().isBadRequest())
@@ -235,6 +274,8 @@ class ClinicControllerWriteTest {
         doNothing().when(clinicUseCase).deactivateClinic(eq("clinic-1"), any());
 
         mockMvc.perform(delete("/clinic/clinic-1")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validDeactivateJson()))
                 .andExpect(status().isNoContent());
@@ -252,6 +293,8 @@ class ClinicControllerWriteTest {
                 """;
 
         mockMvc.perform(delete("/clinic/clinic-1")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest())
@@ -264,6 +307,8 @@ class ClinicControllerWriteTest {
     @DisplayName("DELETE /clinic/{id}: should return 400 when reason is missing")
     void deactivate_WhenReasonMissing_ShouldReturn400() throws Exception {
         mockMvc.perform(delete("/clinic/clinic-1")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest())
@@ -277,6 +322,8 @@ class ClinicControllerWriteTest {
                 .when(clinicUseCase).deactivateClinic(eq("no-existe"), any());
 
         mockMvc.perform(delete("/clinic/no-existe")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validDeactivateJson()))
                 .andExpect(status().isNotFound())
@@ -293,6 +340,8 @@ class ClinicControllerWriteTest {
                 .when(clinicUseCase).deactivateClinic(eq("clinic-1"), any());
 
         mockMvc.perform(delete("/clinic/clinic-1")
+                        .with(csrf())
+                        .with(superAdminAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validDeactivateJson()))
                 .andExpect(status().isBadRequest())
@@ -317,7 +366,7 @@ class ClinicControllerWriteTest {
                     "phone": "+34912345678",
                     "email": "clinica@test.com",
                     "logoUrl": "https://example.com/logo.png",
-                    "scheduleOpenDays": "Lunes - Viernes",
+                    "scheduleOpenDays": ["Lunes - Viernes"],
                     "scheduleOpenTime": "09:00:00",
                     "scheduleCloseTime": "18:00:00",
                     "scheduleNotes": "Cierra fines de semana"

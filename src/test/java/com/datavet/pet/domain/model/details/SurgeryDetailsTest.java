@@ -216,7 +216,7 @@ class SurgeryDetailsTest {
         d.changedOutcome(SurgeryOutcome.SUCCESSFUL);
         d.addPostOpMedication(SurgeryDetailsTestDataBuilder.DEFAULT_POST_OP_MEDICATION);
         StatusChangeResult r = d.applyAction(RecordAction.COMPLETE);
-        assertEquals(SurgeryStatus.COMPLETED, r.getNewStatus());
+        assertEquals(SurgeryStatus.COMPLETED.toString(), r.getNewStatus());
         assertNotNull(d.getCompletedAt());
         assertEquals(SurgeryOutcome.SUCCESSFUL, d.getOutcome());
     }

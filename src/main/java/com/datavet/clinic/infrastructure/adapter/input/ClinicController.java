@@ -47,6 +47,8 @@ public class ClinicController {
 
         CreatePendingClinicCommand command = CreatePendingClinicCommand.builder()
                 .clinicName(request.getClinicName())
+                .email(new Email(request.getEmail()))
+                .phone(new Phone(request.getPhone()))
                 .build();
 
         Clinic clinic = clinicUseCase.createPendingClinic(command);

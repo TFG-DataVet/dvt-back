@@ -554,10 +554,10 @@ class PetTest {
     @Test
     @DisplayName("Should return correct age in years")
     void getAgeInYears_shouldReturnCorrectAge() {
-        // Born 2020-04-05, today is 2026-02-24 → 5 years
+        // Born 2020-04-05, after 2026-04-05 → 6 years
         Pet pet = PetTestDataBuilder.aValidPet();
 
-        assertEquals(5, pet.getAgeInYears());
+        assertEquals(6, pet.getAgeInYears());
     }
 
     @Test
