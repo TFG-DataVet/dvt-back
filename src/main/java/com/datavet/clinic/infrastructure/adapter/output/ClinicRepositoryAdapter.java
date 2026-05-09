@@ -34,6 +34,8 @@ public class ClinicRepositoryAdapter implements ClinicRepositoryPort {
                 .scheduleCloseTime(clinic.getSchedule() != null ? clinic.getSchedule().getCloseTime()  : null)
                 .scheduleNotes(clinic.getSchedule()     != null ? clinic.getSchedule().getNotes()      : null)
                 .status(clinic.getStatus())
+                .createdAt(clinic.getCreatedAt())
+                .updatedAt(clinic.getUpdatedAt())
                 .build();
     }
 
