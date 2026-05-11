@@ -35,3 +35,8 @@ build/
 
 .env
 logs/
+
+
+.claude/
+cambios.md
+plandetrabajo.md

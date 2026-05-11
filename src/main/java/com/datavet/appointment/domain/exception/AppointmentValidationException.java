@@ -1,18 +1,22 @@
-package com.datavet.auth.domain.exception;
+package com.datavet.appointment.domain.exception;
 
 import com.datavet.shared.domain.validation.ValidationResult;
 
-public class UserValidationException extends AuthDomainException {
+public class AppointmentValidationException extends AppointmentDomainException {
 
     private final ValidationResult validationResult;
 
-    public UserValidationException(ValidationResult validationResult) {
-        super("User validation failed: " + formatErrors(validationResult));
+    public AppointmentValidationException(ValidationResult validationResult) {
+        super("Appointment validation failed: " + formatErrors(validationResult));
         this.validationResult = validationResult;
     }
 
-    public UserValidationException(String field, String message) {
+    public AppointmentValidationException(String field, String message) {
         this(buildResult(field, message));
+    }
+
+    public ValidationResult getValidationResult() {
+        return validationResult;
     }
 
     private static ValidationResult buildResult(String field, String message) {
@@ -21,13 +25,9 @@ public class UserValidationException extends AuthDomainException {
         return result;
     }
 
-    public ValidationResult getValidationResult() {
-        return validationResult;
-    }
-
     private static String formatErrors(ValidationResult result) {
         return result.getErrors().stream()
-                .map(error -> error.getField() + ": " + error.getMessage())
+                .map(e -> e.getField() + ": " + e.getMessage())
                 .reduce((a, b) -> a + ", " + b)
                 .orElse("Unknown validation error");
     }

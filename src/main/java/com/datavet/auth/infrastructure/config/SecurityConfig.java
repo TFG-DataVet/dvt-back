@@ -66,6 +66,9 @@ public class SecurityConfig {
                         // Onboarding — requiere JWT temporal
                         .requestMatchers(HttpMethod.PATCH, "/clinic/*/complete-setup").authenticated()
 
+                        // Agenda
+                        .requestMatchers("/appointments/**").authenticated()
+
                         // Employees — solo CLINIC_OWNER y CLINIC_ADMIN
                         .requestMatchers("/employees/**").hasAnyRole(
                                 "CLINIC_OWNER", "CLINIC_ADMIN")
