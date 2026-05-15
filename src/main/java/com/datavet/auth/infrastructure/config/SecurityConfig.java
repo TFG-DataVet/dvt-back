@@ -69,6 +69,18 @@ public class SecurityConfig {
                         // Agenda
                         .requestMatchers("/appointments/**").authenticated()
 
+                        // Productos — lectura libre para cualquier rol; escritura restringida
+                        .requestMatchers(HttpMethod.GET,    "/product/**").authenticated()
+                        .requestMatchers(HttpMethod.POST,   "/product/**").hasAnyRole(
+                                "SUPER_ADMIN", "CLINIC_OWNER", "CLINIC_ADMIN")
+                        .requestMatchers(HttpMethod.PUT,    "/product/**").hasAnyRole(
+                                "SUPER_ADMIN", "CLINIC_OWNER", "CLINIC_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/product/**").hasAnyRole(
+                                "SUPER_ADMIN", "CLINIC_OWNER", "CLINIC_ADMIN")
+
+                        // Movimientos de inventario — cualquier empleado autenticado puede registrar
+                        .requestMatchers("/product-movement/**").authenticated()
+
                         // Employees — solo CLINIC_OWNER y CLINIC_ADMIN
                         .requestMatchers("/employees/**").hasAnyRole(
                                 "CLINIC_OWNER", "CLINIC_ADMIN")
